@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  view:
+    image: message-app-view-dev
+    container_name: message-app-view-dev
+    restart: always
+    build:
+      context: ./view-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./view-service:/app
+      - /app/node_modules
+      - /app/.next
+
+  auth:
+    image: message-app-auth-dev
+    container_name: message-app-auth-dev
+    restart: always
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./auth-service:/app
+
+  reverse-proxy:
+    image: nginx:stable-alpine
+    container_name: message-app-reverse-proxy-dev
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 3000:80
+    depends_on:
+      - auth
+      - view
