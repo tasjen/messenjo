@@ -10,6 +10,7 @@ import (
 	oa2 "github.com/tasjen/message-app-fullstack/auth-service/oauth2"
 )
 
+// Generates a random 16-character base64 string for enhancing oauth2.0 security
 func generateOauthState() string {
 	b := make([]byte, 16)
 	rand.Read(b)
@@ -17,17 +18,17 @@ func generateOauthState() string {
 	return state
 }
 
+// Converts account(claims) to jwt string and sets it in the cookie with 24hr max age
 func setJwtCookie(c *fiber.Ctx, account *oa2.AccountInfo) error {
+	age := time.Hour * 24
 
 	claims := jwt.MapClaims{
 		"id":   account.Id,
 		"name": account.Name,
-		"exp":  time.Now().Add(time.Minute * 3).Unix(),
+		"exp":  time.Now().Add(age).Unix(),
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Generate encoded token and send it as response.
 	jwtValue, err := jwtToken.SignedString([]byte(JWT_SECRET))
 	if err != nil {
 		return err
@@ -37,7 +38,7 @@ func setJwtCookie(c *fiber.Ctx, account *oa2.AccountInfo) error {
 		Name:     "auth_jwt",
 		Value:    jwtValue,
 		HTTPOnly: true,
-		Expires:  time.Now().Add(time.Minute * 1),
+		MaxAge:   int(age.Seconds()),
 	})
 
 	return nil
