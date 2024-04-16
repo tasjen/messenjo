@@ -4,8 +4,10 @@ import verifyUser from "./lib/auth";
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname === "/") {
+    const t0 = performance.now();
     try {
-      const user = await verifyUser(req);
+      const user = await verifyUser(req.cookies);
+      console.log(performance.now() - t0);
 
       const headers = new Headers(req.headers);
       headers.set("user", JSON.stringify(user));

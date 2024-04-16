@@ -1,5 +1,6 @@
 import { logout } from "@/lib/actions";
-export default function Logout() {
+
+export default function LogoutButton() {
   return (
     <form action={logout}>
       <button>logout</button>

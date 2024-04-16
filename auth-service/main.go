@@ -27,7 +27,7 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/auth", authHandler)
+	app.Get("/verify", verifyHandler)
 
 	app.Get("/login/:provider", oauthLoginHandler)
 	app.Get("/callback/:provider", oauthCallbackHandler)

@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,11 +11,20 @@ import (
 	oa2 "github.com/tasjen/message-app-fullstack/auth-service/oauth2"
 )
 
+// A callback which validates the token signing method
+// then returns jwt secret for verifying the token
+func keyFunc(token *jwt.Token) (interface{}, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+	}
+	return []byte(JWT_SECRET), nil
+}
+
 // Generates a random 16-character base64 string for enhancing oauth2.0 security
 func generateOauthState() string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
+	buffer := make([]byte, 16)
+	rand.Read(buffer)
+	state := base64.URLEncoding.EncodeToString(buffer)
 	return state
 }
 

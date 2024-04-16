@@ -1,15 +1,11 @@
-import { headers } from "next/headers";
 import LoginButton from "../ui/login-button";
-import Logout from "../ui/logout-button";
+import { env } from "process";
 
 export default function LoginPage() {
-  const user = headers().get("user");
   return (
     <>
-      <LoginButton provider="google" />
-      <LoginButton provider="github" />
-      <Logout />
-      <div>{user}</div>
+      <LoginButton host={env.HOST} provider="google" />
+      <LoginButton host={env.HOST} provider="github" />
     </>
   );
 }

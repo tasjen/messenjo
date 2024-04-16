@@ -1,17 +1,16 @@
 "use client";
 
 type Props = {
+  host: string;
   provider: string;
 };
 
-export default function Login({ provider }: Props) {
+export default function LoginButton({ host, provider }: Props) {
   return (
-    <button
-      onClick={() => {
-        window.location.href = `http://localhost:3000/api/auth/login/${provider}`;
-      }}
-    >
-      login {provider}
-    </button>
+    <>
+      <a href={`http://${host}/api/auth/login/${provider}`}>
+        <button>login {provider}</button>
+      </a>
+    </>
   );
 }

@@ -2,30 +2,26 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func authHandler(c *fiber.Ctx) error {
-	jwtToken := c.Cookies("auth_jwt")
-	token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(JWT_SECRET), nil
-	})
-
-	switch {
-	case err != nil:
-		return err
-	case token.Valid:
-		return c.SendStatus(fiber.StatusOK)
-	default:
+func verifyHandler(c *fiber.Ctx) error {
+	tokenString := c.Query("token")
+	token, err := jwt.Parse(tokenString, keyFunc)
+	if err != nil {
+		log.Error(err)
 		return c.SendStatus(fiber.StatusUnauthorized)
 	}
+	return c.JSON(token.Claims)
 }
 
 func oauthLoginHandler(c *fiber.Ctx) error {
 	providerName := c.Params("provider")
 	provider, ok := Providers[providerName]
 	if !ok {
-		return fiber.ErrBadRequest
+		log.Error("invalid provider")
+		return c.Redirect("/login")
 	}
 	oauthState := generateOauthState()
 
@@ -45,9 +41,8 @@ func oauthCallbackHandler(c *fiber.Ctx) error {
 	providerName := c.Params("provider")
 	provider, ok := Providers[providerName]
 	if !ok {
-		return c.Status(400).JSON(fiber.Map{
-			"error": fiber.ErrBadRequest.Error(),
-		})
+		log.Error("invalid provider")
+		return c.Redirect("/login")
 	}
 
 	if c.Query("error") != "" {
@@ -55,30 +50,26 @@ func oauthCallbackHandler(c *fiber.Ctx) error {
 	}
 
 	if c.Query("state") != c.Cookies("oauthstate") {
-		return c.Status(400).JSON(fiber.Map{
-			"error": fiber.ErrBadRequest.Error(),
-		})
+		log.Error("callback state does not match oauthstate")
+		return c.Redirect("/login")
 	}
 
 	code := c.Query("code")
 	token, err := provider.Config().Exchange(c.Context(), code)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		log.Error(err)
+		return c.Redirect("/login")
 	}
 
 	account, err := provider.FetchAccountInfo(token.AccessToken)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		log.Error(err)
+		return c.Redirect("/login")
 	}
 
 	if err := setJwtCookie(c, account); err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		log.Error(err)
+		return c.Redirect("/login")
 	}
 
 	return c.Redirect("/")
