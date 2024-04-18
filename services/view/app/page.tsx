@@ -3,7 +3,7 @@ import Chat from "./ui/chatbox";
 import UserInfo from "./ui/user-info";
 import LogoutButton from "./ui/logout-button";
 
-export default function Home() {
+export default async function Home() {
   return (
     <main>
       <UserInfo />

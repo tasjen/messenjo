@@ -5,10 +5,11 @@ services:
     container_name: message-app-view-dev
     restart: always
     build:
-      context: ./view-service
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: ./services/view/Dockerfile.dev
     volumes:
-      - ./view-service:/app
+      - ./services/view:/app
+      - /app/protos
       - /app/node_modules
       - /app/.next
 
@@ -17,10 +18,13 @@ services:
     container_name: message-app-auth-dev
     restart: always
     build:
-      context: ./auth-service
+      context: ./services/auth
       dockerfile: Dockerfile.dev
     volumes:
-      - ./auth-service:/app
+      - ./services/auth:/app
+    ports:
+      - 3001:3000
+      - 3002:3001
 
   reverse-proxy:
     image: nginx:stable-alpine
@@ -33,3 +37,25 @@ services:
     depends_on:
       - auth
       - view
+
+  chat-service-db:
+    container_name: message-app-postgres-dev
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - ./services/chat/database/postgresql/dev:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    container_name: message-app-pgadmin-dev
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dev@dev.com
+      PGADMIN_DEFAULT_PASSWORD: dev
+    ports:
+      - 5050:80
