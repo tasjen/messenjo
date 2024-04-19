@@ -6,7 +6,6 @@ export default async function UserInfo() {
   return (
     <>
       <div>id: {user.id}</div>
-      <div>name: {user.name}</div>
     </>
   );
 }

@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"net"
+	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -19,13 +19,14 @@ var (
 	JWT_SECRET string
 )
 
-type User struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+const isProd = false
+
+type user struct {
+	Id string `json:"id"`
 	jwt.RegisteredClaims
 }
 
-type server struct {
+type service struct {
 	pb.UnimplementedTokenVerifierServer
 }
 
@@ -34,29 +35,29 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go startgRPCServer()
+	go startGrpcService()
 
 	JWT_SECRET = os.Getenv("JWT_SECRET")
 
 	Providers["github"] = oa2.NewGithubProvider()
 	Providers["google"] = oa2.NewGoogleProvider()
 
-	app := fiber.New()
+	app := http.NewServeMux()
+	app.HandleFunc("GET /login/{provider}", oauthLoginHandler)
+	app.HandleFunc("GET /callback/{provider}", oauthCallbackHandler)
 
-	app.Get("/login/:provider", oauthLoginHandler)
-	app.Get("/callback/:provider", oauthCallbackHandler)
-
-	log.Fatal(app.Listen(":3000"))
+	log.Printf("server listening at :3000")
+	log.Fatal(http.ListenAndServe(":3000", app))
 }
 
-func startgRPCServer() {
+func startGrpcService() {
 	lis, err := net.Listen("tcp", ":3001")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal(err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterTokenVerifierServer(s, &server{})
-	log.Printf("server listening at %v", lis.Addr())
+	pb.RegisterTokenVerifierServer(s, &service{})
+	log.Printf("gRPC service listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

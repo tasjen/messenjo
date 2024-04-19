@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 )
 
 type GithubAccountInfo struct {
-	Id   int    `json:"id"`
-	Name string `json:"login"`
+	Id int `json:"id"`
+	// Name string `json:"login"`
 	// Picture  string `json:"avatar_url"`
 }
 
@@ -37,25 +38,33 @@ func (g *GithubProvider) Config() *oauth2.Config {
 }
 
 func (g *GithubProvider) FetchAccountInfo(accessToken string) (*AccountInfo, error) {
-	req := fiber.Get("https://api.github.com/user")
-	req.Set("Authorization", "Bearer "+accessToken)
-	_, rawBody, errs := req.Bytes()
+	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/user", nil)
+	if err != nil {
+		return &AccountInfo{}, err
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return &AccountInfo{}, err
+	}
+	defer res.Body.Close()
 
-	if len(errs) > 0 {
-		return &AccountInfo{}, errors.New("cannot get userinfo from api.github")
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return &AccountInfo{}, err
 	}
 
 	var data GithubAccountInfo
-	err := json.Unmarshal(rawBody, &data)
+	err = json.Unmarshal(resBody, &data)
 
 	switch {
 	case err != nil:
 		return &AccountInfo{}, err
 	case data.Id == 0:
 		return &AccountInfo{}, errors.New("`id` field is missing from googleapi response")
-	case data.Name == "":
-		return &AccountInfo{}, errors.New("`login`(username) field is missing from googleapi response")
+		// case data.Name == "":
+		// 	return &AccountInfo{}, errors.New("`login`(username) field is missing from github response")
 	}
 
-	return &AccountInfo{Id: fmt.Sprint(data.Id), Name: data.Name}, nil
+	return &AccountInfo{Id: fmt.Sprint(data.Id)}, nil
 }

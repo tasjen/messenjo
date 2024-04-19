@@ -8,7 +8,6 @@ import { z, ZodError } from "zod";
 
 const User = z.object({
   id: z.string(),
-  name: z.string(),
 });
 
 type User = z.infer<typeof User>;

@@ -4,82 +4,102 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	pb "github.com/tasjen/message-app-fullstack/auth-service/token-verifier"
 )
 
-func oauthLoginHandler(c *fiber.Ctx) error {
-	providerName := c.Params("provider")
+func oauthLoginHandler(w http.ResponseWriter, r *http.Request) {
+	providerName := r.PathValue("provider")
 	provider, ok := Providers[providerName]
 	if !ok {
 		log.Println("invalid provider")
-		return c.Redirect("/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
+
 	oauthState := generateOauthState()
-
-	c.Cookie(&fiber.Cookie{
-		Name:     "oauthstate",
-		Value:    oauthState,
-		HTTPOnly: true,
-		Path:     "/",
-	})
-
+	setOauthStateCookie(w, oauthState)
 	URL := provider.Config().AuthCodeURL(oauthState)
 
-	return c.Redirect(URL)
+	http.Redirect(w, r, URL, http.StatusTemporaryRedirect)
 }
 
-func oauthCallbackHandler(c *fiber.Ctx) error {
-	providerName := c.Params("provider")
+func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	providerName := r.PathValue("provider")
 	provider, ok := Providers[providerName]
 	if !ok {
 		log.Println("invalid provider")
-		return c.Redirect("/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
-	if c.Query("error") != "" {
-		return c.Redirect("/login")
+	if r.URL.Query().Get("error") != "" {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
-	if c.Query("state") != c.Cookies("oauthstate") {
-		log.Println("callback state does not match oauthstate")
-		return c.Redirect("/login")
+	oauthstate, err := r.Cookie("oauthstate")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			http.Redirect(w, r, "/login", http.StatusFound)
+		default:
+			log.Println(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
+		return
 	}
 
-	code := c.Query("code")
-	token, err := provider.Config().Exchange(c.Context(), code)
+	if r.URL.Query().Get("state") != oauthstate.Value {
+		log.Println(errors.New("callback state does not match oauthstate"))
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+
+	code := r.URL.Query().Get("code")
+	token, err := provider.Config().Exchange(r.Context(), code)
 	if err != nil {
 		log.Println(err)
-		return c.Redirect("/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	account, err := provider.FetchAccountInfo(token.AccessToken)
 	if err != nil {
 		log.Println(err)
-		return c.Redirect("/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
-
-	if err := setJwtCookie(c, account); err != nil {
+	if err := setJwtCookie(w, account); err != nil {
 		log.Println(err)
-		return c.Redirect("/login")
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
-	return c.Redirect("/")
+	// delete oauthstate cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:   "oauthstate",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *server) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
-	token, err := jwt.ParseWithClaims(req.GetToken(), &User{}, keyFunc)
+func (s *service) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
+	token, err := jwt.ParseWithClaims(req.GetToken(), &user{}, keyFunc)
 	if err != nil {
 		log.Println(err)
 		return &pb.AuthResponse{}, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*User)
+	claims, ok := token.Claims.(*user)
 	if !ok {
+		log.Println(errors.New("failed asserting `token.Claims` to `*User` type"))
 		return &pb.AuthResponse{}, errors.New("internal server error")
 	}
 
-	return &pb.AuthResponse{Id: claims.Id, Name: claims.Name}, nil
+	return &pb.AuthResponse{Id: claims.Id}, nil
 }

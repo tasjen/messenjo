@@ -38,8 +38,8 @@ services:
       - auth
       - view
 
-  chat-service-db:
-    container_name: message-app-postgres-dev
+  chat-db:
+    container_name: message-app-chat-db-dev
     image: postgres:16-alpine
     restart: always
     environment:
