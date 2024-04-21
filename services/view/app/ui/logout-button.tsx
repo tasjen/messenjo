@@ -1,9 +1,10 @@
-import { logout } from "@/lib/actions";
+// use <a> instead of <Link> as clicking <Link> doesn't revalidate the "/" path
+// allowing users to navigate back to the cached home page
 
 export default function LogoutButton() {
   return (
-    <form action={logout}>
+    <a href="/api/auth/logout">
       <button>logout</button>
-    </form>
+    </a>
   );
 }

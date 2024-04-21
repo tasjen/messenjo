@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { verifyToken } from "./grpc-client";
 import { z, ZodError } from "zod";
@@ -28,9 +27,4 @@ export async function verifyUser(
     }
     redirect("/login");
   }
-}
-
-export async function logout() {
-  cookies().delete("auth_jwt");
-  redirect("/login");
 }

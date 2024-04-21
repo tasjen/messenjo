@@ -3,21 +3,11 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-// A callback which validates the token signing method
-// then returns jwt secret for verifying the token
-func keyFunc(token *jwt.Token) (interface{}, error) {
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-	}
-	return []byte(JWT_SECRET), nil
-}
 
 // Generates a random 16-character base64 string
 func generateOauthState() string {
@@ -40,7 +30,8 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 	})
 }
 
-// Converts account(claims) to jwt string and sets it in the cookie with 24hr max age
+// Converts claims to jwt string and sets it in the cookie
+// with the same age as the claims
 func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtValue, err := jwtToken.SignedString([]byte(JWT_SECRET))

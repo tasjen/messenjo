@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -123,8 +124,26 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *tokenVerifierServer) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
-	token, err := jwt.ParseWithClaims(req.GetToken(), &jwtClaims{}, keyFunc)
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth_jwt",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
+	http.Redirect(w, r, "/login", http.StatusFound)
+}
+
+func (*tokenVerifierServer) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
+	token, err := jwt.ParseWithClaims(
+		req.GetToken(),
+		&jwtClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(JWT_SECRET), nil
+		})
 	if err != nil {
 		return &pb.AuthResponse{}, errors.New("invalid token")
 	}
