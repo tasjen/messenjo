@@ -5,14 +5,22 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/tasjen/message-app-fullstack/auth-service/internal/models"
 	pb "github.com/tasjen/message-app-fullstack/auth-service/token-verifier"
 )
 
-func oauthLoginHandler(w http.ResponseWriter, r *http.Request) {
+type jwtClaims struct {
+	Id  string `json:"id"`
+	Exp int64  `json:"exp"`
+	jwt.RegisteredClaims
+}
+
+func (app *application) oauthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	providerName := r.PathValue("provider")
-	provider, ok := Providers[providerName]
+	provider, ok := app.providers[providerName]
 	if !ok {
 		log.Println("invalid provider")
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -26,9 +34,16 @@ func oauthLoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, URL, http.StatusTemporaryRedirect)
 }
 
-func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	// delete oauthstate cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:   "oauthstate",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
 	providerName := r.PathValue("provider")
-	provider, ok := Providers[providerName]
+	provider, ok := app.providers[providerName]
 	if !ok {
 		log.Println("invalid provider")
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -66,38 +81,57 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account, err := provider.FetchAccountInfo(token.AccessToken)
+	oauthAccountInfo, err := provider.FetchAccountInfo(token.AccessToken)
 	if err != nil {
 		log.Println(err)
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	if err := setJwtCookie(w, account); err != nil {
+
+	acc, err := app.accounts.Get(r.Context(), oauthAccountInfo.Id)
+	if err != nil {
 		log.Println(err)
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
+	// if account doesn't exist, create one
+	if acc == nil {
+		err = app.accounts.Add(r.Context(), &models.Account{
+			UserId:       oauthAccountInfo.Id, // change this to uuid
+			ProviderName: providerName,
+			ProviderId:   oauthAccountInfo.Id,
+			CreatedAt:    time.Now().String(),
+		})
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+	}
 
-	// delete oauthstate cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:   "oauthstate",
-		Path:   "/",
-		MaxAge: -1,
-	})
+	claims := &jwtClaims{
+		Id:  oauthAccountInfo.Id, // change this to uuid
+		Exp: time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	if err := setJwtCookie(w, claims); err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (s *service) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
-	token, err := jwt.ParseWithClaims(req.GetToken(), &user{}, keyFunc)
+func (s *tokenVerifierServer) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
+	token, err := jwt.ParseWithClaims(req.GetToken(), &jwtClaims{}, keyFunc)
 	if err != nil {
-		log.Println(err)
 		return &pb.AuthResponse{}, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*user)
+	claims, ok := token.Claims.(*jwtClaims)
 	if !ok {
-		log.Println(errors.New("failed asserting `token.Claims` to `*User` type"))
+		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
 		return &pb.AuthResponse{}, errors.New("internal server error")
 	}
 

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	oa2 "github.com/tasjen/message-app-fullstack/auth-service/oauth2"
 )
 
 // A callback which validates the token signing method
@@ -42,14 +41,7 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 }
 
 // Converts account(claims) to jwt string and sets it in the cookie with 24hr max age
-func setJwtCookie(w http.ResponseWriter, account *oa2.AccountInfo) error {
-	age := time.Hour * 24
-
-	claims := jwt.MapClaims{
-		"id":  account.Id,
-		"exp": time.Now().Add(age).Unix(),
-	}
-
+func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtValue, err := jwtToken.SignedString([]byte(JWT_SECRET))
 	if err != nil {
@@ -63,7 +55,7 @@ func setJwtCookie(w http.ResponseWriter, account *oa2.AccountInfo) error {
 		HttpOnly: true,
 		Secure:   isProd,
 		SameSite: http.SameSiteDefaultMode,
-		MaxAge:   int(age.Seconds()),
+		MaxAge:   int(claims.Exp),
 	})
 
 	return nil

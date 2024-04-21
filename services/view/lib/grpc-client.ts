@@ -8,7 +8,6 @@ import path from "path";
 import { ProtoGrpcType } from "./gen/token-verifier";
 import { AuthResponse } from "./gen/AuthResponse";
 
-console.log(path.join(process.cwd(), "/protos/token-verifier.proto"));
 const packageDefinition = loadSync(
   path.join(process.cwd(), "/protos/token-verifier.proto"),
   {}

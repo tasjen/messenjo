@@ -22,6 +22,8 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./services/auth:/app
+    env_file:
+      - ./services/auth/.env
     ports:
       - 3001:3000
       - 3002:3001
