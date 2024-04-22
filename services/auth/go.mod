@@ -1,4 +1,4 @@
-module github.com/tasjen/message-app-fullstack/auth-service
+module github.com/tasjen/message-app-fullstack/services/auth
 
 go 1.22.2
 

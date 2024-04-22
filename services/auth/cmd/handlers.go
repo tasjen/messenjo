@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/tasjen/message-app-fullstack/auth-service/internal/models"
-	pb "github.com/tasjen/message-app-fullstack/auth-service/token-verifier"
+	pb "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto"
+	"github.com/tasjen/message-app-fullstack/services/auth/internal/models"
 )
 
 type jwtClaims struct {

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: token-verifier0/token-verifier.proto
+// source: internal/auth_proto/auth.proto
 
-package token_verifier
+package auth_proto
 
 import (
 	context "context"
@@ -101,5 +101,5 @@ var TokenVerifier_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "token-verifier0/token-verifier.proto",
+	Metadata: "internal/auth_proto/auth.proto",
 }

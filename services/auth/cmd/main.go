@@ -12,9 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"google.golang.org/grpc"
 
-	"github.com/tasjen/message-app-fullstack/auth-service/internal/models"
-	oa2 "github.com/tasjen/message-app-fullstack/auth-service/internal/oauth2"
-	pb "github.com/tasjen/message-app-fullstack/auth-service/token-verifier"
+	pb "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto"
+	"github.com/tasjen/message-app-fullstack/services/auth/internal/models"
+	oa2 "github.com/tasjen/message-app-fullstack/services/auth/internal/oauth2"
 )
 
 const isProd = false
@@ -45,7 +45,7 @@ func main() {
 
 	accountTableName := "message-app-fullstack-auth-db"
 	if !isProd {
-		accountTableName += "-test"
+		accountTableName += "-dev"
 	}
 	app := &application{
 		accounts: &models.AccountModel{
