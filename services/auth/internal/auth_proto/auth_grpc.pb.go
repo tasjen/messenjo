@@ -18,86 +18,86 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// TokenVerifierClient is the client API for TokenVerifier service.
+// AuthClient is the client API for Auth service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type TokenVerifierClient interface {
+type AuthClient interface {
 	VerifyToken(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error)
 }
 
-type tokenVerifierClient struct {
+type authClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTokenVerifierClient(cc grpc.ClientConnInterface) TokenVerifierClient {
-	return &tokenVerifierClient{cc}
+func NewAuthClient(cc grpc.ClientConnInterface) AuthClient {
+	return &authClient{cc}
 }
 
-func (c *tokenVerifierClient) VerifyToken(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
+func (c *authClient) VerifyToken(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
 	out := new(AuthResponse)
-	err := c.cc.Invoke(ctx, "/TokenVerifier/VerifyToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/Auth/VerifyToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// TokenVerifierServer is the server API for TokenVerifier service.
-// All implementations must embed UnimplementedTokenVerifierServer
+// AuthServer is the server API for Auth service.
+// All implementations must embed UnimplementedAuthServer
 // for forward compatibility
-type TokenVerifierServer interface {
+type AuthServer interface {
 	VerifyToken(context.Context, *AuthRequest) (*AuthResponse, error)
-	mustEmbedUnimplementedTokenVerifierServer()
+	mustEmbedUnimplementedAuthServer()
 }
 
-// UnimplementedTokenVerifierServer must be embedded to have forward compatible implementations.
-type UnimplementedTokenVerifierServer struct {
+// UnimplementedAuthServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthServer struct {
 }
 
-func (UnimplementedTokenVerifierServer) VerifyToken(context.Context, *AuthRequest) (*AuthResponse, error) {
+func (UnimplementedAuthServer) VerifyToken(context.Context, *AuthRequest) (*AuthResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
 }
-func (UnimplementedTokenVerifierServer) mustEmbedUnimplementedTokenVerifierServer() {}
+func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
-// UnsafeTokenVerifierServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TokenVerifierServer will
+// UnsafeAuthServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthServer will
 // result in compilation errors.
-type UnsafeTokenVerifierServer interface {
-	mustEmbedUnimplementedTokenVerifierServer()
+type UnsafeAuthServer interface {
+	mustEmbedUnimplementedAuthServer()
 }
 
-func RegisterTokenVerifierServer(s grpc.ServiceRegistrar, srv TokenVerifierServer) {
-	s.RegisterService(&TokenVerifier_ServiceDesc, srv)
+func RegisterAuthServer(s grpc.ServiceRegistrar, srv AuthServer) {
+	s.RegisterService(&Auth_ServiceDesc, srv)
 }
 
-func _TokenVerifier_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Auth_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TokenVerifierServer).VerifyToken(ctx, in)
+		return srv.(AuthServer).VerifyToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/TokenVerifier/VerifyToken",
+		FullMethod: "/Auth/VerifyToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TokenVerifierServer).VerifyToken(ctx, req.(*AuthRequest))
+		return srv.(AuthServer).VerifyToken(ctx, req.(*AuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// TokenVerifier_ServiceDesc is the grpc.ServiceDesc for TokenVerifier service.
+// Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var TokenVerifier_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "TokenVerifier",
-	HandlerType: (*TokenVerifierServer)(nil),
+var Auth_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "Auth",
+	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "VerifyToken",
-			Handler:    _TokenVerifier_VerifyToken_Handler,
+			Handler:    _Auth_VerifyToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

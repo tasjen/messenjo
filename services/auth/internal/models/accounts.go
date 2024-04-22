@@ -11,7 +11,7 @@ import (
 )
 
 type IAccountModel interface {
-	Get(ctx context.Context, userId string) (*Account, error)
+	Get(ctx context.Context, providerId, providerName string) (*Account, error)
 	Add(ctx context.Context, acc *Account) error
 	TableExists(ctx context.Context) (bool, error)
 }
@@ -22,18 +22,27 @@ type AccountModel struct {
 }
 
 type Account struct {
-	UserId       string `dynamodbav:"user_id"`
-	ProviderName string `dynamodbav:"provider_name"`
 	ProviderId   string `dynamodbav:"provider_id"`
+	ProviderName string `dynamodbav:"provider_name"`
+	UserId       string `dynamodbav:"user_id"`
 	CreatedAt    string `dynamodbav:"created_at"`
 }
 
 func (acc *Account) GetKey() (map[string]types.AttributeValue, error) {
-	userId, err := attributevalue.Marshal(acc.UserId)
+	providerId, err := attributevalue.Marshal(acc.ProviderId)
 	if err != nil {
 		return map[string]types.AttributeValue{}, err
 	}
-	return map[string]types.AttributeValue{"user_id": userId}, nil
+
+	providerName, err := attributevalue.Marshal(acc.ProviderName)
+	if err != nil {
+		return map[string]types.AttributeValue{}, err
+	}
+
+	return map[string]types.AttributeValue{
+		"provider_id":   providerId,
+		"provider_name": providerName,
+	}, nil
 }
 
 func (m *AccountModel) TableExists(ctx context.Context) (bool, error) {
@@ -49,8 +58,11 @@ func (m *AccountModel) TableExists(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (m *AccountModel) Get(ctx context.Context, userId string) (*Account, error) {
-	acc := &Account{UserId: userId}
+func (m *AccountModel) Get(ctx context.Context, providerId, providerName string) (*Account, error) {
+	acc := &Account{
+		ProviderId:   providerId,
+		ProviderName: providerName,
+	}
 	accKey, err := acc.GetKey()
 	if err != nil {
 		return &Account{}, err
@@ -64,7 +76,7 @@ func (m *AccountModel) Get(ctx context.Context, userId string) (*Account, error)
 	}
 
 	if len(response.Item) == 0 {
-		return nil, nil
+		return &Account{}, nil
 	}
 
 	err = attributevalue.UnmarshalMap(response.Item, acc)

@@ -35,6 +35,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.11
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.13
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.31.1
+	github.com/google/uuid v1.6.0
 	golang.org/x/oauth2 v0.9.0
 	golang.org/x/sys v0.19.0 // indirect
 	google.golang.org/grpc v1.52.0-dev

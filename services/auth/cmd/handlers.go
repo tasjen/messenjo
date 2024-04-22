@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	pb "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto"
+	"github.com/google/uuid"
+	auth_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto"
+	chat_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/chat_proto"
 	"github.com/tasjen/message-app-fullstack/services/auth/internal/models"
 )
 
@@ -32,7 +34,7 @@ func (app *application) oauthLoginHandler(w http.ResponseWriter, r *http.Request
 	setOauthStateCookie(w, oauthState)
 	URL := provider.Config().AuthCodeURL(oauthState)
 
-	http.Redirect(w, r, URL, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, URL, http.StatusFound)
 }
 
 func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,23 +91,43 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	acc, err := app.accounts.Get(r.Context(), oauthAccountInfo.Id)
+	acc, err := app.accounts.Get(
+		r.Context(),
+		oauthAccountInfo.Id,
+		providerName,
+	)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		http.Redirect(w, r, "/error", http.StatusFound)
 		return
 	}
-	// if account doesn't exist, create one
-	if acc == nil {
+	// if account doesn't exist, create one in Chat DB and one in Auth DB
+	if *acc == (models.Account{}) {
+		res, err := app.chatClient.CreateUser(
+			r.Context(),
+			&chat_pb.CreateUserReq{
+				Username: fmt.Sprintf("%v#%v", providerName, oauthAccountInfo.Id),
+			})
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/error", http.StatusFound)
+			return
+		}
+
+		userId, err := uuid.FromBytes(res.GetUserId())
+		if err != nil {
+			log.Println(err)
+			http.Redirect(w, r, "/error", http.StatusFound)
+		}
 		err = app.accounts.Add(r.Context(), &models.Account{
-			UserId:       oauthAccountInfo.Id, // change this to uuid
-			ProviderName: providerName,
 			ProviderId:   oauthAccountInfo.Id,
-			CreatedAt:    time.Now().String(),
+			ProviderName: providerName,
+			UserId:       userId.String(),
+			CreatedAt:    time.Now().Format(time.DateTime),
 		})
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, r, "/login", http.StatusFound)
+			http.Redirect(w, r, "/error", http.StatusFound)
 			return
 		}
 	}
@@ -134,7 +156,7 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func (*tokenVerifierServer) VerifyToken(ctx context.Context, req *pb.AuthRequest) (*pb.AuthResponse, error) {
+func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
 	token, err := jwt.ParseWithClaims(
 		req.GetToken(),
 		&jwtClaims{},
@@ -145,14 +167,14 @@ func (*tokenVerifierServer) VerifyToken(ctx context.Context, req *pb.AuthRequest
 			return []byte(JWT_SECRET), nil
 		})
 	if err != nil {
-		return &pb.AuthResponse{}, errors.New("invalid token")
+		return &auth_pb.AuthResponse{}, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*jwtClaims)
 	if !ok {
 		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
-		return &pb.AuthResponse{}, errors.New("internal server error")
+		return &auth_pb.AuthResponse{}, errors.New("internal server error")
 	}
 
-	return &pb.AuthResponse{Id: claims.Id}, nil
+	return &auth_pb.AuthResponse{Id: claims.Id}, nil
 }

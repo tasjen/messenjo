@@ -28,6 +28,18 @@ services:
       - 3001:3000
       - 3002:3001
 
+  chat:
+    image: message-app-chat-dev
+    container_name: message-app-chat-dev
+    restart: always
+    build:
+      context: ./services/chat
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/chat:/app
+    env_file:
+      - ./services/chat/.env.dev
+
   reverse-proxy:
     image: nginx:stable-alpine
     container_name: message-app-reverse-proxy-dev
@@ -40,24 +52,13 @@ services:
       - auth
       - view
 
-  chat-db:
-    container_name: message-app-chat-db-dev
-    image: postgres:16-alpine
-    restart: always
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
-    volumes:
-      - ./services/chat/database/postgresql/dev:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
-
   pgadmin:
     container_name: message-app-pgadmin-dev
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev
+    logging:
+      driver: none
     ports:
       - 5050:80
