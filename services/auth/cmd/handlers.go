@@ -16,8 +16,9 @@ import (
 )
 
 type jwtClaims struct {
-	Id  string `json:"id"`
-	Exp int64  `json:"exp"`
+	ProviderId   string `json:"provider_id"`
+	ProviderName string `json:"provider_name"`
+	Exp          int64  `json:"exp"`
 	jwt.RegisteredClaims
 }
 
@@ -38,22 +39,12 @@ func (app *application) oauthLoginHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	// delete oauthstate cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:   "oauthstate",
-		Path:   "/",
-		MaxAge: -1,
-	})
+	deleteOauthStateCookie(w)
 
 	providerName := r.PathValue("provider")
 	provider, ok := app.providers[providerName]
 	if !ok {
 		log.Println("invalid provider")
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-
-	if r.URL.Query().Get("error") != "" {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -91,6 +82,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// find oauth account in Auth DB
 	acc, err := app.accounts.Get(
 		r.Context(),
 		oauthAccountInfo.Id,
@@ -101,8 +93,9 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, "/error", http.StatusFound)
 		return
 	}
-	// if account doesn't exist, create one in Chat DB and one in Auth DB
+	// if account doesn't exist:
 	if *acc == (models.Account{}) {
+		// create a user in Chat DB
 		res, err := app.chatClient.CreateUser(
 			r.Context(),
 			&chat_pb.CreateUserReq{
@@ -114,32 +107,37 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
+		// extract the userId(uuid) returned from Chat service
 		userId, err := uuid.FromBytes(res.GetUserId())
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/error", http.StatusFound)
 		}
-		err = app.accounts.Add(r.Context(), &models.Account{
+
+		// then create an account in Auth DB using that id
+		if err = app.accounts.Add(r.Context(), &models.Account{
 			ProviderId:   oauthAccountInfo.Id,
 			ProviderName: providerName,
 			UserId:       userId.String(),
 			CreatedAt:    time.Now().Format(time.DateTime),
-		})
-		if err != nil {
+		}); err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/error", http.StatusFound)
 			return
 		}
 	}
 
+	// Sign jwt with ProviderId and ProviderName to cookies
+	// before sending the response back to user
 	claims := &jwtClaims{
-		Id:  oauthAccountInfo.Id, // change this to uuid
-		Exp: time.Now().Add(time.Hour * 24).Unix(),
+		ProviderId:   oauthAccountInfo.Id,
+		ProviderName: providerName,
+		Exp:          time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	if err := setJwtCookie(w, claims); err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		http.Redirect(w, r, "/error", http.StatusFound)
 		return
 	}
 
@@ -176,5 +174,8 @@ func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*
 		return &auth_pb.AuthResponse{}, errors.New("internal server error")
 	}
 
-	return &auth_pb.AuthResponse{Id: claims.Id}, nil
+	return &auth_pb.AuthResponse{
+		ProviderId:   claims.ProviderId,
+		ProviderName: claims.ProviderName,
+	}, nil
 }

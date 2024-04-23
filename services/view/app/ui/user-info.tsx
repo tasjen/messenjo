@@ -5,7 +5,8 @@ export default async function UserInfo() {
   const user = await verifyUser(cookies());
   return (
     <>
-      <div>id: {user.id}</div>
+      <div>provider_id: {user.providerId}</div>
+      <div>provider_name: {user.providerName}</div>
     </>
   );
 }

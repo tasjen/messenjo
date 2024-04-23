@@ -13,20 +13,19 @@ type User struct {
 }
 
 type IUserModel interface {
-	Add(ctx context.Context, username string) (uuid.UUID, error)
+	Add(ctx context.Context, id uuid.UUID, username string) error
 }
 
 type UserModel struct {
 	DB *pgxpool.Pool
 }
 
-func (m *UserModel) Add(ctx context.Context, username string) (uuid.UUID, error) {
-	id := uuid.New()
+func (m *UserModel) Add(ctx context.Context, id uuid.UUID, username string) error {
 	stmt := `INSERT INTO users (id, username) VALUES ($1, $2);`
 	_, err := m.DB.Exec(ctx, stmt, id, username)
 	if err != nil {
-		return uuid.UUID{}, err
+		return err
 	}
 
-	return id, nil
+	return nil
 }

@@ -1,4 +1,4 @@
-// Original file: protos/token-verifier.proto
+// Original file: auth.proto
 
 
 export interface AuthRequest {

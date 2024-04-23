@@ -30,6 +30,15 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 	})
 }
 
+// Delete oauthstate cookie
+func deleteOauthStateCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "oauthstate",
+		Path:   "/",
+		MaxAge: -1,
+	})
+}
+
 // Converts claims to jwt string and sets it in the cookie
 // with the same age as the claims
 func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {

@@ -11,6 +11,6 @@ message AuthRequest {
 }
 
 message AuthResponse {
-  string id = 1;
-  string name = 2;
+  string provider_id = 1;
+  string provider_name = 2;
 }

@@ -6,7 +6,8 @@ import { verifyToken } from "./grpc-client";
 import { z, ZodError } from "zod";
 
 const User = z.object({
-  id: z.string(),
+  providerId: z.string(),
+  providerName: z.string(),
 });
 
 type User = z.infer<typeof User>;
