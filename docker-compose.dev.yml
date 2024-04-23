@@ -3,7 +3,6 @@ services:
   view:
     image: message-app-view-dev
     container_name: message-app-view-dev
-    restart: always
     build:
       context: .
       dockerfile: ./services/view/Dockerfile.dev
@@ -16,7 +15,6 @@ services:
   auth:
     image: message-app-auth-dev
     container_name: message-app-auth-dev
-    restart: always
     build:
       context: ./services/auth
       dockerfile: Dockerfile.dev
@@ -31,7 +29,6 @@ services:
   chat:
     image: message-app-chat-dev
     container_name: message-app-chat-dev
-    restart: always
     build:
       context: ./services/chat
       dockerfile: Dockerfile.dev
@@ -43,7 +40,6 @@ services:
   reverse-proxy:
     image: nginx:stable-alpine
     container_name: message-app-reverse-proxy-dev
-    restart: always
     volumes:
       - ./nginx.conf.dev:/etc/nginx/nginx.conf:ro
     ports:

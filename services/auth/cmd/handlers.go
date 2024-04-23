@@ -16,9 +16,8 @@ import (
 )
 
 type jwtClaims struct {
-	ProviderId   string `json:"provider_id"`
-	ProviderName string `json:"provider_name"`
-	Exp          int64  `json:"exp"`
+	UserId string `json:"user_id"`
+	Exp    int64  `json:"exp"`
 	jwt.RegisteredClaims
 }
 
@@ -83,7 +82,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	// find oauth account in Auth DB
-	acc, err := app.accounts.Get(
+	account, err := app.accounts.Get(
 		r.Context(),
 		oauthAccountInfo.Id,
 		providerName,
@@ -93,8 +92,9 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, "/error", http.StatusFound)
 		return
 	}
+
 	// if account doesn't exist:
-	if *acc == (models.Account{}) {
+	if *account == (models.Account{}) {
 		// create a user in Chat DB
 		res, err := app.chatClient.CreateUser(
 			r.Context(),
@@ -112,6 +112,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, r, "/error", http.StatusFound)
+			return
 		}
 
 		// then create an account in Auth DB using that id
@@ -127,12 +128,11 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	// Sign jwt with ProviderId and ProviderName to cookies
+	// Sign jwt to cookies with userId
 	// before sending the response back to user
 	claims := &jwtClaims{
-		ProviderId:   oauthAccountInfo.Id,
-		ProviderName: providerName,
-		Exp:          time.Now().Add(time.Hour * 24).Unix(),
+		UserId: account.UserId,
+		Exp:    time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	if err := setJwtCookie(w, claims); err != nil {
@@ -155,27 +155,22 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
-	token, err := jwt.ParseWithClaims(
+	token, err := jwt.Parse(
 		req.GetToken(),
-		&jwtClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				return nil, jwt.ErrSignatureInvalid
 			}
 			return []byte(JWT_SECRET), nil
 		})
 	if err != nil {
+		log.Println(err)
+		return &auth_pb.AuthResponse{}, err
+	}
+
+	if !token.Valid {
 		return &auth_pb.AuthResponse{}, errors.New("invalid token")
 	}
 
-	claims, ok := token.Claims.(*jwtClaims)
-	if !ok {
-		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
-		return &auth_pb.AuthResponse{}, errors.New("internal server error")
-	}
-
-	return &auth_pb.AuthResponse{
-		ProviderId:   claims.ProviderId,
-		ProviderName: claims.ProviderName,
-	}, nil
+	return &auth_pb.AuthResponse{}, nil
 }

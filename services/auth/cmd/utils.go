@@ -43,19 +43,19 @@ func deleteOauthStateCookie(w http.ResponseWriter) {
 // with the same age as the claims
 func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	jwtValue, err := jwtToken.SignedString([]byte(JWT_SECRET))
+	jwtString, err := jwtToken.SignedString([]byte(JWT_SECRET))
 	if err != nil {
 		return err
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_jwt",
-		Value:    jwtValue,
+		Value:    jwtString,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   isProd,
 		SameSite: http.SameSiteDefaultMode,
-		MaxAge:   int(claims.Exp),
+		MaxAge:   int(claims.Exp - time.Now().Unix()),
 	})
 
 	return nil

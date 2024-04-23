@@ -1,48 +1,47 @@
 "use client";
-import { useState, useEffect, type FormEvent } from "react";
-import useWebSocket from "react-use-websocket";
+import { sendMessage } from "@/lib/actions";
+import { useRef, useState } from "react";
 
 type Props = {
   host: string;
 };
 
 export default function Chatbox({ host }: Props) {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
-  const { lastMessage, sendJsonMessage, readyState } = useWebSocket(
-    `ws://${host}/api/streaming/subscribe`
-    // {
-    //   shouldReconnect: () => true,
-    //   reconnectAttempts: 5,
-    //   reconnectInterval: 5,
-    // }
-  );
-
-  useEffect(() => {
-    if (typeof lastMessage?.data === "string") {
-      setMessages((prev) => [...prev, lastMessage.data]);
-    }
-  }, [lastMessage]);
-
-  function sendMessage(event: FormEvent) {
-    event.preventDefault();
-    sendJsonMessage({ message, to: "all" });
-    setMessage("");
-  }
-
+  const [content, setContent] = useState("");
   return (
     <div>
-      {messages.map((m, i) => (
-        <div key={i}>{m}</div>
-      ))}
-      <form onSubmit={sendMessage}>
+      <form
+        action={async () => {
+          await sendMessage({ user_id: "123", group_id: "456", date: "789" });
+          setContent("");
+        }}
+      >
         <input
-          value={message}
-          onChange={(event) => setMessage(event.target.value)}
+          type="text"
+          name="content"
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          autoComplete="off"
         />
-        <button>send</button>
+        <button type="submit">send</button>
       </form>
-      <div>readyState: {readyState}</div>
     </div>
   );
 }
+
+// const [message, setMessage] = useState("");
+// const [messages, setMessages] = useState<string[]>([]);
+// const { lastMessage, readyState } = useWebSocket(
+//   `ws://${host}/api/streaming/subscribe`,
+//   {
+//     shouldReconnect: () => true,
+//     reconnectAttempts: 5,
+//     reconnectInterval: 5,
+//   }
+// );
+
+// useEffect(() => {
+//   if (typeof lastMessage?.data === "string") {
+//     setMessages((prev) => [...prev, lastMessage.data]);
+//   }
+// }, [lastMessage]);
