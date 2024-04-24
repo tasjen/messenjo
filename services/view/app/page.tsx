@@ -5,10 +5,11 @@ import { verifyToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
 export default async function Home() {
-  await verifyToken(cookies());
+  const userId = await verifyToken(cookies());
   return (
     <main>
       <div>Logged in</div>
+      <div>{userId}</div>
       <Chat host={env.HOST} />
       <LogoutButton />
     </main>

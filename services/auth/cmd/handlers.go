@@ -155,8 +155,9 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
-	token, err := jwt.Parse(
+	token, err := jwt.ParseWithClaims(
 		req.GetToken(),
+		&jwtClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
@@ -172,5 +173,11 @@ func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*
 		return &auth_pb.AuthResponse{}, errors.New("invalid token")
 	}
 
-	return &auth_pb.AuthResponse{}, nil
+	claims, ok := token.Claims.(*jwtClaims)
+	if !ok {
+		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
+		return &auth_pb.AuthResponse{}, errors.New("internal server error")
+	}
+
+	return &auth_pb.AuthResponse{UserId: []byte(claims.UserId)}, nil
 }

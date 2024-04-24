@@ -2,10 +2,11 @@ import { ServiceError } from "@grpc/grpc-js";
 import { authClient } from "./grpc-client";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { redirect } from "next/navigation";
+import { AuthResponse } from "./auth_proto/AuthResponse";
 
 export async function verifyToken(
   cookies: ReadonlyRequestCookies
-): Promise<void> {
+): Promise<string> {
   const token = cookies.get("auth_jwt")?.value;
   if (!token) {
     redirect("/login");
@@ -19,12 +20,14 @@ export async function verifyToken(
       authClient.VerifyToken(
         { token },
         { deadline },
-        (err?: ServiceError | null) => {
+        (err?: ServiceError | null, res?: AuthResponse) => {
           if (err) {
             console.error(err.details);
-            reject(err);
+            return reject(err);
+          } else if (!res?.userId) {
+            return reject(new Error("no response from AuthService"));
           }
-          resolve();
+          resolve(res.userId.toString());
         }
       );
     });
