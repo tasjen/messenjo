@@ -1,18 +1,18 @@
+import path from "path";
 import { credentials, loadPackageDefinition } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
-import path from "path";
-import { ProtoGrpcType } from "./auth_proto/auth";
+import { ProtoGrpcType as ChatProtoGrpcType } from "./chat_proto/chat";
 
 const packageDefinition = loadSync(
-  path.join(process.cwd(), "/protos/auth.proto"),
+  path.join(process.cwd(), "/protos/chat.proto"),
   {}
 );
 
-const { Auth: AuthClient } = loadPackageDefinition(
+const { Chat: ChatClient } = loadPackageDefinition(
   packageDefinition
-) as unknown as ProtoGrpcType;
+) as unknown as ChatProtoGrpcType;
 
-export const authClient = new AuthClient(
-  "auth:3001",
+export const chatClient = new ChatClient(
+  "chat:3000",
   credentials.createInsecure()
 );

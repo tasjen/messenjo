@@ -1,0 +1,45 @@
+tls
+saved
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/services/view/.pnp
+/services/view/.pnp.js
+/services/view/.yarn/install-state.gz
+
+# testing
+/services/view/coverage
+
+# next.js
+/services/view/.next/
+/services/view/out/
+
+# production
+build/
+
+# misc
+/services/view/.DS_Store
+/services/view/*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/services/chat/tmp/
+/services/chatdb/data/
+/services/auth/tmp/
+
+

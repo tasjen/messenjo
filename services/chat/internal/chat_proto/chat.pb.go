@@ -20,6 +20,468 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Null struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Null) Reset() {
+	*x = Null{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Null) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Null) ProtoMessage() {}
+
+func (x *Null) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Null.ProtoReflect.Descriptor instead.
+func (*Null) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{0}
+}
+
+type GetByUsernameReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+}
+
+func (x *GetByUsernameReq) Reset() {
+	*x = GetByUsernameReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetByUsernameReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetByUsernameReq) ProtoMessage() {}
+
+func (x *GetByUsernameReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetByUsernameReq.ProtoReflect.Descriptor instead.
+func (*GetByUsernameReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetByUsernameReq) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type GetByUsernameRes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+}
+
+func (x *GetByUsernameRes) Reset() {
+	*x = GetByUsernameRes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetByUsernameRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetByUsernameRes) ProtoMessage() {}
+
+func (x *GetByUsernameRes) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetByUsernameRes.ProtoReflect.Descriptor instead.
+func (*GetByUsernameRes) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetByUsernameRes) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+type GetContactsReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+}
+
+func (x *GetContactsReq) Reset() {
+	*x = GetContactsReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetContactsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetContactsReq) ProtoMessage() {}
+
+func (x *GetContactsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetContactsReq.ProtoReflect.Descriptor instead.
+func (*GetContactsReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetContactsReq) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+type GetContactsRes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Contacts []*Contact `protobuf:"bytes,1,rep,name=contacts,proto3" json:"contacts,omitempty"`
+}
+
+func (x *GetContactsRes) Reset() {
+	*x = GetContactsRes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetContactsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetContactsRes) ProtoMessage() {}
+
+func (x *GetContactsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetContactsRes.ProtoReflect.Descriptor instead.
+func (*GetContactsRes) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetContactsRes) GetContacts() []*Contact {
+	if x != nil {
+		return x.Contacts
+	}
+	return nil
+}
+
+type Contact struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	GroupId     []byte `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	Name        string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	LastContent string `protobuf:"bytes,3,opt,name=last_content,json=lastContent,proto3" json:"last_content,omitempty"`
+	LastSentAt  int64  `protobuf:"varint,4,opt,name=last_sent_at,json=lastSentAt,proto3" json:"last_sent_at,omitempty"`
+}
+
+func (x *Contact) Reset() {
+	*x = Contact{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Contact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Contact) ProtoMessage() {}
+
+func (x *Contact) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Contact.ProtoReflect.Descriptor instead.
+func (*Contact) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Contact) GetGroupId() []byte {
+	if x != nil {
+		return x.GroupId
+	}
+	return nil
+}
+
+func (x *Contact) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Contact) GetLastContent() string {
+	if x != nil {
+		return x.LastContent
+	}
+	return ""
+}
+
+func (x *Contact) GetLastSentAt() int64 {
+	if x != nil {
+		return x.LastSentAt
+	}
+	return 0
+}
+
+type GetMessagesReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId  []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GroupId []byte `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+}
+
+func (x *GetMessagesReq) Reset() {
+	*x = GetMessagesReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetMessagesReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMessagesReq) ProtoMessage() {}
+
+func (x *GetMessagesReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMessagesReq.ProtoReflect.Descriptor instead.
+func (*GetMessagesReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetMessagesReq) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+func (x *GetMessagesReq) GetGroupId() []byte {
+	if x != nil {
+		return x.GroupId
+	}
+	return nil
+}
+
+type GetMessagesRes struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Message []*Message `protobuf:"bytes,1,rep,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *GetMessagesRes) Reset() {
+	*x = GetMessagesRes{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetMessagesRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMessagesRes) ProtoMessage() {}
+
+func (x *GetMessagesRes) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMessagesRes.ProtoReflect.Descriptor instead.
+func (*GetMessagesRes) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetMessagesRes) GetMessage() []*Message {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+type Message struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id      int32  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Content string `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	SentAt  int64  `protobuf:"varint,3,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
+}
+
+func (x *Message) Reset() {
+	*x = Message{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Message) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Message) ProtoMessage() {}
+
+func (x *Message) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Message.ProtoReflect.Descriptor instead.
+func (*Message) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *Message) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Message) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *Message) GetSentAt() int64 {
+	if x != nil {
+		return x.SentAt
+	}
+	return 0
+}
+
 type CreateUserReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -31,7 +493,7 @@ type CreateUserReq struct {
 func (x *CreateUserReq) Reset() {
 	*x = CreateUserReq{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_chat_proto_chat_proto_msgTypes[0]
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -44,7 +506,7 @@ func (x *CreateUserReq) String() string {
 func (*CreateUserReq) ProtoMessage() {}
 
 func (x *CreateUserReq) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_chat_proto_chat_proto_msgTypes[0]
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +519,7 @@ func (x *CreateUserReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserReq.ProtoReflect.Descriptor instead.
 func (*CreateUserReq) Descriptor() ([]byte, []int) {
-	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{0}
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *CreateUserReq) GetUsername() string {
@@ -78,7 +540,7 @@ type CreateUserRes struct {
 func (x *CreateUserRes) Reset() {
 	*x = CreateUserRes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_internal_chat_proto_chat_proto_msgTypes[1]
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -91,7 +553,7 @@ func (x *CreateUserRes) String() string {
 func (*CreateUserRes) ProtoMessage() {}
 
 func (x *CreateUserRes) ProtoReflect() protoreflect.Message {
-	mi := &file_internal_chat_proto_chat_proto_msgTypes[1]
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +566,7 @@ func (x *CreateUserRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserRes.ProtoReflect.Descriptor instead.
 func (*CreateUserRes) Descriptor() ([]byte, []int) {
-	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{1}
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *CreateUserRes) GetUserId() []byte {
@@ -114,25 +576,335 @@ func (x *CreateUserRes) GetUserId() []byte {
 	return nil
 }
 
+type CreateGroupReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId    []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GroupName string `protobuf:"bytes,2,opt,name=group_name,json=groupName,proto3" json:"group_name,omitempty"`
+}
+
+func (x *CreateGroupReq) Reset() {
+	*x = CreateGroupReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateGroupReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateGroupReq) ProtoMessage() {}
+
+func (x *CreateGroupReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateGroupReq.ProtoReflect.Descriptor instead.
+func (*CreateGroupReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CreateGroupReq) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+func (x *CreateGroupReq) GetGroupName() string {
+	if x != nil {
+		return x.GroupName
+	}
+	return ""
+}
+
+type AddFriendReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FromUserId []byte `protobuf:"bytes,1,opt,name=from_user_id,json=fromUserId,proto3" json:"from_user_id,omitempty"`
+	ToUserId   []byte `protobuf:"bytes,2,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`
+}
+
+func (x *AddFriendReq) Reset() {
+	*x = AddFriendReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddFriendReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddFriendReq) ProtoMessage() {}
+
+func (x *AddFriendReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddFriendReq.ProtoReflect.Descriptor instead.
+func (*AddFriendReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *AddFriendReq) GetFromUserId() []byte {
+	if x != nil {
+		return x.FromUserId
+	}
+	return nil
+}
+
+func (x *AddFriendReq) GetToUserId() []byte {
+	if x != nil {
+		return x.ToUserId
+	}
+	return nil
+}
+
+type AddMemberReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId  []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GroupId []byte `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+}
+
+func (x *AddMemberReq) Reset() {
+	*x = AddMemberReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddMemberReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddMemberReq) ProtoMessage() {}
+
+func (x *AddMemberReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddMemberReq.ProtoReflect.Descriptor instead.
+func (*AddMemberReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *AddMemberReq) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+func (x *AddMemberReq) GetGroupId() []byte {
+	if x != nil {
+		return x.GroupId
+	}
+	return nil
+}
+
+type SendMessageReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UserId  []byte `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GroupId []byte `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	Content string `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	SentAt  int64  `protobuf:"varint,4,opt,name=sent_at,json=sentAt,proto3" json:"sent_at,omitempty"`
+}
+
+func (x *SendMessageReq) Reset() {
+	*x = SendMessageReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_internal_chat_proto_chat_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SendMessageReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendMessageReq) ProtoMessage() {}
+
+func (x *SendMessageReq) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_chat_proto_chat_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendMessageReq.ProtoReflect.Descriptor instead.
+func (*SendMessageReq) Descriptor() ([]byte, []int) {
+	return file_internal_chat_proto_chat_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SendMessageReq) GetUserId() []byte {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+func (x *SendMessageReq) GetGroupId() []byte {
+	if x != nil {
+		return x.GroupId
+	}
+	return nil
+}
+
+func (x *SendMessageReq) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *SendMessageReq) GetSentAt() int64 {
+	if x != nil {
+		return x.SentAt
+	}
+	return 0
+}
+
 var File_internal_chat_proto_chat_proto protoreflect.FileDescriptor
 
 var file_internal_chat_proto_chat_proto_rawDesc = []byte{
 	0x0a, 0x1e, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x5f,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x22, 0x2b, 0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65,
-	0x71, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x28, 0x0a,
-	0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x12, 0x17,
-	0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52,
-	0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x32, 0x36, 0x0a, 0x04, 0x43, 0x68, 0x61, 0x74, 0x12,
-	0x2e, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x12, 0x0e, 0x2e,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x1a, 0x0e, 0x2e,
-	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x22, 0x00, 0x42,
-	0x42, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x61,
-	0x73, 0x6a, 0x65, 0x6e, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x2d, 0x61, 0x70, 0x70,
-	0x2d, 0x66, 0x75, 0x6c, 0x6c, 0x73, 0x74, 0x61, 0x63, 0x6b, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x73, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x5f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x06, 0x0a, 0x04, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x2e, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x42,
+	0x79, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08,
+	0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
+	0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x2b, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x42,
+	0x79, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x73, 0x12, 0x17, 0x0a, 0x07,
+	0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x75,
+	0x73, 0x65, 0x72, 0x49, 0x64, 0x22, 0x29, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74,
+	0x61, 0x63, 0x74, 0x73, 0x52, 0x65, 0x71, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64,
+	0x22, 0x36, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73, 0x52,
+	0x65, 0x73, 0x12, 0x24, 0x0a, 0x08, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x52, 0x08,
+	0x63, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73, 0x22, 0x7d, 0x0a, 0x07, 0x43, 0x6f, 0x6e, 0x74,
+	0x61, 0x63, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x63, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6c, 0x61, 0x73, 0x74, 0x43, 0x6f,
+	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x20, 0x0a, 0x0c, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x73, 0x65,
+	0x6e, 0x74, 0x5f, 0x61, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0a, 0x6c, 0x61, 0x73,
+	0x74, 0x53, 0x65, 0x6e, 0x74, 0x41, 0x74, 0x22, 0x44, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x71, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65,
+	0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72,
+	0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x22, 0x34, 0x0a,
+	0x0e, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x73, 0x52, 0x65, 0x73, 0x12,
+	0x22, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x08, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73,
+	0x61, 0x67, 0x65, 0x22, 0x4c, 0x0a, 0x07, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x02, 0x69, 0x64, 0x12, 0x18,
+	0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x73, 0x65, 0x6e, 0x74,
+	0x5f, 0x61, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x74, 0x41,
+	0x74, 0x22, 0x2b, 0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52,
+	0x65, 0x71, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x28,
+	0x0a, 0x0d, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x12,
+	0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x22, 0x48, 0x0a, 0x0e, 0x43, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73,
+	0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x75, 0x73, 0x65,
+	0x72, 0x49, 0x64, 0x12, 0x1d, 0x0a, 0x0a, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x4e, 0x61,
+	0x6d, 0x65, 0x22, 0x4e, 0x0a, 0x0c, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52,
+	0x65, 0x71, 0x12, 0x20, 0x0a, 0x0c, 0x66, 0x72, 0x6f, 0x6d, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0a, 0x66, 0x72, 0x6f, 0x6d, 0x55, 0x73,
+	0x65, 0x72, 0x49, 0x64, 0x12, 0x1c, 0x0a, 0x0a, 0x74, 0x6f, 0x5f, 0x75, 0x73, 0x65, 0x72, 0x5f,
+	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x74, 0x6f, 0x55, 0x73, 0x65, 0x72,
+	0x49, 0x64, 0x22, 0x42, 0x0a, 0x0c, 0x41, 0x64, 0x64, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x52,
+	0x65, 0x71, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x67,
+	0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x67,
+	0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x22, 0x77, 0x0a, 0x0e, 0x53, 0x65, 0x6e, 0x64, 0x4d, 0x65,
+	0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72,
+	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49,
+	0x64, 0x12, 0x19, 0x0a, 0x08, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x07, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07,
+	0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x73, 0x65, 0x6e, 0x74, 0x5f, 0x61,
+	0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x73, 0x65, 0x6e, 0x74, 0x41, 0x74, 0x32,
+	0xf1, 0x02, 0x0a, 0x04, 0x43, 0x68, 0x61, 0x74, 0x12, 0x37, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x42,
+	0x79, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x11, 0x2e, 0x47, 0x65, 0x74, 0x42,
+	0x79, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x1a, 0x11, 0x2e, 0x47,
+	0x65, 0x74, 0x42, 0x79, 0x55, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x73, 0x22,
+	0x00, 0x12, 0x31, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73,
+	0x12, 0x0f, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73, 0x52, 0x65,
+	0x71, 0x1a, 0x0f, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x63, 0x74, 0x73, 0x52,
+	0x65, 0x73, 0x22, 0x00, 0x12, 0x31, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x73, 0x12, 0x0f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x73, 0x52, 0x65, 0x71, 0x1a, 0x0f, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x73, 0x52, 0x65, 0x73, 0x22, 0x00, 0x12, 0x2e, 0x0a, 0x0a, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x55, 0x73, 0x65, 0x72, 0x12, 0x0e, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73,
+	0x65, 0x72, 0x52, 0x65, 0x71, 0x1a, 0x0e, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x55, 0x73,
+	0x65, 0x72, 0x52, 0x65, 0x73, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x12, 0x0f, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x47,
+	0x72, 0x6f, 0x75, 0x70, 0x52, 0x65, 0x71, 0x1a, 0x05, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00,
+	0x12, 0x23, 0x0a, 0x09, 0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x12, 0x0d, 0x2e,
+	0x41, 0x64, 0x64, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x1a, 0x05, 0x2e, 0x4e,
+	0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x23, 0x0a, 0x09, 0x41, 0x64, 0x64, 0x4d, 0x65, 0x6d, 0x62,
+	0x65, 0x72, 0x12, 0x0d, 0x2e, 0x41, 0x64, 0x64, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x52, 0x65,
+	0x71, 0x1a, 0x05, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x22, 0x00, 0x12, 0x27, 0x0a, 0x0b, 0x53, 0x65,
+	0x6e, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x0f, 0x2e, 0x53, 0x65, 0x6e, 0x64,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x1a, 0x05, 0x2e, 0x4e, 0x75, 0x6c,
+	0x6c, 0x22, 0x00, 0x42, 0x42, 0x5a, 0x40, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x74, 0x61, 0x73, 0x6a, 0x65, 0x6e, 0x2f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x2d, 0x61, 0x70, 0x70, 0x2d, 0x66, 0x75, 0x6c, 0x6c, 0x73, 0x74, 0x61, 0x63, 0x6b, 0x2f, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x2f, 0x63, 0x68, 0x61, 0x74, 0x2f, 0x63, 0x68, 0x61,
+	0x74, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -147,19 +919,48 @@ func file_internal_chat_proto_chat_proto_rawDescGZIP() []byte {
 	return file_internal_chat_proto_chat_proto_rawDescData
 }
 
-var file_internal_chat_proto_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_internal_chat_proto_chat_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_internal_chat_proto_chat_proto_goTypes = []interface{}{
-	(*CreateUserReq)(nil), // 0: CreateUserReq
-	(*CreateUserRes)(nil), // 1: CreateUserRes
+	(*Null)(nil),             // 0: Null
+	(*GetByUsernameReq)(nil), // 1: GetByUsernameReq
+	(*GetByUsernameRes)(nil), // 2: GetByUsernameRes
+	(*GetContactsReq)(nil),   // 3: GetContactsReq
+	(*GetContactsRes)(nil),   // 4: GetContactsRes
+	(*Contact)(nil),          // 5: Contact
+	(*GetMessagesReq)(nil),   // 6: GetMessagesReq
+	(*GetMessagesRes)(nil),   // 7: GetMessagesRes
+	(*Message)(nil),          // 8: Message
+	(*CreateUserReq)(nil),    // 9: CreateUserReq
+	(*CreateUserRes)(nil),    // 10: CreateUserRes
+	(*CreateGroupReq)(nil),   // 11: CreateGroupReq
+	(*AddFriendReq)(nil),     // 12: AddFriendReq
+	(*AddMemberReq)(nil),     // 13: AddMemberReq
+	(*SendMessageReq)(nil),   // 14: SendMessageReq
 }
 var file_internal_chat_proto_chat_proto_depIdxs = []int32{
-	0, // 0: Chat.CreateUser:input_type -> CreateUserReq
-	1, // 1: Chat.CreateUser:output_type -> CreateUserRes
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	5,  // 0: GetContactsRes.contacts:type_name -> Contact
+	8,  // 1: GetMessagesRes.message:type_name -> Message
+	1,  // 2: Chat.GetByUsername:input_type -> GetByUsernameReq
+	3,  // 3: Chat.GetContacts:input_type -> GetContactsReq
+	6,  // 4: Chat.GetMessages:input_type -> GetMessagesReq
+	9,  // 5: Chat.CreateUser:input_type -> CreateUserReq
+	11, // 6: Chat.CreateGroup:input_type -> CreateGroupReq
+	12, // 7: Chat.AddFriend:input_type -> AddFriendReq
+	13, // 8: Chat.AddMember:input_type -> AddMemberReq
+	14, // 9: Chat.SendMessage:input_type -> SendMessageReq
+	2,  // 10: Chat.GetByUsername:output_type -> GetByUsernameRes
+	4,  // 11: Chat.GetContacts:output_type -> GetContactsRes
+	7,  // 12: Chat.GetMessages:output_type -> GetMessagesRes
+	10, // 13: Chat.CreateUser:output_type -> CreateUserRes
+	0,  // 14: Chat.CreateGroup:output_type -> Null
+	0,  // 15: Chat.AddFriend:output_type -> Null
+	0,  // 16: Chat.AddMember:output_type -> Null
+	0,  // 17: Chat.SendMessage:output_type -> Null
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_internal_chat_proto_chat_proto_init() }
@@ -169,7 +970,7 @@ func file_internal_chat_proto_chat_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_internal_chat_proto_chat_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CreateUserReq); i {
+			switch v := v.(*Null); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -181,7 +982,163 @@ func file_internal_chat_proto_chat_proto_init() {
 			}
 		}
 		file_internal_chat_proto_chat_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetByUsernameReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetByUsernameRes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetContactsReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetContactsRes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Contact); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetMessagesReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetMessagesRes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Message); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateUserReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateUserRes); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateGroupReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddFriendReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddMemberReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_internal_chat_proto_chat_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SendMessageReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -199,7 +1156,7 @@ func file_internal_chat_proto_chat_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_internal_chat_proto_chat_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

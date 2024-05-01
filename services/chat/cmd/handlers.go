@@ -3,20 +3,218 @@ package main
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
+	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
 )
 
-func (c *chatServer) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserRes, error) {
-	userId := uuid.New()
-	err := c.users.Add(ctx, userId, req.GetUsername())
+func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsernameReq) (*pb.GetByUsernameRes, error) {
+	username := req.GetUsername()
+	if l := len(username); l < 1 || l > 32 {
+		return &pb.GetByUsernameRes{}, errors.New("bad request")
+	}
 
+	userId, err := app.users.GetByUsername(ctx, username)
+	if err != nil {
+		return &pb.GetByUsernameRes{}, err
+	}
+
+	return &pb.GetByUsernameRes{UserId: userId[:]}, nil
+}
+
+func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &pb.GetContactsRes{}, err
+	}
+	stmt := `
+		SELECT DISTINCT
+		g.id AS group_id,
+		CASE
+			WHEN g.name = '' THEN  u.username
+			ELSE g.name
+		END AS contact_name,
+		CASE
+			WHEN msg.content IS NOT NULL THEN msg.content 
+			ELSE ''
+		END AS last_content,
+		CASE
+			WHEN msg.sent_at IS NOT NULL THEN msg.sent_at
+			ELSE '0001-01-01 00:00:00.001'
+		END AS last_sent_at
+		FROM (
+			SELECT id, name
+			FROM members
+			JOIN groups
+			ON members.group_id = groups.id
+			WHERE members.user_id = $1
+		) AS g
+		LEFT JOIN members AS m
+		ON m.group_id = g.id
+		LEFT JOIN users AS u
+		ON m.user_id = u.id
+		LEFT JOIN messages AS msg
+		ON m.group_id = msg.group_id
+		WHERE u.id != $1
+		AND (
+			msg.id IN (
+				SELECT MAX(id)
+				FROM messages
+				GROUP BY group_id
+			)
+			OR msg.id IS NULL
+		);`
+	rows, err := models.DB.Query(ctx, stmt, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
+		var c pb.Contact
+		var lastSentAt time.Time
+		err := row.Scan(&c.GroupId, &c.Name, &c.LastContent, &lastSentAt)
+		c.LastSentAt = max(0, lastSentAt.UnixMilli())
+		return &c, err
+	})
+	if err != nil {
+		app.errorLog.Println(err.Error())
+		return &pb.GetContactsRes{}, err
+	}
+
+	return &pb.GetContactsRes{Contacts: contacts}, nil
+}
+
+// this method is only for Auth service when creating new users
+// where username is providerName concat with providerId
+func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserRes, error) {
+	username := req.GetUsername()
+	if l := len(username); l < 1 || l > 32 {
+		return &pb.CreateUserRes{}, errors.New("user name must be at least 1 and not exceed 32 characters")
+	}
+
+	userId := uuid.New()
+	err := app.users.Add(ctx, userId, username)
 	var pgErr *pgconn.PgError
 	if err != nil && !(errors.As(err, &pgErr) && pgErr.Code == "23505") {
 		return &pb.CreateUserRes{}, err
 	}
 
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
+}
+
+func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.Null, error) {
+	groupName := req.GetGroupName()
+	if l := len(groupName); l < 1 || l > 16 {
+		return nil, errors.New("group name must be at least 1 and not exceed 16 characters")
+	}
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := models.DB.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	groupId := uuid.New()
+	err = app.groups.Add(ctx, tx, groupId, groupName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.members.Add(ctx, tx, userId, groupId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit(ctx)
+	return nil, err
+}
+
+func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.Null, error) {
+	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	toUserId, err := uuid.FromBytes(req.GetToUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
+	if err != nil {
+		return nil, err
+	}
+	if isFriend {
+		return nil, errors.New("already friends")
+	}
+
+	tx, err := models.DB.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	groupId := uuid.New()
+	err = app.groups.Add(ctx, tx, groupId, "")
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.members.Add(ctx, tx, fromUserId, groupId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.members.Add(ctx, tx, toUserId, groupId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = tx.Commit(ctx)
+	return nil, err
+}
+
+func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*pb.Null, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	groupId, err := uuid.FromBytes(req.GetGroupId())
+	if err != nil {
+		return nil, err
+	}
+
+	err = app.members.Add(ctx, nil, userId, groupId)
+	return nil, err
+}
+
+func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.Null, error) {
+	userId, err := uuid.ParseBytes(req.GetUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	groupId, err := uuid.ParseBytes(req.GetGroupId())
+	if err != nil {
+		return nil, err
+	}
+
+	content := req.GetContent()
+	if l := len(content); l < 1 || l > 300 {
+		return nil, errors.New("message must be at least 1 character and not exceed 300 characters")
+	}
+
+	sentAt := req.GetSentAt()
+
+	err = app.messages.Add(ctx, userId, groupId, content, sentAt)
+	return nil, err
 }

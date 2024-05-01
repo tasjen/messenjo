@@ -22,7 +22,14 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
+	GetByUsername(ctx context.Context, in *GetByUsernameReq, opts ...grpc.CallOption) (*GetByUsernameRes, error)
+	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
+	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
+	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*Null, error)
+	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*Null, error)
+	AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*Null, error)
+	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*Null, error)
 }
 
 type chatClient struct {
@@ -31,6 +38,33 @@ type chatClient struct {
 
 func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
 	return &chatClient{cc}
+}
+
+func (c *chatClient) GetByUsername(ctx context.Context, in *GetByUsernameReq, opts ...grpc.CallOption) (*GetByUsernameRes, error) {
+	out := new(GetByUsernameRes)
+	err := c.cc.Invoke(ctx, "/Chat/GetByUsername", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error) {
+	out := new(GetContactsRes)
+	err := c.cc.Invoke(ctx, "/Chat/GetContacts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error) {
+	out := new(GetMessagesRes)
+	err := c.cc.Invoke(ctx, "/Chat/GetMessages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error) {
@@ -42,11 +76,54 @@ func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...
 	return out, nil
 }
 
+func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/Chat/CreateGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/Chat/AddFriend", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/Chat/AddMember", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*Null, error) {
+	out := new(Null)
+	err := c.cc.Invoke(ctx, "/Chat/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServer is the server API for Chat service.
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility
 type ChatServer interface {
+	GetByUsername(context.Context, *GetByUsernameReq) (*GetByUsernameRes, error)
+	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
+	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
+	CreateGroup(context.Context, *CreateGroupReq) (*Null, error)
+	AddFriend(context.Context, *AddFriendReq) (*Null, error)
+	AddMember(context.Context, *AddMemberReq) (*Null, error)
+	SendMessage(context.Context, *SendMessageReq) (*Null, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -54,8 +131,29 @@ type ChatServer interface {
 type UnimplementedChatServer struct {
 }
 
+func (UnimplementedChatServer) GetByUsername(context.Context, *GetByUsernameReq) (*GetByUsernameRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetByUsername not implemented")
+}
+func (UnimplementedChatServer) GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContacts not implemented")
+}
+func (UnimplementedChatServer) GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateGroup not implemented")
+}
+func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+}
+func (UnimplementedChatServer) AddMember(context.Context, *AddMemberReq) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMember not implemented")
+}
+func (UnimplementedChatServer) SendMessage(context.Context, *SendMessageReq) (*Null, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 
@@ -68,6 +166,60 @@ type UnsafeChatServer interface {
 
 func RegisterChatServer(s grpc.ServiceRegistrar, srv ChatServer) {
 	s.RegisterService(&Chat_ServiceDesc, srv)
+}
+
+func _Chat_GetByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByUsernameReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/GetByUsername",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetByUsername(ctx, req.(*GetByUsernameReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetContacts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetContactsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetContacts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/GetContacts",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetContacts(ctx, req.(*GetContactsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMessagesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/GetMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetMessages(ctx, req.(*GetMessagesReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -88,6 +240,78 @@ func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_CreateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateGroupReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).CreateGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/CreateGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).CreateGroup(ctx, req.(*CreateGroupReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_AddFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddFriendReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).AddFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/AddFriend",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).AddFriend(ctx, req.(*AddFriendReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_AddMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMemberReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).AddMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/AddMember",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).AddMember(ctx, req.(*AddMemberReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).SendMessage(ctx, req.(*SendMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Chat_ServiceDesc is the grpc.ServiceDesc for Chat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,8 +320,36 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ChatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetByUsername",
+			Handler:    _Chat_GetByUsername_Handler,
+		},
+		{
+			MethodName: "GetContacts",
+			Handler:    _Chat_GetContacts_Handler,
+		},
+		{
+			MethodName: "GetMessages",
+			Handler:    _Chat_GetMessages_Handler,
+		},
+		{
 			MethodName: "CreateUser",
 			Handler:    _Chat_CreateUser_Handler,
+		},
+		{
+			MethodName: "CreateGroup",
+			Handler:    _Chat_CreateGroup_Handler,
+		},
+		{
+			MethodName: "AddFriend",
+			Handler:    _Chat_AddFriend_Handler,
+		},
+		{
+			MethodName: "AddMember",
+			Handler:    _Chat_AddMember_Handler,
+		},
+		{
+			MethodName: "SendMessage",
+			Handler:    _Chat_SendMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

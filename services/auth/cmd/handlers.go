@@ -114,12 +114,14 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			http.Redirect(w, r, "/error", http.StatusFound)
 			return
 		}
+		userIdString := userId.String()
+		account.UserId = userIdString
 
 		// then create an account in Auth DB using that id
 		if err = app.accounts.Add(r.Context(), &models.Account{
 			ProviderId:   oauthAccountInfo.Id,
 			ProviderName: providerName,
-			UserId:       userId.String(),
+			UserId:       userIdString,
 			CreatedAt:    time.Now().Format(time.DateTime),
 		}); err != nil {
 			log.Println(err)
@@ -154,7 +156,7 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
+func (app *application) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
 	token, err := jwt.ParseWithClaims(
 		req.GetToken(),
 		&jwtClaims{},
@@ -179,5 +181,7 @@ func (*authServer) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*
 		return &auth_pb.AuthResponse{}, errors.New("internal server error")
 	}
 
-	return &auth_pb.AuthResponse{UserId: []byte(claims.UserId)}, nil
+	userId := uuid.MustParse(claims.UserId)
+
+	return &auth_pb.AuthResponse{UserId: userId[:]}, nil
 }

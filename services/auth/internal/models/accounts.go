@@ -28,6 +28,10 @@ type Account struct {
 	CreatedAt    string `dynamodbav:"created_at"`
 }
 
+func NewAccountModel(db *dynamodb.Client, tableName string) *AccountModel {
+	return &AccountModel{DB: db, TableName: tableName}
+}
+
 func (acc *Account) GetKey() (map[string]types.AttributeValue, error) {
 	providerId, err := attributevalue.Marshal(acc.ProviderId)
 	if err != nil {
@@ -95,7 +99,6 @@ func (m *AccountModel) Add(ctx context.Context, acc *Account) error {
 	_, err = m.DB.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(m.TableName), Item: item,
 	})
-
 	if err != nil {
 		return err
 	}

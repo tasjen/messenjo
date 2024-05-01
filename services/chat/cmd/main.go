@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,29 +13,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-var isProd bool
-
-type chatServer struct {
-	users models.IUserModel
+type application struct {
+	errorLog *log.Logger
+	users    models.IUserModel
+	groups   models.IGroupModel
+	members  models.IMemberModel
+	messages models.IMessageModel
 	pb.UnimplementedChatServer
 }
 
 func main() {
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-
-	if buffer, err := strconv.ParseBool(os.Getenv("isProd")); err != nil {
-		log.Fatal(err)
-	} else {
-		isProd = buffer
-		println(isProd)
-	}
 
 	pool, err := getDbPool(ctx, os.Getenv("POSTGRESQL_URI"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer pool.Close()
+	models.DB = pool
 
 	lis, err := net.Listen("tcp", ":3000")
 	if err != nil {
@@ -44,17 +41,17 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	srv := &chatServer{
-		users: &models.UserModel{
-			DB: pool,
-		},
+	app := &application{
+		errorLog: errorLog,
+		users:    models.NewUserModel(),
+		groups:   models.NewGroupModel(),
+		members:  models.NewMemberModel(),
+		messages: models.NewMessageModel(),
 	}
 
-	pb.RegisterChatServer(s, srv)
+	pb.RegisterChatServer(s, app)
 	log.Printf("gRPC service listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	log.Fatalf("failed to serve: %v", s.Serve(lis))
 }
 
 func getDbPool(ctx context.Context, pgURI string) (*pgxpool.Pool, error) {

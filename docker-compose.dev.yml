@@ -11,6 +11,8 @@ services:
       - /app/protos
       - /app/node_modules
       - /app/.next
+    depends_on:
+      - grpc-proxy
 
   auth:
     image: message-app-auth-dev
@@ -21,10 +23,7 @@ services:
     volumes:
       - ./services/auth:/app
     env_file:
-      - ./services/auth/.env
-    ports:
-      - 3001:3000
-      - 3002:3001
+      - ./services/auth/.env.dev
 
   chat:
     image: message-app-chat-dev
@@ -36,17 +35,38 @@ services:
       - ./services/chat:/app
     env_file:
       - ./services/chat/.env.dev
+    depends_on:
+      - chatdb
+
+  chatdb:
+    container_name: message-app-chatdb-dev
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - ./services/chatdb/data/dev:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
 
   reverse-proxy:
     image: nginx:stable-alpine
     container_name: message-app-reverse-proxy-dev
     volumes:
-      - ./nginx.conf.dev:/etc/nginx/nginx.conf:ro
+      - ./services/reverse-proxy/nginx.conf.dev:/etc/nginx/nginx.conf:ro
     ports:
       - 3000:80
     depends_on:
       - auth
       - view
+
+  grpc-proxy:
+    image: envoyproxy/envoy:distroless-v1.30-latest
+    volumes:
+      - ./services/grpc-proxy/envoy.yaml:/etc/envoy/envoy.yaml
+    depends_on:
+      - auth
 
   pgadmin:
     container_name: message-app-pgadmin-dev

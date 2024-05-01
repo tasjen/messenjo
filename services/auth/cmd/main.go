@@ -25,26 +25,19 @@ var (
 	JWT_SECRET string
 )
 
-type (
-	authServer struct {
-		auth_pb.UnimplementedAuthServer
-	}
-
-	application struct {
-		accounts   models.IAccountModel
-		providers  map[string]oa2.Provider
-		authServer *authServer
-		chatClient chat_pb.ChatClient
-	}
-)
+type application struct {
+	providers  map[string]oa2.Provider
+	accounts   models.IAccountModel
+	chatClient chat_pb.ChatClient
+	auth_pb.UnimplementedAuthServer
+}
 
 func main() {
 	JWT_SECRET = os.Getenv("JWT_SECRET")
 
-	if buffer, err := strconv.ParseBool(os.Getenv("isProd")); err != nil {
+	var err error
+	if isProd, err = strconv.ParseBool(os.Getenv("isProd")); err != nil {
 		log.Fatal(err)
-	} else {
-		isProd = buffer
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -68,14 +61,14 @@ func main() {
 	}
 
 	app := &application{
-		accounts: &models.AccountModel{
-			DB:        dynamodb.NewFromConfig(awsConfig),
-			TableName: accountTableName,
-		},
 		providers: map[string]oa2.Provider{
 			"github": oa2.NewGithubProvider(),
 			"google": oa2.NewGoogleProvider(),
 		},
+		accounts: models.NewAccountModel(
+			dynamodb.NewFromConfig(awsConfig),
+			accountTableName,
+		),
 		chatClient: chat_pb.NewChatClient(chatConn),
 	}
 
@@ -107,9 +100,7 @@ func (app *application) startGrpcService() {
 		log.Fatal(err)
 	}
 	s := grpc.NewServer()
-	auth_pb.RegisterAuthServer(s, app.authServer)
+	auth_pb.RegisterAuthServer(s, app)
 	log.Printf("gRPC service listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	log.Fatalf("failed to serve: %v", s.Serve(lis))
 }
