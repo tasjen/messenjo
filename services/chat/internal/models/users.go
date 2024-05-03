@@ -11,6 +11,7 @@ import (
 type IUserModel interface {
 	Add(ctx context.Context, userId uuid.UUID, username string) error
 	GetByUsername(ctx context.Context, username string) (uuid.UUID, error)
+	GetById(ctx context.Context, userId uuid.UUID) (string, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
 }
 
@@ -36,6 +37,13 @@ func (m *UserModel) GetByUsername(ctx context.Context, username string) (uuid.UU
 	err := DB.QueryRow(ctx, `
 		SELECT id FROM users WHERE username = $1;`, username).Scan(&userId)
 	return userId, err
+}
+
+func (m *UserModel) GetById(ctx context.Context, userId uuid.UUID) (string, error) {
+	var username string
+	err := DB.QueryRow(ctx,
+		`SELECT username FROM users WHERE id = $1`, userId).Scan(&username)
+	return username, err
 }
 
 func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error) {

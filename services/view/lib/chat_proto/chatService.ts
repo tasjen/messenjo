@@ -21,6 +21,8 @@ export interface ProtoGrpcType {
   GetContactsRes: MessageTypeDefinition
   GetMessagesReq: MessageTypeDefinition
   GetMessagesRes: MessageTypeDefinition
+  GetUserByIdReq: MessageTypeDefinition
+  GetUserByIdRes: MessageTypeDefinition
   Message: MessageTypeDefinition
   Null: MessageTypeDefinition
   SendMessageReq: MessageTypeDefinition

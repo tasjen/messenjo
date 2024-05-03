@@ -1,15 +1,16 @@
 // Original file: chat.proto
 
-import type { Long } from '@grpc/proto-loader';
+// import type { Long } from '@grpc/proto-loader';
+import Long from "long";
 
 export interface Message {
-  'id'?: (number);
-  'content'?: (string);
-  'sentAt'?: (number | string | Long);
+  id?: number;
+  content?: string;
+  sentAt?: number | string | Long;
 }
 
 export interface Message__Output {
-  'id'?: (number);
-  'content'?: (string);
-  'sentAt'?: (number);
+  id?: number;
+  content?: string;
+  sentAt?: number;
 }

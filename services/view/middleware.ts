@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPromiseClient } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { Auth } from "./lib/auth_proto/auth_connect";
+import { uuidStringify } from "./lib/utils";
 const transport = createGrpcWebTransport({
   baseUrl: "http://grpc-proxy:3000",
 });
@@ -20,9 +21,8 @@ export async function middleware(req: NextRequest) {
       const t0 = performance.now();
       const { userId } = await authClient.verifyToken({ token });
       console.log(req.nextUrl.pathname, performance.now() - t0);
-
       const headers = new Headers(req.headers);
-      headers.set("userId", userId.toString());
+      headers.set("userId", uuidStringify(userId));
 
       return NextResponse.next({ request: { headers } });
     } catch (err) {
@@ -35,5 +35,5 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher:
-    "/((?!api|_next/static|_next/image|favicon.ico|search.svg|github.svg|google.svg).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|search.svg|github.svg|google.svg|__nextjs_original-stack-frame).*)",
 };

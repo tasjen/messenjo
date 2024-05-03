@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
 	GetByUsername(ctx context.Context, in *GetByUsernameReq, opts ...grpc.CallOption) (*GetByUsernameRes, error)
+	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*GetUserByIdRes, error)
 	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
@@ -43,6 +44,15 @@ func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
 func (c *chatClient) GetByUsername(ctx context.Context, in *GetByUsernameReq, opts ...grpc.CallOption) (*GetByUsernameRes, error) {
 	out := new(GetByUsernameRes)
 	err := c.cc.Invoke(ctx, "/Chat/GetByUsername", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*GetUserByIdRes, error) {
+	out := new(GetUserByIdRes)
+	err := c.cc.Invoke(ctx, "/Chat/GetUserById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +127,7 @@ func (c *chatClient) SendMessage(ctx context.Context, in *SendMessageReq, opts .
 // for forward compatibility
 type ChatServer interface {
 	GetByUsername(context.Context, *GetByUsernameReq) (*GetByUsernameRes, error)
+	GetUserById(context.Context, *GetUserByIdReq) (*GetUserByIdRes, error)
 	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
@@ -133,6 +144,9 @@ type UnimplementedChatServer struct {
 
 func (UnimplementedChatServer) GetByUsername(context.Context, *GetByUsernameReq) (*GetByUsernameRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetByUsername not implemented")
+}
+func (UnimplementedChatServer) GetUserById(context.Context, *GetUserByIdReq) (*GetUserByIdRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
 }
 func (UnimplementedChatServer) GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContacts not implemented")
@@ -182,6 +196,24 @@ func _Chat_GetByUsername_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ChatServer).GetByUsername(ctx, req.(*GetByUsernameReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetUserById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByIdReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetUserById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Chat/GetUserById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetUserById(ctx, req.(*GetUserByIdReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -322,6 +354,10 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetByUsername",
 			Handler:    _Chat_GetByUsername_Handler,
+		},
+		{
+			MethodName: "GetUserById",
+			Handler:    _Chat_GetUserById_Handler,
 		},
 		{
 			MethodName: "GetContacts",

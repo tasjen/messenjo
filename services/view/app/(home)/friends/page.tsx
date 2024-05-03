@@ -2,14 +2,14 @@ import Result from "@/components/friends/result";
 import SearchForm from "@/components/friends/search-form";
 
 type Props = {
-  searchParams: { s: string | undefined };
+  searchParams: { q?: string | undefined };
 };
 
 export default async function FriendsPage({ searchParams }: Props) {
   return (
     <>
       <SearchForm />
-      <Result username={searchParams.s} />
+      <Result username={searchParams.q} />
     </>
   );
 }

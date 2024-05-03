@@ -1,17 +1,18 @@
+// import { getContacts, getUser } from "@/components/cache";
 import ChatForm from "@/components/chat-form";
+import getQueryClient from "@/components/get-query-client";
 import ChatBoard from "@/components/messages/chat-board";
+import { fetchMessages } from "@/lib/data";
 import env from "@/lib/env";
+import { useStore } from "@/lib/zustand-provider";
 
-type Props = {
-  params: { groupId: string };
-};
+export default async function ChatPage() {
+  const messages = await fetchMessages();
+  const { user, contacts } = useStore.getState();
 
-export default async function MessagePage({ params }: Props) {
-  // const messages = await fetchMessage(params.groupId)
   return (
     <>
-      <div>{params.groupId}</div>
-      <ChatBoard messages={[]} />
+      <ChatBoard messages={messages} user={user} contacts={contacts} />
       <ChatForm host={env.HOST} />
     </>
   );

@@ -4,6 +4,7 @@ option go_package = "github.com/tasjen/message-app-fullstack/services/chat/chat_
 
 service Chat {
   rpc GetByUsername (GetByUsernameReq) returns (GetByUsernameRes) {}
+  rpc GetUserById (GetUserByIdReq) returns (GetUserByIdRes) {}
   rpc GetContacts (GetContactsReq) returns (GetContactsRes) {}
   rpc GetMessages (GetMessagesReq) returns (GetMessagesRes) {}
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
@@ -22,17 +23,27 @@ message GetByUsernameRes {
   bytes user_id = 1;
 }
 
+message GetUserByIdReq {
+  bytes user_id = 1;
+}
+message GetUserByIdRes {
+  string username = 1;
+}
+
 message GetContactsReq {
   bytes user_id = 1;
 }
 message GetContactsRes {
   repeated Contact contacts = 1;
 }
+
 message Contact {
-  bytes group_id = 1;
-  string name = 2;
-  string last_content = 3;
-  int64 last_sent_at = 4;
+  string type = 1;
+  bytes user_id = 2;
+  bytes group_id = 3;
+  string name = 4;
+  string last_content = 5;
+  int64 last_sent_at = 6;
 }
 
 message GetMessagesReq {

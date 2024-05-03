@@ -1,8 +1,7 @@
-import { session } from "@/lib/utils";
-import { headers } from "next/headers";
+import { getUserId } from "@/lib/data";
 
 export default async function HomePage() {
-  const userId = session(headers());
+  const userId = getUserId();
   return (
     <>
       <div>Logged in</div>

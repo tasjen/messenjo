@@ -1,6 +1,6 @@
 import { fetchUserByUsername } from "@/lib/data";
 import { Button } from "../ui/button";
-import { toUuidFormat } from "@/lib/utils";
+import { uuidFormat } from "@/lib/utils";
 import { addFriend } from "@/lib/actions";
 
 type Props = {
@@ -16,7 +16,7 @@ export default async function Result({ username }: Props) {
 
   return (
     <>
-      <div>{toUuidFormat(userResult.id)}</div>
+      <div>{uuidFormat(userResult.id)}</div>
       <div>{username}</div>
       <form
         action={async () => {

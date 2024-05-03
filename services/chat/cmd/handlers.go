@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -26,6 +26,15 @@ func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsername
 	return &pb.GetByUsernameRes{UserId: userId[:]}, nil
 }
 
+func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq) (*pb.GetUserByIdRes, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &pb.GetUserByIdRes{}, err
+	}
+	username, err := app.users.GetById(ctx, userId)
+	return &pb.GetUserByIdRes{Username: username}, err
+}
+
 func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
@@ -33,6 +42,14 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 	}
 	stmt := `
 		SELECT DISTINCT
+		CASE
+			WHEN g.name = '' THEN  'friend'
+			ELSE 'group'
+		END AS contact_type,
+		CASE
+			WHEN g.name = '' THEN  u.id
+			ELSE NULL
+		END AS user_id,
 		g.id AS group_id,
 		CASE
 			WHEN g.name = '' THEN  u.username
@@ -40,11 +57,11 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		END AS contact_name,
 		CASE
 			WHEN msg.content IS NOT NULL THEN msg.content 
-			ELSE ''
+			ELSE NULL
 		END AS last_content,
 		CASE
 			WHEN msg.sent_at IS NOT NULL THEN msg.sent_at
-			ELSE '0001-01-01 00:00:00.001'
+			ELSE NULL
 		END AS last_sent_at
 		FROM (
 			SELECT id, name
@@ -75,9 +92,11 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 
 	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
 		var c pb.Contact
-		var lastSentAt time.Time
-		err := row.Scan(&c.GroupId, &c.Name, &c.LastContent, &lastSentAt)
-		c.LastSentAt = max(0, lastSentAt.UnixMilli())
+		var lastContent sql.NullString
+		var lastSentAt sql.NullTime
+		err := row.Scan(&c.Type, &c.UserId, &c.GroupId, &c.Name, &lastContent, &lastSentAt)
+		c.LastSentAt = max(0, lastSentAt.Time.UnixMilli())
+		c.LastContent = lastContent.String
 		return &c, err
 	})
 	if err != nil {

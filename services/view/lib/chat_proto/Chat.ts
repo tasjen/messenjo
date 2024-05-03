@@ -13,6 +13,8 @@ import type { GetContactsReq as _GetContactsReq, GetContactsReq__Output as _GetC
 import type { GetContactsRes as _GetContactsRes, GetContactsRes__Output as _GetContactsRes__Output } from './GetContactsRes';
 import type { GetMessagesReq as _GetMessagesReq, GetMessagesReq__Output as _GetMessagesReq__Output } from './GetMessagesReq';
 import type { GetMessagesRes as _GetMessagesRes, GetMessagesRes__Output as _GetMessagesRes__Output } from './GetMessagesRes';
+import type { GetUserByIdReq as _GetUserByIdReq, GetUserByIdReq__Output as _GetUserByIdReq__Output } from './GetUserByIdReq';
+import type { GetUserByIdRes as _GetUserByIdRes, GetUserByIdRes__Output as _GetUserByIdRes__Output } from './GetUserByIdRes';
 import type { Null as _Null, Null__Output as _Null__Output } from './Null';
 import type { SendMessageReq as _SendMessageReq, SendMessageReq__Output as _SendMessageReq__Output } from './SendMessageReq';
 
@@ -80,6 +82,15 @@ export interface ChatClient extends grpc.Client {
   getMessages(argument: _GetMessagesReq, options: grpc.CallOptions, callback: grpc.requestCallback<_GetMessagesRes__Output>): grpc.ClientUnaryCall;
   getMessages(argument: _GetMessagesReq, callback: grpc.requestCallback<_GetMessagesRes__Output>): grpc.ClientUnaryCall;
   
+  GetUserById(argument: _GetUserByIdReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  GetUserById(argument: _GetUserByIdReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  GetUserById(argument: _GetUserByIdReq, options: grpc.CallOptions, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  GetUserById(argument: _GetUserByIdReq, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  getUserById(argument: _GetUserByIdReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  getUserById(argument: _GetUserByIdReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  getUserById(argument: _GetUserByIdReq, options: grpc.CallOptions, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  getUserById(argument: _GetUserByIdReq, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
+  
   SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
   SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
   SendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
@@ -106,6 +117,8 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
   
   GetMessages: grpc.handleUnaryCall<_GetMessagesReq__Output, _GetMessagesRes>;
   
+  GetUserById: grpc.handleUnaryCall<_GetUserByIdReq__Output, _GetUserByIdRes>;
+  
   SendMessage: grpc.handleUnaryCall<_SendMessageReq__Output, _Null>;
   
 }
@@ -118,5 +131,6 @@ export interface ChatDefinition extends grpc.ServiceDefinition {
   GetByUsername: MethodDefinition<_GetByUsernameReq, _GetByUsernameRes, _GetByUsernameReq__Output, _GetByUsernameRes__Output>
   GetContacts: MethodDefinition<_GetContactsReq, _GetContactsRes, _GetContactsReq__Output, _GetContactsRes__Output>
   GetMessages: MethodDefinition<_GetMessagesReq, _GetMessagesRes, _GetMessagesReq__Output, _GetMessagesRes__Output>
+  GetUserById: MethodDefinition<_GetUserByIdReq, _GetUserByIdRes, _GetUserByIdReq__Output, _GetUserByIdRes__Output>
   SendMessage: MethodDefinition<_SendMessageReq, _Null, _SendMessageReq__Output, _Null__Output>
 }

@@ -1,24 +1,28 @@
 "use client";
 
-import { Contact } from "@/lib/data";
 import { toDateFormat } from "@/lib/utils";
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import NoSSR from "./no-ssr";
+import { Contact, User } from "@/lib/data";
+import { useStore } from "@/lib/zustand-provider";
 
 type Props = {
-  friends: Contact[];
+  user: User;
+  contacts: Contact[];
 };
 
-export default function FriendList(props: Props) {
-  const [friends, setFriends] = useState(props.friends);
+export default function ContactListClient({ user, contacts }: Props) {
   const pathname = usePathname();
+  useStore.setState({ user, contacts });
+
+  console.log("contactlist client");
 
   return (
     <ul className="flex flex-col gap-2">
-      {friends
-        .filter((e) => e.lastContent !== "")
+      {contacts
+        ?.filter((e) => e.lastContent !== "")
         .sort((a, b) => b.lastSentAt - a.lastSentAt)
         .map((e) => (
           <li
@@ -32,29 +36,20 @@ export default function FriendList(props: Props) {
                 <div className="font-bold text-ellipsis w-40 overflow-hidden">
                   {e.name}
                 </div>
-                {/* this component must be forced to render on the client */}
-                <LastSentAt date={e.lastSentAt} />
+                <NoSSR>
+                  <div className="ml-auto text-xs self-center">
+                    {
+                      toDateFormat(e.lastSentAt)[
+                        e.lastSentAt < Date.now() - 24 * 60 * 60 * 1000 ? 0 : 1
+                      ]
+                    }
+                  </div>
+                </NoSSR>
               </div>
               <div className="text-sm">{e.lastContent}</div>
             </Link>
           </li>
         ))}
     </ul>
-  );
-}
-
-function LastSentAt({ date }: { date: number }) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  return (
-    isClient && (
-      <div className="ml-auto text-xs self-center">
-        {toDateFormat(date)[date < Date.now() - 24 * 60 * 60 * 1000 ? 0 : 1]}
-      </div>
-    )
   );
 }

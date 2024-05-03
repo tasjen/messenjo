@@ -16,8 +16,8 @@ export default function SearchForm() {
     console.log(`Searching... ${term}`);
     const params = new URLSearchParams(searchParams);
     console.log(params);
-    if (term) params.set("s", term);
-    else params.delete("query");
+    if (term) params.set("q", term);
+    else params.delete("q");
     replace(`${pathname}?${params.toString()}`);
   }
 

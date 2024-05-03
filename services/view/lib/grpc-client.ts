@@ -1,7 +1,7 @@
 import path from "path";
 import { credentials, loadPackageDefinition } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
-import { ProtoGrpcType as ChatProtoGrpcType } from "./chat_proto/chat";
+import { ProtoGrpcType as ChatProtoGrpcType } from "./chat_proto/chatService";
 
 const packageDefinition = loadSync(
   path.join(process.cwd(), "/protos/chat.proto"),
