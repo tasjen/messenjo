@@ -17,6 +17,7 @@ import type { GetUserByIdReq as _GetUserByIdReq, GetUserByIdReq__Output as _GetU
 import type { GetUserByIdRes as _GetUserByIdRes, GetUserByIdRes__Output as _GetUserByIdRes__Output } from './GetUserByIdRes';
 import type { Null as _Null, Null__Output as _Null__Output } from './Null';
 import type { SendMessageReq as _SendMessageReq, SendMessageReq__Output as _SendMessageReq__Output } from './SendMessageReq';
+import type { SendMessageRes as _SendMessageRes, SendMessageRes__Output as _SendMessageRes__Output } from './SendMessageRes';
 
 export interface ChatClient extends grpc.Client {
   AddFriend(argument: _AddFriendReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
@@ -91,14 +92,14 @@ export interface ChatClient extends grpc.Client {
   getUserById(argument: _GetUserByIdReq, options: grpc.CallOptions, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
   getUserById(argument: _GetUserByIdReq, callback: grpc.requestCallback<_GetUserByIdRes__Output>): grpc.ClientUnaryCall;
   
-  SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  SendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  SendMessage(argument: _SendMessageReq, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  sendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  sendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  sendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
-  sendMessage(argument: _SendMessageReq, callback: grpc.requestCallback<_Null__Output>): grpc.ClientUnaryCall;
+  SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  SendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  SendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  SendMessage(argument: _SendMessageReq, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  sendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  sendMessage(argument: _SendMessageReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  sendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
+  sendMessage(argument: _SendMessageReq, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
   
 }
 
@@ -119,7 +120,7 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
   
   GetUserById: grpc.handleUnaryCall<_GetUserByIdReq__Output, _GetUserByIdRes>;
   
-  SendMessage: grpc.handleUnaryCall<_SendMessageReq__Output, _Null>;
+  SendMessage: grpc.handleUnaryCall<_SendMessageReq__Output, _SendMessageRes>;
   
 }
 
@@ -132,5 +133,5 @@ export interface ChatDefinition extends grpc.ServiceDefinition {
   GetContacts: MethodDefinition<_GetContactsReq, _GetContactsRes, _GetContactsReq__Output, _GetContactsRes__Output>
   GetMessages: MethodDefinition<_GetMessagesReq, _GetMessagesRes, _GetMessagesReq__Output, _GetMessagesRes__Output>
   GetUserById: MethodDefinition<_GetUserByIdReq, _GetUserByIdRes, _GetUserByIdReq__Output, _GetUserByIdRes__Output>
-  SendMessage: MethodDefinition<_SendMessageReq, _Null, _SendMessageReq__Output, _Null__Output>
+  SendMessage: MethodDefinition<_SendMessageReq, _SendMessageRes, _SendMessageReq__Output, _SendMessageRes__Output>
 }

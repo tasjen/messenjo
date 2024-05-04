@@ -6,22 +6,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import NoSSR from "./no-ssr";
 import { Contact, User } from "@/lib/data";
-import { useStore } from "@/lib/zustand-provider";
+import { useEffect } from "react";
+import { useClientStore } from "@/lib/stores/client-store";
 
 type Props = {
   user: User;
   contacts: Contact[];
 };
 
-export default function ContactListClient({ user, contacts }: Props) {
+export default function ContactListClient(props: Props) {
   const pathname = usePathname();
-  useStore.setState({ user, contacts });
+  const clientStore = useClientStore();
 
-  console.log("contactlist client");
+  useEffect(() => {
+    clientStore.setUser(props.user);
+    clientStore.setContacts(props.contacts);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <ul className="flex flex-col gap-2">
-      {contacts
+      {(clientStore.contacts || props.contacts)
         ?.filter((e) => e.lastContent !== "")
         .sort((a, b) => b.lastSentAt - a.lastSentAt)
         .map((e) => (

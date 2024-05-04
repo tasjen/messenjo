@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import QueryProvider from "@/components/query-provider";
+import { ClientStoreProvider } from "@/lib/stores/client-store";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-slate-200`}>
-        <QueryProvider>{children}</QueryProvider>
+        <ClientStoreProvider>{children}</ClientStoreProvider>
       </body>
     </html>
   );

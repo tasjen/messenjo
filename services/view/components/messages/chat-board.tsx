@@ -1,11 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { Contact, Message, User } from "@/lib/data";
 import { toDateFormat } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect } from "react";
 import NoSSR from "../no-ssr";
 import clsx from "clsx";
 import { useParams } from "next/navigation";
-import { useStore } from "@/lib/zustand-provider";
+import { useClientStore } from "@/lib/stores/client-store";
 
 type Props = {
   messages: Message[];
@@ -14,28 +15,34 @@ type Props = {
 };
 
 export default function ChatBoard(props: Props) {
-  const [messages, setMessages] = useState(props.messages);
   const { groupId } = useParams<{ groupId: string }>();
-  const contact = props.contacts?.find((e) => e.groupId === groupId);
+  const { user, contacts, chatRooms, addChatRoom } = useClientStore();
+  const contact = (contacts || props.contacts)?.find(
+    (e) => e.groupId === groupId
+  );
   const contactName = contact?.name;
-  useStore.setState({ user: props.user, contacts: props.contacts });
+
+  useEffect(() => {
+    addChatRoom({ groupId, messages: props.messages });
+  }, []);
 
   return (
     <>
-      <div className="font-bold text-lg mb-4">{contactName}</div>
-      <ul className="flex flex-col gap-2">
-        {messages.map((e) => (
+      <div className="font-bold text-lg mb-auto">{contactName}</div>
+      <ul className="flex flex-col gap-2 overflow-auto h-full">
+        {(
+          chatRooms?.find((e) => e.groupId === groupId)?.messages ??
+          props.messages
+        ).map((e) => (
           <li
             key={e.id}
             className={clsx(
               "flex gap-2",
-              props.user?.username === e.fromUsername &&
+              (user ?? props.user)?.username === e.fromUsername &&
                 "ml-auto flex-row-reverse"
             )}
           >
-            <div className={clsx("rounded-xl bg-gray-200 p-2")}>
-              {e.content}
-            </div>
+            <div className="rounded-xl bg-gray-200 p-2">{e.content}</div>
             <NoSSR>
               <div className="self-end text-xs">
                 {toDateFormat(e.sentAt)[1]}

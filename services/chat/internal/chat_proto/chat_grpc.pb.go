@@ -30,7 +30,7 @@ type ChatClient interface {
 	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*Null, error)
 	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*Null, error)
 	AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*Null, error)
-	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*Null, error)
+	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error)
 }
 
 type chatClient struct {
@@ -113,8 +113,8 @@ func (c *chatClient) AddMember(ctx context.Context, in *AddMemberReq, opts ...gr
 	return out, nil
 }
 
-func (c *chatClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
+func (c *chatClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error) {
+	out := new(SendMessageRes)
 	err := c.cc.Invoke(ctx, "/Chat/SendMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ type ChatServer interface {
 	CreateGroup(context.Context, *CreateGroupReq) (*Null, error)
 	AddFriend(context.Context, *AddFriendReq) (*Null, error)
 	AddMember(context.Context, *AddMemberReq) (*Null, error)
-	SendMessage(context.Context, *SendMessageReq) (*Null, error)
+	SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -166,7 +166,7 @@ func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*Null,
 func (UnimplementedChatServer) AddMember(context.Context, *AddMemberReq) (*Null, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMember not implemented")
 }
-func (UnimplementedChatServer) SendMessage(context.Context, *SendMessageReq) (*Null, error) {
+func (UnimplementedChatServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}

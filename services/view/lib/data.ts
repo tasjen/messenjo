@@ -4,6 +4,7 @@ import { GetByUsernameRes } from "./chat_proto/GetByUsernameRes";
 import { redirect } from "next/navigation";
 import { newDeadline, uuidStringify, uuidParse } from "./utils";
 import { GetContactsRes } from "./chat_proto/GetContactsRes";
+import { GetMessagesRes } from "./chat_proto/GetMessagesRes";
 import { unstable_noStore as noStore } from "next/cache";
 import { z } from "zod";
 import { headers } from "next/headers";
@@ -16,12 +17,13 @@ export const User = z.object({
 });
 export type User = z.infer<typeof User>;
 
-export type Message = {
-  id: number;
-  fromUsername: string;
-  content: string;
-  sentAt: number;
-};
+export const Message = z.object({
+  id: z.number(),
+  fromUsername: z.string(),
+  content: z.string(),
+  sentAt: z.number(),
+});
+export type Message = z.infer<typeof Message>;
 
 export const FriendContact = z.object({
   type: z.literal("friend"),
@@ -71,16 +73,15 @@ export async function fetchUserData(): Promise<User> {
               new Error("no response from ChatService: `GetUserById`")
             );
           }
-          console.log(res.username);
           resolve(User.parse({ id: userId, username: res.username }));
         }
       );
     });
   } catch (err) {
     if (err instanceof Error) {
-      console.error(err.message);
+      console.error("fetchUserData error: ", err.message);
     } else {
-      console.error("fetchContacts unknown error");
+      console.error("fetchUserData unknown error");
     }
     redirect("/error");
   }
@@ -101,13 +102,13 @@ export async function fetchUserByUsername(username: string): Promise<User> {
               new Error("no response from ChatService: `GetByUsername`")
             );
           }
-          resolve(User.parse({ id: res.userId.toString("hex") }));
+          resolve(User.parse({ id: uuidStringify(res.userId), username }));
         }
       );
     });
   } catch (err) {
     if (err instanceof Error) {
-      console.log(err.message);
+      console.error("fetchUserByUsername error: ", err.message);
     }
     redirect("/friends");
   }
@@ -125,29 +126,25 @@ export async function fetchContacts(): Promise<Contact[]> {
         (err?: ServiceError | null, res?: GetContactsRes) => {
           if (err) {
             return reject(err);
-          } else if (!res?.contacts) {
+          } else if (!res) {
             return reject(new Error("no response from ChatService"));
+          } else if (!res.contacts) {
+            return resolve([]);
           }
           resolve(
             res.contacts.map((e) =>
               e.type === "friend"
                 ? FriendContact.parse({
                     type: e.type,
-                    userId: uuidStringify(
-                      z.instanceof(Uint8Array).parse(e.userId)
-                    ),
-                    groupId: uuidStringify(
-                      z.instanceof(Uint8Array).parse(e.groupId)
-                    ),
+                    userId: uuidStringify(e.userId!),
+                    groupId: uuidStringify(e.groupId!),
                     name: e.name,
                     lastContent: e.lastContent ?? "",
                     lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? 0,
                   })
                 : GroupContact.parse({
                     type: e.type,
-                    groupId: uuidStringify(
-                      z.instanceof(Uint8Array).parse(e.groupId)
-                    ),
+                    groupId: uuidStringify(e.groupId!),
                     name: e.name,
                     lastContent: e.lastContent ?? "",
                     lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? 0,
@@ -159,7 +156,7 @@ export async function fetchContacts(): Promise<Contact[]> {
     });
   } catch (err) {
     if (err instanceof Error) {
-      console.error(err.message);
+      console.error("fetchContacts error: ", err.message);
     } else {
       console.error("fetchContacts unknown error");
     }
@@ -167,32 +164,36 @@ export async function fetchContacts(): Promise<Contact[]> {
   }
 }
 
-export async function fetchMessages(): Promise<Message[]> {
+export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
-  return [
-    {
-      id: 1,
-      fromUsername: "one",
-      content: "from one 1",
-      sentAt: 1714599407051,
-    },
-    {
-      id: 2,
-      fromUsername: "github#129994991",
-      content: "from github 1",
-      sentAt: 1714599307051,
-    },
-    {
-      id: 3,
-      fromUsername: "github#129994991",
-      content: "from github 2",
-      sentAt: 1714599207051,
-    },
-    {
-      id: 4,
-      fromUsername: "one",
-      content: "from one 2",
-      sentAt: 1714599107051,
-    },
-  ];
+  try {
+    return await new Promise((resolve, reject) => {
+      chatClient.GetMessages(
+        { userId: uuidParse(getUserId()), groupId: uuidParse(groupId) },
+        { deadline: newDeadline(5) },
+        (err?: ServiceError | null, res?: GetMessagesRes) => {
+          if (err) {
+            return reject(err);
+          } else if (!res?.messages) {
+            return reject(new Error("no response from GetMessages"));
+          }
+          resolve(
+            res.messages.map((e) =>
+              Message.parse({
+                ...e,
+                sentAt: (e.sentAt as Long)?.toNumber(),
+              })
+            )
+          );
+        }
+      );
+    });
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("fetchMessages error: ", err.message);
+    } else {
+      console.error("fetchMessages unknown error");
+    }
+    redirect("/error");
+  }
 }

@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useParams } from "next/navigation";
+import { sendMessage } from "@/lib/actions";
+import { useClientStore } from "@/lib/stores/client-store";
 
 type Props = {
   host: string;
@@ -9,10 +12,21 @@ type Props = {
 
 export default function ChatForm({ host }: Props) {
   const [content, setContent] = useState("");
+  const { groupId } = useParams<{ groupId: string }>();
+  const { user, addMessage } = useClientStore();
   return (
-    <div>
+    <div className="mt-4">
       <form
         action={async () => {
+          if (content === "") return;
+          const sentAt = Date.now();
+          const messageId = await sendMessage(groupId, content, sentAt);
+          addMessage(groupId, {
+            id: messageId,
+            fromUsername: user?.username ?? "username is undefined",
+            content,
+            sentAt,
+          });
           setContent("");
         }}
       >

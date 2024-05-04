@@ -11,7 +11,7 @@ service Chat {
   rpc CreateGroup (CreateGroupReq) returns (Null) {}
   rpc AddFriend (AddFriendReq) returns (Null) {}
   rpc AddMember (AddMemberReq) returns (Null) {}
-  rpc SendMessage (SendMessageReq) returns (Null) {}
+  rpc SendMessage (SendMessageReq) returns (SendMessageRes) {}
 }
 
 message Null {}
@@ -51,12 +51,13 @@ message GetMessagesReq {
   bytes group_id = 2;
 }
 message GetMessagesRes {
-  repeated Message message = 1;
+  repeated Message messages = 1;
 }
 message Message {
   int32 id = 1;
-  string content = 2;
-  int64 sent_at = 3;
+  string from_username = 2;
+  string content = 3;
+  int64 sent_at = 4;
 }
 
 message CreateUserReq {
@@ -86,4 +87,8 @@ message SendMessageReq {
   bytes group_id = 2;
   string content = 3;
   int64 sent_at = 4;
+}
+
+message SendMessageRes {
+  int32 message_id = 1;
 }

@@ -26,5 +26,6 @@ export interface ProtoGrpcType {
   Message: MessageTypeDefinition
   Null: MessageTypeDefinition
   SendMessageReq: MessageTypeDefinition
+  SendMessageRes: MessageTypeDefinition
 }
 

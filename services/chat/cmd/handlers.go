@@ -38,37 +38,37 @@ func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq)
 func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.GetContactsRes{}, err
+		return &pb.GetContactsRes{Contacts: []*pb.Contact{}}, err
 	}
 	stmt := `
 		SELECT DISTINCT
 		CASE
-			WHEN g.name = '' THEN  'friend'
-			ELSE 'group'
+				WHEN g.name = '' THEN  'friend'
+				ELSE 'group'
 		END AS contact_type,
 		CASE
-			WHEN g.name = '' THEN  u.id
-			ELSE NULL
+				WHEN g.name = '' THEN  u.username
+		ELSE g.name
+		END AS contact_name,
+		CASE
+				WHEN g.name = '' THEN  u.id
+				ELSE NULL
 		END AS user_id,
 		g.id AS group_id,
 		CASE
-			WHEN g.name = '' THEN  u.username
-			ELSE g.name
-		END AS contact_name,
-		CASE
-			WHEN msg.content IS NOT NULL THEN msg.content 
-			ELSE NULL
+				WHEN msg.content IS NOT NULL THEN msg.content 
+				ELSE NULL
 		END AS last_content,
 		CASE
-			WHEN msg.sent_at IS NOT NULL THEN msg.sent_at
-			ELSE NULL
+				WHEN msg.sent_at IS NOT NULL THEN msg.sent_at
+				ELSE NULL
 		END AS last_sent_at
 		FROM (
-			SELECT id, name
-			FROM members
-			JOIN groups
-			ON members.group_id = groups.id
-			WHERE members.user_id = $1
+				SELECT id, name
+				FROM members
+				JOIN groups
+				ON members.group_id = groups.id
+				WHERE members.user_id = $1
 		) AS g
 		LEFT JOIN members AS m
 		ON m.group_id = g.id
@@ -78,23 +78,26 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		ON m.group_id = msg.group_id
 		WHERE u.id != $1
 		AND (
-			msg.id IN (
-				SELECT MAX(id)
-				FROM messages
-				GROUP BY group_id
-			)
-			OR msg.id IS NULL
-		);`
+				msg.id IN (
+						SELECT MAX(id)
+						FROM messages
+						GROUP BY group_id
+				)
+				OR msg.id IS NULL
+		)
+		ORDER BY last_sent_at DESC;`
 	rows, err := models.DB.Query(ctx, stmt, userId)
+	if err == pgx.ErrNoRows {
+		return &pb.GetContactsRes{}, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-
 	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
 		var c pb.Contact
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
-		err := row.Scan(&c.Type, &c.UserId, &c.GroupId, &c.Name, &lastContent, &lastSentAt)
+		err := row.Scan(&c.Type, &c.Name, &c.UserId, &c.GroupId, &lastContent, &lastSentAt)
 		c.LastSentAt = max(0, lastSentAt.Time.UnixMilli())
 		c.LastContent = lastContent.String
 		return &c, err
@@ -105,6 +108,35 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 	}
 
 	return &pb.GetContactsRes{Contacts: contacts}, nil
+}
+
+func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq) (*pb.GetMessagesRes, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &pb.GetMessagesRes{}, err
+	}
+
+	groupId, err := uuid.FromBytes(req.GetGroupId())
+	if err != nil {
+		return &pb.GetMessagesRes{}, err
+	}
+
+	messages, err := app.messages.GetFromGroupId(ctx, userId, groupId)
+	if err != nil {
+		return &pb.GetMessagesRes{}, err
+	}
+
+	var pbMessages []*pb.Message
+	for _, e := range messages {
+		pbMessages = append(pbMessages, &pb.Message{
+			Id:           int32(e.Id),
+			FromUsername: e.FromUsername,
+			Content:      e.Content,
+			SentAt:       e.SentAt.UnixMilli(),
+		})
+	}
+
+	return &pb.GetMessagesRes{Messages: pbMessages}, nil
 }
 
 // this method is only for Auth service when creating new users
@@ -216,13 +248,13 @@ func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*p
 	return nil, err
 }
 
-func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.Null, error) {
-	userId, err := uuid.ParseBytes(req.GetUserId())
+func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.SendMessageRes, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return nil, err
 	}
 
-	groupId, err := uuid.ParseBytes(req.GetGroupId())
+	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +266,6 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 
 	sentAt := req.GetSentAt()
 
-	err = app.messages.Add(ctx, userId, groupId, content, sentAt)
-	return nil, err
+	id, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
+	return &pb.SendMessageRes{MessageId: id}, err
 }

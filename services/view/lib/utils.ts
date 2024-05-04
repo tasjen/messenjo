@@ -9,7 +9,7 @@ export function uuidFormat(uuid: string): string {
   let result = "";
   for (let i = 0; i < uuid.length; i++) {
     result += uuid[i];
-    if ([8, 12, 16, 20].includes(i)) result += "-";
+    if ([7, 11, 15, 19].includes(i)) result += "-";
   }
   return result;
 }
@@ -32,7 +32,10 @@ export function uuidParse(uuid: string): Uint8Array {
   return uuidBytes;
 }
 
-export function uuidStringify(bytes: Uint8Array): string {
+export function uuidStringify(bytes: Buffer | Uint8Array | string): string {
+  if (bytes instanceof Buffer) {
+    return uuidFormat(bytes.toString("hex"));
+  }
   if (bytes.length !== 16) {
     throw new Error("Invalid Uint8Array size (should be 16)");
   }
@@ -44,7 +47,6 @@ export function uuidStringify(bytes: Uint8Array): string {
       uuidString += "-";
     }
   }
-
   return uuidString;
 }
 
