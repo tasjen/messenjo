@@ -56,7 +56,7 @@ export function getUserId(): string {
   return userId;
 }
 
-export async function fetchUserData(): Promise<User> {
+export async function fetchUserInfo(): Promise<User> {
   noStore();
   // console.log("fetchUserData --------------------");
   try {
@@ -73,6 +73,8 @@ export async function fetchUserData(): Promise<User> {
               new Error("no response from ChatService: `GetUserById`")
             );
           }
+          console.log("fetchUserInfo");
+
           resolve(User.parse({ id: userId, username: res.username }));
         }
       );
@@ -116,7 +118,6 @@ export async function fetchUserByUsername(username: string): Promise<User> {
 
 export async function fetchContacts(): Promise<Contact[]> {
   noStore();
-  // console.log("fetchContacts --------------------");
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
     return await new Promise((resolve, reject) => {
@@ -131,6 +132,8 @@ export async function fetchContacts(): Promise<Contact[]> {
           } else if (!res.contacts) {
             return resolve([]);
           }
+          console.log("fetchContacts");
+
           resolve(
             res.contacts.map((e) =>
               e.type === "friend"
@@ -166,6 +169,7 @@ export async function fetchContacts(): Promise<Contact[]> {
 
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
     return await new Promise((resolve, reject) => {
       chatClient.GetMessages(

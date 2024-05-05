@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { toDateFormat } from "@/lib/utils";
@@ -16,17 +17,16 @@ type Props = {
 
 export default function ContactListClient(props: Props) {
   const pathname = usePathname();
-  const clientStore = useClientStore();
+  const store = useClientStore();
 
   useEffect(() => {
-    clientStore.setUser(props.user);
-    clientStore.setContacts(props.contacts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    store.setUser(props.user);
+    store.setContacts(props.contacts);
   }, []);
 
   return (
-    <ul className="flex flex-col gap-2">
-      {(clientStore.contacts || props.contacts)
+    <ul className="flex flex-col gap-2 h-full overflow-auto">
+      {(store.contacts ?? props.contacts)
         ?.filter((e) => e.lastContent !== "")
         .sort((a, b) => b.lastSentAt - a.lastSentAt)
         .map((e) => (

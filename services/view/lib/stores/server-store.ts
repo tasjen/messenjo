@@ -1,12 +1,6 @@
-import { create } from "zustand";
-import { User, Contact } from "../data";
+import "server-only";
+import { cache } from "react";
+import { fetchContacts, fetchUserInfo } from "@/lib/data";
 
-type ServerState = {
-  user: User;
-  contacts: Contact[];
-};
-
-export const serverStore = create<ServerState>(() => ({
-  user: {} as User,
-  contacts: [],
-}));
+export const getContacts = cache(fetchContacts);
+export const getUserInfo = cache(fetchUserInfo);

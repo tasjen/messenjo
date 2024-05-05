@@ -2,7 +2,6 @@ import ChatForm from "@/components/chat-form";
 import ChatBoard from "@/components/messages/chat-board";
 import { fetchMessages } from "@/lib/data";
 import env from "@/lib/env";
-import { serverStore } from "@/lib/stores/server-store";
 
 type Props = {
   params: { groupId: string };
@@ -10,12 +9,10 @@ type Props = {
 
 export default async function ChatPage({ params: { groupId } }: Props) {
   const messages = await fetchMessages(groupId);
-  const { user, contacts } = serverStore.getState();
-
   return (
-    <>
-      <ChatBoard messages={messages} user={user} contacts={contacts} />
+    <div className="flex flex-col h-full justify-between gap-4">
+      <ChatBoard messages={messages} />
       <ChatForm host={env.HOST} />
-    </>
+    </div>
   );
 }

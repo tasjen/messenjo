@@ -135,7 +135,6 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 			SentAt:       e.SentAt.UnixMilli(),
 		})
 	}
-
 	return &pb.GetMessagesRes{Messages: pbMessages}, nil
 }
 
