@@ -6,7 +6,7 @@ import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { Auth } from "./lib/auth_proto/auth_connect";
 import { uuidStringify } from "./lib/utils";
 const transport = createGrpcWebTransport({
-  baseUrl: "http://grpc-proxy:3000",
+  baseUrl: "http://grpc-gateway:3000",
 });
 const authClient = createPromiseClient(Auth, transport);
 

@@ -12,7 +12,7 @@ services:
       - /app/node_modules
       - /app/.next
     depends_on:
-      - grpc-proxy
+      - grpc-gateway
 
   auth:
     image: message-app-auth-dev
@@ -61,10 +61,11 @@ services:
       - auth
       - view
 
-  grpc-proxy:
+  grpc-gateway:
+    container_name: message-app-grpc-gateway-dev
     image: envoyproxy/envoy:distroless-v1.30-latest
     volumes:
-      - ./services/grpc-proxy/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
       - auth
 
