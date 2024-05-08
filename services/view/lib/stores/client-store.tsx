@@ -8,9 +8,7 @@ import {
   Dispatch,
   SetStateAction,
 } from "react";
-import { User, Contact, Message } from "../data";
-
-type ChatRoom = { groupId: string; messages: Message[] };
+import { User, Message, ChatRoom, Contact } from "@/lib/schema";
 
 type ClientState = {
   user?: User;
@@ -18,8 +16,8 @@ type ClientState = {
   contacts?: Contact[];
   setContacts: Dispatch<SetStateAction<Contact[] | undefined>>;
   chatRooms?: ChatRoom[];
-  addChatRoom: (c: ChatRoom) => void;
-  addMessage: (groupId: string, message: Message) => void;
+  addChatRooms: (...c: ChatRoom[]) => void;
+  addMessages: (groupId: string, ...message: Message[]) => void;
 };
 
 const ClientStore = createContext<ClientState | null>(null);
@@ -29,16 +27,36 @@ const ClientStoreProvider = ({ children }: { children: ReactNode }) => {
   const [contacts, setContacts] = useState<Contact[]>();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>();
 
-  function addChatRoom(c: ChatRoom) {
-    if (chatRooms) setChatRooms([...chatRooms, c]);
-    else setChatRooms([c]);
+  function addChatRooms(...c: ChatRoom[]) {
+    if (!chatRooms) {
+      setChatRooms([...c]);
+      console.log("no chatRooms, set chatRooms to:", [...c]);
+    } else {
+      const toAdd = c.filter(
+        (e) => !chatRooms.find((room) => room.groupId === e.groupId)
+      );
+      setChatRooms([...chatRooms, ...toAdd]);
+      console.log("added", toAdd.length, "rooms to the chatRooms");
+    }
   }
-  function addMessage(groupId: string, message: Message) {
+  function addMessages(groupId: string, ...messages: Message[]) {
+    console.log("addMessages' chatRooms:", chatRooms);
+    if (!chatRooms) {
+      return;
+    }
     setChatRooms(
-      chatRooms?.map((e) =>
+      chatRooms.map((e) =>
         e.groupId !== groupId
           ? e
-          : { groupId, messages: [...e.messages, message] }
+          : {
+              ...e,
+              messages: [
+                ...e.messages,
+                ...messages.filter(
+                  (m) => !e.messages.find((em) => em.id === m.id)
+                ),
+              ],
+            }
       )
     );
   }
@@ -51,8 +69,8 @@ const ClientStoreProvider = ({ children }: { children: ReactNode }) => {
         contacts,
         setContacts,
         chatRooms,
-        addChatRoom,
-        addMessage,
+        addChatRooms,
+        addMessages,
       }}
     >
       {children}

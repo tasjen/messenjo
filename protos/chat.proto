@@ -39,9 +39,9 @@ message GetContactsRes {
 
 message Contact {
   string type = 1;
-  bytes user_id = 2;
-  bytes group_id = 3;
-  string name = 4;
+  bytes group_id = 2;
+  string name = 3;
+  int32 last_message_id = 4;
   string last_content = 5;
   int64 last_sent_at = 6;
 }

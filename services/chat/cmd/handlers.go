@@ -41,51 +41,49 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		return &pb.GetContactsRes{Contacts: []*pb.Contact{}}, err
 	}
 	stmt := `
-		SELECT DISTINCT
-		CASE
-				WHEN g.name = '' THEN  'friend'
+		SELECT
+			DISTINCT
+			CASE
+				WHEN groups.name = '' THEN  'friend'
 				ELSE 'group'
-		END AS contact_type,
-		CASE
-				WHEN g.name = '' THEN  u.username
-		ELSE g.name
-		END AS contact_name,
-		CASE
-				WHEN g.name = '' THEN  u.id
-				ELSE NULL
-		END AS user_id,
-		g.id AS group_id,
-		CASE
-				WHEN msg.content IS NOT NULL THEN msg.content 
-				ELSE NULL
-		END AS last_content,
-		CASE
-				WHEN msg.sent_at IS NOT NULL THEN msg.sent_at
-				ELSE NULL
-		END AS last_sent_at
-		FROM (
-				SELECT id, name
+			END AS contact_type,
+			groups.id AS group_id,
+			COALESCE(
+				NULLIF(groups.name, ''),
+				users.username
+			) AS contact_name,
+			messages.id AS last_message_id,
+			messages.content AS last_content,
+			messages.sent_at AS last_sent_at
+		FROM 
+			"groups"
+			JOIN members
+			ON groups.id = members.group_id
+			JOIN users
+			ON members.user_id = users.id
+			LEFT JOIN messages
+			ON groups.id = messages.group_id
+		WHERE
+			groups.id IN (
+				SELECT DISTINCT group_id
 				FROM members
-				JOIN groups
-				ON members.group_id = groups.id
-				WHERE members.user_id = $1
-		) AS g
-		LEFT JOIN members AS m
-		ON m.group_id = g.id
-		LEFT JOIN users AS u
-		ON m.user_id = u.id
-		LEFT JOIN messages AS msg
-		ON m.group_id = msg.group_id
-		WHERE u.id != $1
-		AND (
-				msg.id IN (
-						SELECT MAX(id)
+				WHERE user_id = $1
+			)
+			AND users.id != $1
+			AND (
+				messages.id IN (
+					SELECT "id"
+					FROM messages
+					WHERE "id" IN (
+						SELECT MAX("id")
 						FROM messages
 						GROUP BY group_id
+					)
 				)
-				OR msg.id IS NULL
-		)
-		ORDER BY last_sent_at DESC;`
+				OR messages.id IS NULL
+			)
+		ORDER BY 
+			last_sent_at DESC;`
 	rows, err := models.DB.Query(ctx, stmt, userId)
 	if err == pgx.ErrNoRows {
 		return &pb.GetContactsRes{}, nil
@@ -95,9 +93,11 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 	}
 	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
 		var c pb.Contact
+		var lastMessageId sql.NullInt32
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
-		err := row.Scan(&c.Type, &c.Name, &c.UserId, &c.GroupId, &lastContent, &lastSentAt)
+		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &lastMessageId, &lastContent, &lastSentAt)
+		c.LastMessageId = lastMessageId.Int32
 		c.LastSentAt = max(0, lastSentAt.Time.UnixMilli())
 		c.LastContent = lastContent.String
 		return &c, err
@@ -266,5 +266,12 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 	sentAt := req.GetSentAt()
 
 	id, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
+	if err != nil {
+		return nil, err
+	}
+
+	// app.pubClient.Publish(ctx, "message", map[string]any{
+
+	// })
 	return &pb.SendMessageRes{MessageId: id}, err
 }

@@ -1,5 +1,5 @@
-import ChatForm from "@/components/chat-form";
-import ChatBoard from "@/components/messages/chat-board";
+import ChatForm from "@/components/chat/chat-form";
+import ChatBoard from "@/components/chat/chat-board";
 import { fetchMessages } from "@/lib/data";
 import env from "@/lib/env";
 

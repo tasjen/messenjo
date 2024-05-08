@@ -8,17 +8,19 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
 	"google.golang.org/grpc"
 )
 
 type application struct {
-	errorLog *log.Logger
-	users    models.IUserModel
-	groups   models.IGroupModel
-	members  models.IMemberModel
-	messages models.IMessageModel
+	errorLog  *log.Logger
+	users     models.IUserModel
+	groups    models.IGroupModel
+	members   models.IMemberModel
+	messages  models.IMessageModel
+	pubClient *redis.Client
 	pb.UnimplementedChatServer
 }
 
@@ -47,6 +49,9 @@ func main() {
 		groups:   models.NewGroupModel(),
 		members:  models.NewMemberModel(),
 		messages: models.NewMessageModel(),
+		pubClient: redis.NewClient(&redis.Options{
+			Addr: "messagech:6379",
+		}),
 	}
 
 	pb.RegisterChatServer(s, app)

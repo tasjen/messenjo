@@ -28,7 +28,10 @@ type Message struct {
 
 func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error) {
 	stmt := `
-		SELECT messages.id AS id, users.username AS "fromUsername", "content", sent_at
+		SELECT
+			messages.id AS "id",
+			users.username AS "fromUsername",
+			"content", sent_at
 		FROM (
 			SELECT messages.id, messages.user_id, messages.group_id, "content", sent_at
 			FROM messages
@@ -38,7 +41,8 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 			AND members.user_id = $1
 		) AS messages
 		JOIN users
-		ON users.id = messages.user_id;`
+		ON users.id = messages.user_id
+		ORDER BY "id";`
 
 	rows, err := DB.Query(ctx, stmt, userId, groupId)
 	if err != nil {

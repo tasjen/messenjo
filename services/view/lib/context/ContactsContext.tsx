@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { Contact } from "../data";
+import { Contact } from "@/lib/schema";
 import { ContactsContext } from "../hooks";
 
 export default function ContactsContextProvider({

@@ -14,6 +14,20 @@ services:
     depends_on:
       - grpc-gateway
 
+  streaming:
+    image: message-app-streaming-dev
+    container_name: message-app-streaming-dev
+    build:
+      context: ./services/streaming
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/streaming:/app
+      - /app/node_modules
+    env_file:
+      - ./services/streaming/.env.dev
+    depends_on:
+      - messagech
+
   auth:
     image: message-app-auth-dev
     container_name: message-app-auth-dev
@@ -39,8 +53,8 @@ services:
       - chatdb
 
   chatdb:
-    container_name: message-app-chatdb-dev
     image: postgres:16-alpine
+    container_name: message-app-chatdb-dev
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: dev
@@ -49,6 +63,10 @@ services:
       - ./services/chatdb/data/dev:/var/lib/postgresql/data
     ports:
       - 5432:5432
+
+  messagech:
+    image: ghcr.io/microsoft/garnet-alpine
+    container_name: message-app-messagech-dev
 
   reverse-proxy:
     image: nginx:stable-alpine
@@ -62,16 +80,16 @@ services:
       - view
 
   grpc-gateway:
-    container_name: message-app-grpc-gateway-dev
     image: envoyproxy/envoy:distroless-v1.30-latest
+    container_name: message-app-grpc-gateway-dev
     volumes:
       - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
       - auth
 
   pgadmin:
-    container_name: message-app-pgadmin-dev
     image: dpage/pgadmin4
+    container_name: message-app-pgadmin-dev
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev

@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { Contact, User } from "../data";
+import { Contact, User } from "@/lib/schema";
 import {
   Dispatch,
   ReactNode,
@@ -8,38 +7,6 @@ import {
   useContext,
   useState,
 } from "react";
-
-export function useContactsQuery(options = {}) {
-  const {
-    data: contacts,
-    error,
-    isLoading,
-  } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => {
-      console.log("refetch user");
-      return Promise.resolve([] as Contact[]);
-    },
-    ...options,
-  });
-  return { contacts, error, isLoading };
-}
-
-export function useUserQuery(options = {}) {
-  const {
-    data: user,
-    error,
-    isLoading,
-  } = useQuery({
-    queryKey: ["user"],
-    queryFn: () => {
-      console.log("refetch user");
-      return Promise.resolve({} as User);
-    },
-    ...options,
-  });
-  return { user, error, isLoading };
-}
 
 type TContactsContext = {
   contacts: Contact[];

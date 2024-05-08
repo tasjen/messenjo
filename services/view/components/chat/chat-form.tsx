@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { useParams } from "next/navigation";
 import { sendMessage } from "@/lib/actions";
 import { useClientStore } from "@/lib/stores/client-store";
-import ChatFormSkeleton from "./skeletons/chat-form";
+import ChatFormSkeleton from "../skeletons/chat-form";
 
 type Props = {
   host: string;
@@ -15,6 +15,7 @@ export default function ChatForm({ host }: Props) {
   const [content, setContent] = useState("");
   const { groupId } = useParams<{ groupId: string }>();
   const store = useClientStore();
+  const chatRoom = store.chatRooms?.find((e) => e.groupId === groupId);
 
   if (!store.user || !store.contacts) {
     return <ChatFormSkeleton />;
@@ -26,12 +27,24 @@ export default function ChatForm({ host }: Props) {
         if (content === "") return;
         const sentAt = Date.now();
         const messageId = await sendMessage(groupId, content, sentAt);
-        store.addMessage(groupId, {
+        store.addMessages(groupId, {
           id: messageId,
           fromUsername: store.user?.username ?? "username is undefined",
           content,
           sentAt,
         });
+        store.setContacts(
+          store.contacts?.map((e) =>
+            e.groupId !== groupId
+              ? e
+              : {
+                  ...e,
+                  lastMessageId: messageId,
+                  lastContent: content,
+                  lastSentAt: sentAt,
+                }
+          )
+        );
         setContent("");
       }}
     >

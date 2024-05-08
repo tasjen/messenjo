@@ -6,49 +6,10 @@ import { newDeadline, uuidStringify, uuidParse } from "./utils";
 import { GetContactsRes } from "./chat_proto/GetContactsRes";
 import { GetMessagesRes } from "./chat_proto/GetMessagesRes";
 import { unstable_noStore as noStore } from "next/cache";
-import { z } from "zod";
 import { headers } from "next/headers";
 import { GetUserByIdRes } from "./chat_proto/GetUserByIdRes";
 import Long from "long";
-
-export const User = z.object({
-  id: z.string(),
-  username: z.string(),
-});
-export type User = z.infer<typeof User>;
-
-export const Message = z.object({
-  id: z.number(),
-  fromUsername: z.string(),
-  content: z.string(),
-  sentAt: z.number(),
-});
-export type Message = z.infer<typeof Message>;
-
-export const FriendContact = z.object({
-  type: z.literal("friend"),
-  userId: z.string(),
-  groupId: z.string(),
-  name: z.string(),
-  lastContent: z.string(),
-  lastSentAt: z.number(),
-});
-export type FriendContact = z.infer<typeof FriendContact>;
-
-export const GroupContact = z.object({
-  type: z.literal("group"),
-  groupId: z.string(),
-  name: z.string(),
-  lastContent: z.string(),
-  lastSentAt: z.number(),
-});
-export type GroupContact = z.infer<typeof GroupContact>;
-
-export const Contact = z.discriminatedUnion("type", [
-  FriendContact,
-  GroupContact,
-]);
-export type Contact = z.infer<typeof Contact>;
+import { Contact, Message, User } from "@/lib/schema";
 
 export function getUserId(): string {
   const userId = headers().get("userId");
@@ -136,22 +97,14 @@ export async function fetchContacts(): Promise<Contact[]> {
 
           resolve(
             res.contacts.map((e) =>
-              e.type === "friend"
-                ? FriendContact.parse({
-                    type: e.type,
-                    userId: uuidStringify(e.userId!),
-                    groupId: uuidStringify(e.groupId!),
-                    name: e.name,
-                    lastContent: e.lastContent ?? "",
-                    lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? 0,
-                  })
-                : GroupContact.parse({
-                    type: e.type,
-                    groupId: uuidStringify(e.groupId!),
-                    name: e.name,
-                    lastContent: e.lastContent ?? "",
-                    lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? 0,
-                  })
+              Contact.parse({
+                type: e.type,
+                groupId: uuidStringify(e.groupId!),
+                name: e.name,
+                lastMessageId: e.lastMessageId ?? -1,
+                lastContent: e.lastContent ?? "",
+                lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? -1,
+              })
             )
           );
         }

@@ -6,7 +6,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import NoSSR from "./no-ssr";
-import { Contact, User } from "@/lib/data";
+import { Contact, User } from "@/lib/schema";
 import { useEffect } from "react";
 import { useClientStore } from "@/lib/stores/client-store";
 
@@ -18,6 +18,7 @@ type Props = {
 export default function ContactListClient(props: Props) {
   const pathname = usePathname();
   const store = useClientStore();
+  console.log("loaded home layout");
 
   useEffect(() => {
     store.setUser(props.user);
@@ -25,7 +26,7 @@ export default function ContactListClient(props: Props) {
   }, []);
 
   return (
-    <ul className="flex flex-col gap-2 h-full overflow-auto">
+    <ul className="flex flex-col gap-2 h-full">
       {(store.contacts ?? props.contacts)
         ?.filter((e) => e.lastContent !== "")
         .sort((a, b) => b.lastSentAt - a.lastSentAt)
@@ -38,7 +39,7 @@ export default function ContactListClient(props: Props) {
           >
             <Link href={`/chat/${e.groupId}`}>
               <div className="flex">
-                <div className="font-bold text-ellipsis w-40 overflow-hidden">
+                <div className="font-bold text-ellipsis max-w-[60%] overflow-hidden">
                   {e.name}
                 </div>
                 <NoSSR>
@@ -51,7 +52,9 @@ export default function ContactListClient(props: Props) {
                   </div>
                 </NoSSR>
               </div>
-              <div className="text-sm">{e.lastContent}</div>
+              <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">
+                {e.lastContent}
+              </div>
             </Link>
           </li>
         ))}

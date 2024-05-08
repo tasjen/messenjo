@@ -14,12 +14,12 @@ fi
 
 case "$1" in
   --sv)
-    docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway;;
+    docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway streaming messagech;;
   --db)
     docker compose -f docker-compose.dev.yml up pgadmin chatdb -d;;
   --all)
     docker compose -f docker-compose.dev.yml up pgadmin chatdb -d
-    docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway;;
+    docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway streaming messagech;;
   *)
     echo "Error: Invalid option $1"
     usage;;
