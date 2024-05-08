@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsernameReq) (*pb.GetByUsernameRes, error) {
@@ -98,7 +100,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastSentAt sql.NullTime
 		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &lastMessageId, &lastContent, &lastSentAt)
 		c.LastMessageId = lastMessageId.Int32
-		c.LastSentAt = max(0, lastSentAt.Time.UnixMilli())
+		c.LastSentAt = timestamppb.New(lastSentAt.Time)
 		c.LastContent = lastContent.String
 		return &c, err
 	})
@@ -132,7 +134,7 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 			Id:           int32(e.Id),
 			FromUsername: e.FromUsername,
 			Content:      e.Content,
-			SentAt:       e.SentAt.UnixMilli(),
+			SentAt:       timestamppb.New(e.SentAt),
 		})
 	}
 	return &pb.GetMessagesRes{Messages: pbMessages}, nil
@@ -156,95 +158,95 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
-func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.Null, error) {
+func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*empty.Empty, error) {
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
-		return nil, errors.New("group name must be at least 1 and not exceed 16 characters")
+		return &empty.Empty{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, groupName)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = app.members.Add(ctx, tx, userId, groupId)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = tx.Commit(ctx)
-	return nil, err
+	return &empty.Empty{}, err
 }
 
-func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.Null, error) {
+func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*empty.Empty, error) {
 	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	toUserId, err := uuid.FromBytes(req.GetToUserId())
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 	if isFriend {
-		return nil, errors.New("already friends")
+		return &empty.Empty{}, errors.New("already friends")
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, "")
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = app.members.Add(ctx, tx, fromUserId, groupId)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = app.members.Add(ctx, tx, toUserId, groupId)
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = tx.Commit(ctx)
-	return nil, err
+	return &empty.Empty{}, err
 }
 
-func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*pb.Null, error) {
+func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.Empty, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return nil, err
+		return &empty.Empty{}, err
 	}
 
 	err = app.members.Add(ctx, nil, userId, groupId)
-	return nil, err
+	return &empty.Empty{}, err
 }
 
 func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.SendMessageRes, error) {
@@ -263,7 +265,7 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 		return nil, errors.New("message must be at least 1 character and not exceed 300 characters")
 	}
 
-	sentAt := req.GetSentAt()
+	sentAt := req.GetSentAt().AsTime()
 
 	id, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
 	if err != nil {

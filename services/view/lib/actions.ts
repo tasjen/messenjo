@@ -3,10 +3,12 @@
 import { ServiceError } from "@grpc/grpc-js";
 import { chatClient } from "./grpc-client";
 import { getUserId } from "./data";
-import { newDeadline, uuidParse } from "./utils";
+import { newDeadline, toDateMs, uuidParse } from "./utils";
 import { SendMessageRes } from "./chat_proto/SendMessageRes";
 import { z } from "zod";
 import { redirect } from "next/navigation";
+// import { Timestamp } from "@bufbuild/protobuf";
+import { Timestamp } from "./schema";
 
 export type State = {
   error?: string | null;
@@ -39,16 +41,20 @@ export async function addFriend(toUserId: string) {
 export async function sendMessage(
   toGroupId: string,
   content: string,
-  sentAt: number
+  sentAt: Date
 ): Promise<number> {
   try {
+    const sentAtTimestamp = Timestamp.parse({
+      seconds: Math.floor(sentAt.getTime() / 1000),
+      nanos: sentAt.getMilliseconds() * 1e6,
+    });
     return await new Promise<number>((resolve, reject) => {
       chatClient.SendMessage(
         {
           userId: uuidParse(getUserId()),
           groupId: uuidParse(toGroupId),
           content,
-          sentAt,
+          sentAt: sentAtTimestamp,
         },
         { deadline: newDeadline(5) },
         (err?: ServiceError | null, res?: SendMessageRes) => {

@@ -25,13 +25,13 @@ export default function ChatForm({ host }: Props) {
     <form
       action={async () => {
         if (content === "") return;
-        const sentAt = Date.now();
+        const sentAt = new Date();
         const messageId = await sendMessage(groupId, content, sentAt);
         store.addMessages(groupId, {
           id: messageId,
           fromUsername: store.user?.username ?? "username is undefined",
           content,
-          sentAt,
+          sentAt: sentAt.getTime(),
         });
         store.setContacts(
           store.contacts?.map((e) =>
@@ -41,7 +41,7 @@ export default function ChatForm({ host }: Props) {
                   ...e,
                   lastMessageId: messageId,
                   lastContent: content,
-                  lastSentAt: sentAt,
+                  lastSentAt: sentAt.getTime(),
                 }
           )
         );

@@ -2,14 +2,14 @@ import { ServiceError } from "@grpc/grpc-js";
 import { chatClient } from "./grpc-client";
 import { GetByUsernameRes } from "./chat_proto/GetByUsernameRes";
 import { redirect } from "next/navigation";
-import { newDeadline, uuidStringify, uuidParse } from "./utils";
+import { newDeadline, uuidStringify, uuidParse, toDateMs } from "./utils";
 import { GetContactsRes } from "./chat_proto/GetContactsRes";
 import { GetMessagesRes } from "./chat_proto/GetMessagesRes";
 import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { GetUserByIdRes } from "./chat_proto/GetUserByIdRes";
 import Long from "long";
-import { Contact, Message, User } from "@/lib/schema";
+import { Contact, Message, User, Timestamp } from "@/lib/schema";
 
 export function getUserId(): string {
   const userId = headers().get("userId");
@@ -34,7 +34,6 @@ export async function fetchUserInfo(): Promise<User> {
               new Error("no response from ChatService: `GetUserById`")
             );
           }
-          console.log("fetchUserInfo");
 
           resolve(User.parse({ id: userId, username: res.username }));
         }
@@ -93,7 +92,6 @@ export async function fetchContacts(): Promise<Contact[]> {
           } else if (!res.contacts) {
             return resolve([]);
           }
-          console.log("fetchContacts");
 
           resolve(
             res.contacts.map((e) =>
@@ -103,7 +101,12 @@ export async function fetchContacts(): Promise<Contact[]> {
                 name: e.name,
                 lastMessageId: e.lastMessageId ?? -1,
                 lastContent: e.lastContent ?? "",
-                lastSentAt: (e.lastSentAt as Long)?.toNumber() ?? -1,
+                lastSentAt: toDateMs(
+                  Timestamp.parse({
+                    seconds: (e.lastSentAt?.seconds as Long)?.toNumber() ?? 0,
+                    nanos: e.lastSentAt?.nanos ?? 0,
+                  })
+                ),
               })
             )
           );
@@ -135,12 +138,17 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
             return reject(new Error("no response from GetMessages"));
           }
           resolve(
-            res.messages.map((e) =>
-              Message.parse({
+            res.messages.map((e) => {
+              return Message.parse({
                 ...e,
-                sentAt: (e.sentAt as Long)?.toNumber(),
-              })
-            )
+                sentAt: toDateMs(
+                  Timestamp.parse({
+                    seconds: (e.sentAt?.seconds as Long)?.toNumber(),
+                    nanos: e.sentAt?.nanos ?? 0,
+                  })
+                ),
+              });
+            })
           );
         }
       );

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const Timestamp = z.object({
+  seconds: z.number(),
+  nanos: z.number(),
+});
+export type Timestamp = z.infer<typeof Timestamp>;
+
 export const User = z.object({
   id: z.string(),
   username: z.string(),

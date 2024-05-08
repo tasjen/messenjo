@@ -24,8 +24,13 @@ export interface ProtoGrpcType {
   GetUserByIdReq: MessageTypeDefinition
   GetUserByIdRes: MessageTypeDefinition
   Message: MessageTypeDefinition
-  Null: MessageTypeDefinition
   SendMessageReq: MessageTypeDefinition
   SendMessageRes: MessageTypeDefinition
+  google: {
+    protobuf: {
+      Empty: MessageTypeDefinition
+      Timestamp: MessageTypeDefinition
+    }
+  }
 }
 

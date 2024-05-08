@@ -20,7 +20,6 @@ export default function ChatBoard(props: Props) {
 
   useEffect(() => {
     store.addChatRooms({ groupId, messages: props.messages });
-    console.log("props.messages:", props.messages);
   }, []);
 
   if (!store.user || !contact) {
@@ -28,9 +27,6 @@ export default function ChatBoard(props: Props) {
   }
 
   const chatRoom = store.chatRooms?.find((e) => e.groupId === groupId);
-  console.log("user: ", store.user);
-  console.log("chatRoom: ", chatRoom);
-  console.log("chatRooms: ", store.chatRooms);
 
   return (
     <>

@@ -18,7 +18,6 @@ type Props = {
 export default function ContactListClient(props: Props) {
   const pathname = usePathname();
   const store = useClientStore();
-  console.log("loaded home layout");
 
   useEffect(() => {
     store.setUser(props.user);

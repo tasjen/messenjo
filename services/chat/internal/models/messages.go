@@ -10,7 +10,7 @@ import (
 
 type IMessageModel interface {
 	GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error)
-	Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt int64) (int32, error)
+	Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, error)
 }
 
 type MessageModel struct{}
@@ -62,12 +62,12 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 }
 
 // `sentAt` represents timestamp in milliseconds
-func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt int64) (int32, error) {
+func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, error) {
 	stmt := `
 		INSERT INTO messages (user_id, group_id, content, sent_at)
 		VALUES ($1, $2, $3, TO_TIMESTAMP($4))
 		RETURNING id;`
 	var id int32
-	err := DB.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt)/1000).Scan(&id)
+	err := DB.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt.UnixMilli())/1000).Scan(&id)
 	return id, err
 }

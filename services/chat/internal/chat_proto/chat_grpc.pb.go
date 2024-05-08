@@ -8,6 +8,7 @@ package chat_proto
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -27,9 +28,9 @@ type ChatClient interface {
 	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
-	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*Null, error)
-	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*Null, error)
-	AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*Null, error)
+	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error)
 }
 
@@ -86,8 +87,8 @@ func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...
 	return out, nil
 }
 
-func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
+func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/Chat/CreateGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -95,8 +96,8 @@ func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts .
 	return out, nil
 }
 
-func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
+func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/Chat/AddFriend", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -104,8 +105,8 @@ func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...gr
 	return out, nil
 }
 
-func (c *chatClient) AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*Null, error) {
-	out := new(Null)
+func (c *chatClient) AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/Chat/AddMember", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -131,9 +132,9 @@ type ChatServer interface {
 	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
-	CreateGroup(context.Context, *CreateGroupReq) (*Null, error)
-	AddFriend(context.Context, *AddFriendReq) (*Null, error)
-	AddMember(context.Context, *AddMemberReq) (*Null, error)
+	CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error)
+	AddFriend(context.Context, *AddFriendReq) (*empty.Empty, error)
+	AddMember(context.Context, *AddMemberReq) (*empty.Empty, error)
 	SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error)
 	mustEmbedUnimplementedChatServer()
 }
@@ -157,13 +158,13 @@ func (UnimplementedChatServer) GetMessages(context.Context, *GetMessagesReq) (*G
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*Null, error) {
+func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGroup not implemented")
 }
-func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*Null, error) {
+func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
 }
-func (UnimplementedChatServer) AddMember(context.Context, *AddMemberReq) (*Null, error) {
+func (UnimplementedChatServer) AddMember(context.Context, *AddMemberReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMember not implemented")
 }
 func (UnimplementedChatServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error) {

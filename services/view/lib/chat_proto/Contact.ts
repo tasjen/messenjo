@@ -1,6 +1,6 @@
 // Original file: chat.proto
 
-import type { Long } from '@grpc/proto-loader';
+import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _google_protobuf_Timestamp__Output } from './google/protobuf/Timestamp';
 
 export interface Contact {
   'type'?: (string);
@@ -8,7 +8,7 @@ export interface Contact {
   'name'?: (string);
   'lastMessageId'?: (number);
   'lastContent'?: (string);
-  'lastSentAt'?: (number | string | Long);
+  'lastSentAt'?: (_google_protobuf_Timestamp | null);
 }
 
 export interface Contact__Output {
@@ -17,5 +17,5 @@ export interface Contact__Output {
   'name'?: (string);
   'lastMessageId'?: (number);
   'lastContent'?: (string);
-  'lastSentAt'?: (number);
+  'lastSentAt'?: (_google_protobuf_Timestamp__Output);
 }
