@@ -7,8 +7,8 @@
 package chat_proto
 
 import (
-	empty "github.com/golang/protobuf/ptypes/empty"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	empty "google.golang.org/protobuf/types/known/emptypb"
+	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

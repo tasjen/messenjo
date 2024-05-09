@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	empty "google.golang.org/protobuf/types/known/emptypb"
+	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsernameReq) (*pb.GetByUsernameRes, error) {
@@ -100,7 +100,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastSentAt sql.NullTime
 		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &lastMessageId, &lastContent, &lastSentAt)
 		c.LastMessageId = lastMessageId.Int32
-		c.LastSentAt = timestamppb.New(lastSentAt.Time)
+		c.LastSentAt = timestamp.New(lastSentAt.Time)
 		c.LastContent = lastContent.String
 		return &c, err
 	})
@@ -134,7 +134,7 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 			Id:           int32(e.Id),
 			FromUsername: e.FromUsername,
 			Content:      e.Content,
-			SentAt:       timestamppb.New(e.SentAt),
+			SentAt:       timestamp.New(e.SentAt),
 		})
 	}
 	return &pb.GetMessagesRes{Messages: pbMessages}, nil
