@@ -1,5 +1,5 @@
 FROM golang:1.22-alpine
-ENV isProd false
+ENV IS_PROD false
 WORKDIR /app
 COPY . .
 

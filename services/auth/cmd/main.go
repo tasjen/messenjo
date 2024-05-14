@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	isProd     bool
+	IsProd     bool
 	JWT_SECRET string
 )
 
@@ -36,7 +36,7 @@ func main() {
 	JWT_SECRET = os.Getenv("JWT_SECRET")
 
 	var err error
-	if isProd, err = strconv.ParseBool(os.Getenv("isProd")); err != nil {
+	if IsProd, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
 		log.Fatal(err)
 	}
 

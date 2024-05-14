@@ -42,7 +42,7 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 		) AS messages
 		JOIN users
 		ON users.id = messages.user_id
-		ORDER BY "id";`
+		ORDER BY sent_at DESC;`
 
 	rows, err := DB.Query(ctx, stmt, userId, groupId)
 	if err != nil {

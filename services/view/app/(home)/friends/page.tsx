@@ -8,8 +8,11 @@ type Props = {
 export default async function FriendsPage({ searchParams }: Props) {
   return (
     <>
+      <div>Search for friends</div>
       <SearchForm />
-      <Result username={searchParams.q} />
+      <div className="flex flex-col items-center mt-4">
+        <Result username={searchParams.q} />
+      </div>
     </>
   );
 }

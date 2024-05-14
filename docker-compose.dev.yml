@@ -42,6 +42,7 @@ services:
   chat:
     image: message-app-chat-dev
     container_name: message-app-chat-dev
+    user: ${MY_UID}:${MY_GID} # to make the host be able to modify or delete files created in the container
     build:
       context: ./services/chat
       dockerfile: Dockerfile.dev

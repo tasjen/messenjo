@@ -1,0 +1,1 @@
+ALTER TABLE members ADD unread_count SMALLINT NOT NULL DEFAULT 0;

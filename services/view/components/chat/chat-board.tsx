@@ -2,12 +2,11 @@
 "use client";
 import { Message } from "@/lib/schema";
 import { toDateFormat } from "@/lib/utils";
-import { useEffect } from "react";
-import NoSSR from "../no-ssr";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { useParams } from "next/navigation";
-import { useClientStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "../skeletons/chat-board";
+import { useClientStore } from "@/lib/stores/client-store";
 
 type Props = {
   messages: Message[];
@@ -16,23 +15,30 @@ type Props = {
 export default function ChatBoard(props: Props) {
   const { groupId } = useParams<{ groupId: string }>();
   const store = useClientStore();
-  const contact = store.contacts?.find((e) => e.groupId === groupId);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    store.addChatRooms({ groupId, messages: props.messages });
+    store.loadMessages(groupId, props.messages);
   }, []);
 
-  if (!store.user || !contact) {
+  const contact = store.contacts?.find((e) => e.groupId === groupId);
+  const room = store.chatRooms?.find((e) => e.groupId === groupId);
+
+  console.log(room);
+  console.log(store.chatRooms);
+
+  if (!store.user || !contact || !room) {
     return <ChatBoardSkeleton />;
   }
-
-  const chatRoom = store.chatRooms?.find((e) => e.groupId === groupId);
 
   return (
     <>
       <div className="font-bold text-lg mb-4">{contact.name}</div>
-      <ul className="flex flex-col gap-2 overflow-auto h-full">
-        {(chatRoom?.messages ?? props.messages).map((e) => {
+      <ul
+        ref={listRef}
+        className="flex flex-col-reverse gap-2 overflow-auto h-full"
+      >
+        {room?.messages.map((e) => {
           const isFromMe = store.user?.username === e.fromUsername;
           return (
             <li key={e.id} className={clsx("flex flex-col")}>
@@ -40,7 +46,7 @@ export default function ChatBoard(props: Props) {
                 <div
                   className={clsx("text-xs font-medium", isFromMe && "ml-auto")}
                 >
-                  {e.fromUsername}
+                  {!isFromMe && e.fromUsername}
                 </div>
               )}
               <div
@@ -52,11 +58,9 @@ export default function ChatBoard(props: Props) {
                 <div className="flex-1 rounded-xl bg-gray-200 p-2 break-words max-w-[768px]">
                   {e.content}
                 </div>
-                <NoSSR>
-                  <div className="self-end text-xs">
-                    {toDateFormat(e.sentAt)[1]}
-                  </div>
-                </NoSSR>
+                <div className="self-end text-xs">
+                  {toDateFormat(e.sentAt)[1]}
+                </div>
               </div>
             </li>
           );

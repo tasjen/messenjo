@@ -40,9 +40,11 @@ export async function addFriend(toUserId: string) {
 
 export async function sendMessage(
   toGroupId: string,
-  content: string,
-  sentAt: Date
+  sentAt: Date,
+  formData: FormData
 ): Promise<number> {
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
+
   try {
     const sentAtTimestamp = Timestamp.parse({
       seconds: Math.floor(sentAt.getTime() / 1000),
@@ -53,7 +55,7 @@ export async function sendMessage(
         {
           userId: uuidParse(getUserId()),
           groupId: uuidParse(toGroupId),
-          content,
+          content: formData.get("content") as string,
           sentAt: sentAtTimestamp,
         },
         { deadline: newDeadline(5) },

@@ -20,43 +20,51 @@ export default function ContactListClient(props: Props) {
   const store = useClientStore();
 
   useEffect(() => {
-    store.setUser(props.user);
-    store.setContacts(props.contacts);
+    store.loadUser(props.user);
+    store.loadContacts(props.contacts);
   }, []);
 
+  const contacts =
+    store.contacts.length !== 0 ? store.contacts : props.contacts;
+
   return (
-    <ul className="flex flex-col gap-2 h-full">
-      {(store.contacts ?? props.contacts)
-        ?.filter((e) => e.lastContent !== "")
-        .sort((a, b) => b.lastSentAt - a.lastSentAt)
-        .map((e) => (
-          <li
-            key={e.groupId}
-            className={clsx("bg-gray-200 rounded-md p-2", {
-              "bg-sky-100": pathname === `/chat/${e.groupId}`,
-            })}
-          >
-            <Link href={`/chat/${e.groupId}`}>
-              <div className="flex">
-                <div className="font-bold text-ellipsis max-w-[60%] overflow-hidden">
-                  {e.name}
-                </div>
-                <NoSSR>
-                  <div className="ml-auto text-xs self-center">
-                    {
-                      toDateFormat(e.lastSentAt)[
-                        e.lastSentAt < Date.now() - 24 * 60 * 60 * 1000 ? 0 : 1
-                      ]
-                    }
+    <>
+      <ul className="flex flex-col overflow-auto gap-2 h-full">
+        {contacts
+          .filter((e) => e.lastMessage !== undefined)
+          .sort((a, b) => b.lastMessage!.sentAt - a.lastMessage!.sentAt)
+          .map((e) => {
+            const { content, sentAt } = e.lastMessage!;
+            return (
+              <li
+                key={e.groupId}
+                className={clsx("bg-gray-200 rounded-md p-2", {
+                  "bg-sky-100": pathname === `/chat/${e.groupId}`,
+                })}
+              >
+                <Link href={`/chat/${e.groupId}`}>
+                  <div className="flex">
+                    <div className="font-bold text-ellipsis max-w-[60%] overflow-hidden">
+                      {e.name}
+                    </div>
+                    <NoSSR>
+                      <div className="ml-auto text-xs self-center">
+                        {
+                          toDateFormat(sentAt)[
+                            sentAt < Date.now() - 24 * 60 * 60 * 1000 ? 0 : 1
+                          ]
+                        }
+                      </div>
+                    </NoSSR>
                   </div>
-                </NoSSR>
-              </div>
-              <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">
-                {e.lastContent}
-              </div>
-            </Link>
-          </li>
-        ))}
-    </ul>
+                  <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">
+                    {content}
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+      </ul>
+    </>
   );
 }

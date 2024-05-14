@@ -21,7 +21,11 @@ func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsername
 	}
 
 	userId, err := app.users.GetByUsername(ctx, username)
-	if err != nil {
+	switch {
+	case err == pgx.ErrNoRows:
+		return &pb.GetByUsernameRes{}, nil
+	case err != nil:
+		app.errorLog.Println(err.Error())
 		return &pb.GetByUsernameRes{}, err
 	}
 
@@ -83,16 +87,16 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 					)
 				)
 				OR messages.id IS NULL
-			)
-		ORDER BY 
-			last_sent_at DESC;`
+			);`
 	rows, err := models.DB.Query(ctx, stmt, userId)
-	if err == pgx.ErrNoRows {
+	switch {
+	case err == pgx.ErrNoRows:
 		return &pb.GetContactsRes{}, nil
+	case err != nil:
+		app.errorLog.Println(err.Error())
+		return &pb.GetContactsRes{}, err
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
 		var c pb.Contact
 		var lastMessageId sql.NullInt32
@@ -138,6 +142,41 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 		})
 	}
 	return &pb.GetMessagesRes{Messages: pbMessages}, nil
+}
+
+// this method is only for Streaming service when users connect to WebSocket
+func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq) (*pb.GetGroupIdsRes, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		app.errorLog.Println(err.Error())
+		return &pb.GetGroupIdsRes{}, err
+	}
+
+	stmt := `
+ 		SELECT group_id
+		FROM members
+		WHERE user_id = $1;`
+
+	rows, err := models.DB.Query(ctx, stmt, userId)
+	switch {
+	case err == pgx.ErrNoRows:
+		return &pb.GetGroupIdsRes{}, nil
+	case err != nil:
+		app.errorLog.Println(err.Error())
+		return &pb.GetGroupIdsRes{}, err
+	}
+
+	groupIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) ([]byte, error) {
+		var groupId []byte
+		err := row.Scan(&groupId)
+		return groupId, err
+	})
+	if err != nil {
+		app.errorLog.Println(err.Error())
+		return &pb.GetGroupIdsRes{}, err
+	}
+
+	return &pb.GetGroupIdsRes{GroupIds: groupIds}, nil
 }
 
 // this method is only for Auth service when creating new users

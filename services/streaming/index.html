@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script type="text/javascript" defer>
+        let conn;
+        window.onload = function () {
+        const connect = document.querySelector("#connect")
+        connect.addEventListener("submit", (event) => {
+          event.preventDefault()
+          const username = document.querySelector('#username').value
+          conn = new WebSocket(`ws://localhost:3000`);
+
+          conn.addEventListener("open", (ev) => {
+            console.info("websocket connected");
+          });
+          conn.addEventListener("message", (ev) => {
+            const body = document.querySelector("body");
+            const message = document.createElement("div");
+            message.textContent = ev.data;
+            body.appendChild(message);
+          });
+          document.querySelector('#username').disabled = true;
+          document.querySelector('#connect-button').disabled = true;
+          document.querySelector('#to_username').disabled = false;
+          document.querySelector('#message').disabled = false;
+          document.querySelector('#send-button').disabled = false;
+        });
+
+        const send = document.querySelector('#send')
+        send.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const toUsername = document.querySelector('#to_username').value
+          const message = document.querySelector('#message').value
+          await conn.send(`${toUsername}#${message}`)
+          document.querySelector('#message').value = ''
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <div>register</div>
+    <form id="connect">
+      <input
+        type="text"
+        id="username"
+        placeholder="username"
+        autocomplete="false"
+      />
+      <button id="connect-button">ok</button>
+    </form>
+    <div>send</div>
+    <form id="send">
+      <input
+        type="text"
+        id="to_username"
+        placeholder="to username"
+        disabled
+        autocomplete="false"
+      />
+      <input
+        type="text"
+        id="message"
+        placeholder="message"
+        disabled
+        autocomplete="false"
+      />
+      <button type="text" id="send-button" disabled>send</button>
+    </form>
+  </body>
+</html>

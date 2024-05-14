@@ -24,6 +24,7 @@ const (
 	Chat_GetUserById_FullMethodName   = "/Chat/GetUserById"
 	Chat_GetContacts_FullMethodName   = "/Chat/GetContacts"
 	Chat_GetMessages_FullMethodName   = "/Chat/GetMessages"
+	Chat_GetGroupIds_FullMethodName   = "/Chat/GetGroupIds"
 	Chat_CreateUser_FullMethodName    = "/Chat/CreateUser"
 	Chat_CreateGroup_FullMethodName   = "/Chat/CreateGroup"
 	Chat_AddFriend_FullMethodName     = "/Chat/AddFriend"
@@ -39,6 +40,7 @@ type ChatClient interface {
 	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*GetUserByIdRes, error)
 	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
+	GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts ...grpc.CallOption) (*GetGroupIdsRes, error)
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
 	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -84,6 +86,15 @@ func (c *chatClient) GetContacts(ctx context.Context, in *GetContactsReq, opts .
 func (c *chatClient) GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error) {
 	out := new(GetMessagesRes)
 	err := c.cc.Invoke(ctx, Chat_GetMessages_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts ...grpc.CallOption) (*GetGroupIdsRes, error) {
+	out := new(GetGroupIdsRes)
+	err := c.cc.Invoke(ctx, Chat_GetGroupIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +154,7 @@ type ChatServer interface {
 	GetUserById(context.Context, *GetUserByIdReq) (*GetUserByIdRes, error)
 	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
+	GetGroupIds(context.Context, *GetGroupIdsReq) (*GetGroupIdsRes, error)
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
 	CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error)
 	AddFriend(context.Context, *AddFriendReq) (*empty.Empty, error)
@@ -166,6 +178,9 @@ func (UnimplementedChatServer) GetContacts(context.Context, *GetContactsReq) (*G
 }
 func (UnimplementedChatServer) GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedChatServer) GetGroupIds(context.Context, *GetGroupIdsReq) (*GetGroupIdsRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGroupIds not implemented")
 }
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
@@ -263,6 +278,24 @@ func _Chat_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ChatServer).GetMessages(ctx, req.(*GetMessagesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_GetGroupIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGroupIdsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).GetGroupIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_GetGroupIds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).GetGroupIds(ctx, req.(*GetGroupIdsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -379,6 +412,10 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMessages",
 			Handler:    _Chat_GetMessages_Handler,
+		},
+		{
+			MethodName: "GetGroupIds",
+			Handler:    _Chat_GetGroupIds_Handler,
 		},
 		{
 			MethodName: "CreateUser",

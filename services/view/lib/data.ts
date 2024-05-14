@@ -60,9 +60,7 @@ export async function fetchUserByUsername(username: string): Promise<User> {
           if (err) {
             return reject(err);
           } else if (!res?.userId) {
-            return reject(
-              new Error("no response from ChatService: `GetByUsername`")
-            );
+            return resolve({} as User);
           }
           resolve(User.parse({ id: uuidStringify(res.userId), username }));
         }
@@ -99,14 +97,22 @@ export async function fetchContacts(): Promise<Contact[]> {
                 type: e.type,
                 groupId: uuidStringify(e.groupId!),
                 name: e.name,
-                lastMessageId: e.lastMessageId ?? -1,
-                lastContent: e.lastContent ?? "",
-                lastSentAt: toDateMs(
-                  Timestamp.parse({
-                    seconds: (e.lastSentAt?.seconds as Long)?.toNumber() ?? 0,
-                    nanos: e.lastSentAt?.nanos ?? 0,
-                  })
-                ),
+                lastMessage:
+                  e.lastMessageId && e.lastContent && e.lastSentAt
+                    ? {
+                        id: e.lastMessageId,
+                        fromUsername: "",
+                        content: e.lastContent,
+                        sentAt: toDateMs(
+                          Timestamp.parse({
+                            seconds: !e.lastSentAt.seconds
+                              ? 0
+                              : (e.lastSentAt.seconds as Long).toNumber(),
+                            nanos: e.lastSentAt.nanos ?? 0,
+                          })
+                        ),
+                      }
+                    : undefined,
               })
             )
           );
@@ -125,8 +131,9 @@ export async function fetchContacts(): Promise<Contact[]> {
 
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 500));
   try {
+    console.log("fetchMessages");
     return await new Promise((resolve, reject) => {
       chatClient.GetMessages(
         { userId: uuidParse(getUserId()), groupId: uuidParse(groupId) },
@@ -135,7 +142,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
           if (err) {
             return reject(err);
           } else if (!res?.messages) {
-            return reject(new Error("no response from GetMessages"));
+            return resolve([]);
           }
           resolve(
             res.messages.map((e) => {

@@ -24,7 +24,7 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 		Value:    oauthState,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   isProd,
+		Secure:   IsProd,
 		SameSite: http.SameSiteDefaultMode,
 		MaxAge:   int((time.Minute * 2).Seconds()),
 	})
@@ -53,7 +53,7 @@ func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 		Value:    jwtString,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   isProd,
+		Secure:   IsProd,
 		SameSite: http.SameSiteDefaultMode,
 		MaxAge:   int(claims.Exp - time.Now().Unix()),
 	})
