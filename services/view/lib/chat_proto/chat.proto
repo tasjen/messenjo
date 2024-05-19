@@ -9,8 +9,6 @@ service Chat {
   rpc GetUserById (GetUserByIdReq) returns (GetUserByIdRes) {}
   rpc GetContacts (GetContactsReq) returns (GetContactsRes) {}
   rpc GetMessages (GetMessagesReq) returns (GetMessagesRes) {}
-  rpc GetGroupIds (GetGroupIdsReq) returns (GetGroupIdsRes) {}
-  rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
   rpc CreateGroup (CreateGroupReq) returns (google.protobuf.Empty) {}
   rpc ChangeUsername (ChangeUsernameReq) returns (google.protobuf.Empty) {}
   rpc AddFriend (AddFriendReq) returns (google.protobuf.Empty) {}
@@ -61,21 +59,6 @@ message Message {
   string from_username = 2;
   string content = 3;
   google.protobuf.Timestamp sent_at = 4;
-}
-
-message GetGroupIdsReq {
-  bytes user_id = 1;
-}
-
-message GetGroupIdsRes {
-  repeated bytes group_ids = 1;
-}
-
-message CreateUserReq {
-  string username = 1;
-}
-message CreateUserRes {
-  bytes user_id = 1;
 }
 
 message CreateGroupReq {

@@ -4,4 +4,4 @@
 --bytes=Array \
 --grpcLib=@grpc/grpc-js \
 --outDir=lib/chat_proto/ \
-chat.proto
+lib/chat_proto/chat.proto

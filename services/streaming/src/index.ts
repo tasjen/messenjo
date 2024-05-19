@@ -109,13 +109,16 @@ app.listen(Number(PORT), async (listenSocket) => {
 
   await subClient.subscribe("main", (actionString) => {
     const actionJson = JSON.parse(actionString);
-    const { type, payload } = Action.parse(actionJson);
+    const { success, data } = Action.safeParse(actionJson);
+    if (!success) return;
+    const { type, payload } = data;
     switch (type) {
       case "SEND_MESSAGE":
+        console.log(payload);
         app.publish(payload.groupId, actionString);
         break;
-      case "ADD_ROOM":
-        userManager.addRoom(payload.groupId, payload.userId);
+      case "ADD_CONTACT":
+        userManager.addContact(payload.groupId, payload.userId);
         break;
     }
   });
@@ -136,7 +139,7 @@ const SendMessageAction = z.object({
 });
 
 const AddRoomAction = z.object({
-  type: z.literal("ADD_ROOM"),
+  type: z.literal("ADD_CONTACT"),
   payload: z.object({
     type: z.union([z.literal("friend"), z.literal("group")]),
     groupId: z.string(),

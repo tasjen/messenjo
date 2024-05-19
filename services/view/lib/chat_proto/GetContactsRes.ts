@@ -1,4 +1,4 @@
-// Original file: chat.proto
+// Original file: lib/chat_proto/chat.proto
 
 import type { Contact as _Contact, Contact__Output as _Contact__Output } from './Contact';
 

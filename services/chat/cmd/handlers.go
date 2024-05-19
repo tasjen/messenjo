@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -47,47 +49,53 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		return &pb.GetContactsRes{Contacts: []*pb.Contact{}}, err
 	}
 	stmt := `
-		SELECT
-			DISTINCT
-			CASE
-				WHEN groups.name = '' THEN  'friend'
-				ELSE 'group'
-			END AS contact_type,
-			groups.id AS group_id,
-			COALESCE(
-				NULLIF(groups.name, ''),
-				users.username
-			) AS contact_name,
-			messages.id AS last_message_id,
-			messages.content AS last_content,
-			messages.sent_at AS last_sent_at
-		FROM 
-			"groups"
-			JOIN members
-			ON groups.id = members.group_id
-			JOIN users
-			ON members.user_id = users.id
-			LEFT JOIN messages
-			ON groups.id = messages.group_id
-		WHERE
-			groups.id IN (
-				SELECT DISTINCT group_id
-				FROM members
-				WHERE user_id = $1
-			)
-			AND users.id != $1
-			AND (
-				messages.id IN (
-					SELECT "id"
+	SELECT
+		DISTINCT
+		CASE
+			WHEN groups.name = '' THEN  'friend'
+			ELSE 'group'
+		END AS contact_type,
+		groups.id AS group_id,
+		COALESCE(
+			NULLIF(groups.name, ''),
+			users.username
+		) AS contact_name,
+		CASE
+			WHEN groups.name = '' THEN NULL
+			ELSE m2.count
+		END AS member_count,
+		messages.id AS last_message_id,
+		messages.content AS last_content,
+		messages.sent_at AS last_sent_at
+	FROM 
+		"groups"
+		JOIN members AS m1
+		ON groups.id = m1.group_id
+		JOIN (
+			SELECT COUNT(user_id), group_id
+			FROM members
+			GROUP BY group_id
+		) AS m2
+		ON m1.group_id = m2.group_id
+		JOIN users
+		ON m1.user_id = users.id
+		LEFT JOIN messages
+		ON groups.id = messages.group_id
+	WHERE
+		groups.id IN (
+			SELECT group_id
+			FROM members
+			WHERE user_id = $1
+		)
+		AND users.id != $1
+		AND (
+			messages.id IN (
+					SELECT MAX("id")
 					FROM messages
-					WHERE "id" IN (
-						SELECT MAX("id")
-						FROM messages
-						GROUP BY group_id
-					)
-				)
-				OR messages.id IS NULL
-			);`
+					GROUP BY group_id
+			)
+			OR messages.id IS NULL
+		);`
 	rows, err := models.DB.Query(ctx, stmt, userId)
 	switch {
 	case err == pgx.ErrNoRows:
@@ -102,7 +110,9 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastMessageId sql.NullInt32
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
-		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &lastMessageId, &lastContent, &lastSentAt)
+		var memberCount sql.NullInt32
+		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
+		c.MemberCount = memberCount.Int32
 		c.LastMessageId = lastMessageId.Int32
 		c.LastSentAt = timestamp.New(lastSentAt.Time)
 		c.LastContent = lastContent.String
@@ -228,6 +238,25 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	return &empty.Empty{}, err
 }
 
+func (app *application) ChangeUsername(ctx context.Context, req *pb.ChangeUsernameReq) (*empty.Empty, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+	username := req.GetUsername()
+	if l := len(username); l < 1 || l > 32 {
+		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 32 characters")
+	}
+
+	err = app.users.ChangeUsername(ctx, userId, username)
+	var dupUsernameError *models.DupUsernameError
+	if err != nil && !errors.As(err, &dupUsernameError) {
+		return &empty.Empty{}, errors.New("internal server error")
+	}
+
+	return &empty.Empty{}, err
+}
+
 func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*empty.Empty, error) {
 	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
 	if err != nil {
@@ -306,13 +335,16 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 
 	sentAt := req.GetSentAt().AsTime()
 
-	id, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
+	id, username, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
 	if err != nil {
 		return nil, err
 	}
 
-	// app.pubClient.Publish(ctx, "message", map[string]any{
-
-	// })
+	sendMessageAction := NewSendMessageAction(groupId.String(), id, username, content, sentAt.UnixMilli())
+	sendMessageActionJson, err := json.Marshal(sendMessageAction)
+	if err != nil {
+		fmt.Println(err)
+	}
+	app.pubClient.Publish(ctx, "main", sendMessageActionJson)
 	return &pb.SendMessageRes{MessageId: id}, err
 }

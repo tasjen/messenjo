@@ -97,6 +97,7 @@ export async function fetchContacts(): Promise<Contact[]> {
                 type: e.type,
                 groupId: uuidStringify(e.groupId!),
                 name: e.name,
+                memberCount: e.memberCount,
                 lastMessage:
                   e.lastMessageId && e.lastContent && e.lastSentAt
                     ? {

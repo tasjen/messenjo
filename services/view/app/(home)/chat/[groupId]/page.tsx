@@ -2,7 +2,6 @@
 import ChatBoard from "@/components/chat/chat-board";
 import ChatForm from "@/components/chat/chat-form";
 import { fetchMessages } from "@/lib/data";
-import env from "@/lib/env";
 
 type Props = {
   params: { groupId: string };

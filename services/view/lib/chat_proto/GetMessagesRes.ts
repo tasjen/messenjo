@@ -1,4 +1,4 @@
-// Original file: chat.proto
+// Original file: lib/chat_proto/chat.proto
 
 import type { Message as _Message, Message__Output as _Message__Output } from './Message';
 

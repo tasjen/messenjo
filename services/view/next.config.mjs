@@ -5,6 +5,9 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: [process.env.HOST],
     },
+    staleTimes: {
+      dynamic: 1800, // 30 min
+    },
   },
 };
 

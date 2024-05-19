@@ -21,11 +21,8 @@ export const Contact = z.object({
   type: z.union([z.literal("friend"), z.literal("group")]),
   groupId: z.string(),
   name: z.string(),
-  // messages: z.array(Message),
+  memberCount: z.number().optional(),
   lastMessage: Message.optional(),
-  // lastMessageId: z.number(),
-  // lastContent: z.string(),
-  // lastSentAt: z.number(),
 });
 
 export const ChatRoom = z.object({
@@ -38,16 +35,11 @@ export const Action = z.discriminatedUnion("type", [
     type: z.literal("SEND_MESSAGE"),
     payload: z.object({
       groupId: z.string(),
-      message: z.object({
-        id: z.number(),
-        fromUsername: z.string(),
-        content: z.string(),
-        sentAt: z.number(),
-      }),
+      message: Message,
     }),
   }),
   z.object({
-    type: z.literal("ADD_ROOM"),
+    type: z.literal("ADD_CONTACT"),
     payload: z.object({
       type: z.union([z.literal("friend"), z.literal("group")]),
       groupId: z.string(),

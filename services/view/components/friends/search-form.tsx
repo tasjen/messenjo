@@ -2,13 +2,14 @@
 
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Input } from "../ui/input";
-import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { useClientStore } from "@/lib/stores/client-store";
+import { Button } from "../ui/button";
+import { Search } from "lucide-react";
 
 export default function SearchForm() {
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
   const store = useClientStore();
@@ -20,11 +21,11 @@ export default function SearchForm() {
     else params.delete("q");
 
     const contact = store.contacts?.find((e) => e.name === term);
-    if (!contact) {
-      replace(`${pathname}?${params.toString()}`);
+    if (!contact || contact.type === "group") {
+      router.replace(`${pathname}?${params.toString()}`);
       return;
     }
-    replace(`/chat/${contact.groupId}`);
+    router.replace(`/chat/${contact.groupId}`);
   }
 
   return (
@@ -35,9 +36,9 @@ export default function SearchForm() {
         value={term}
         placeholder="username"
       />
-      <button className="p-4">
-        <Image src="/search.svg" alt="search icon" width={20} height={20} />
-      </button>
+      <Button className="ml-2">
+        <Search className="h-4 w-4" />
+      </Button>
     </form>
   );
 }

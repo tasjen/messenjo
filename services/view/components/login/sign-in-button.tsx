@@ -10,17 +10,17 @@ type Props = {
 
 export default function LoginButton({ provider }: Props) {
   return (
-    <a href={`/api/auth/login/${provider}`}>
+    <a href={`/api/auth/login/${provider.toLowerCase()}`}>
       <Button>
         <Image
           priority
           width={20}
           height={20}
           className="pr-2"
-          src={`/${provider}.svg`}
+          src={`/${provider.toLowerCase()}.svg`}
           alt="google logo"
         />
-        Sign in with {provider[0].toUpperCase() + provider.slice(1)}
+        Sign in with {provider}
       </Button>
     </a>
   );

@@ -1,18 +1,41 @@
 "use server";
 
-import { ServiceError } from "@grpc/grpc-js";
 import { chatClient } from "./grpc-client";
 import { getUserId } from "./data";
-import { newDeadline, toDateMs, uuidParse } from "./utils";
-import { SendMessageRes } from "./chat_proto/SendMessageRes";
+import { newDeadline, uuidParse } from "./utils";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-// import { Timestamp } from "@bufbuild/protobuf";
 import { Timestamp } from "./schema";
 
-export type State = {
-  error?: string | null;
+type FormState = {
+  error?: string;
 };
+
+export async function changeUsername(formData: FormData): Promise<FormState> {
+  const username = formData.get("username") as string;
+
+  if (!username || username.length < 1) {
+    return { error: "too short" };
+  }
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      chatClient.changeUsername(
+        { userId: uuidParse(getUserId()), username },
+        { deadline: newDeadline(5) },
+        (err) => (err ? reject(err.details) : resolve())
+      );
+    });
+    return {};
+  } catch (err) {
+    if (typeof err === "string") {
+      return { error: err };
+    } else if (err instanceof Error) {
+      return { error: err.message };
+    }
+  }
+  return { error: "unknown error" };
+}
 
 export async function addFriend(toUserId: string) {
   try {
@@ -23,7 +46,7 @@ export async function addFriend(toUserId: string) {
           toUserId: uuidParse(toUserId),
         },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null) => {
+        (err) => {
           if (err) {
             return reject(err);
           }
@@ -59,7 +82,7 @@ export async function sendMessage(
           sentAt: sentAtTimestamp,
         },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null, res?: SendMessageRes) => {
+        (err, res) => {
           if (err) {
             return reject(err);
           } else if (!res?.messageId) {

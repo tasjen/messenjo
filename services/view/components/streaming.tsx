@@ -10,30 +10,32 @@ import { useClientStore } from "@/lib/stores/client-store";
 export default function Streaming() {
   const store = useClientStore();
   const { lastMessage } = useWebSocket(
-    `ws://${typeof window !== "undefined" ? window.location.host : ""}/api/streaming/`,
+    typeof window !== "undefined"
+      ? `${window.location.protocol.replace("http", "ws")}//${window.location.host}/api/streaming/`
+      : "",
     {
-      shouldReconnect: () => true,
-      reconnectAttempts: 5,
-      reconnectInterval: 5,
       heartbeat: false,
       share: true,
+      onOpen: () => store.connectWs(),
+      onClose: () => store.disConnectWs(),
+      onError: () => store.disConnectWs(),
     }
   );
 
   useEffect(() => {
-    if (!lastMessage?.data) {
+    const actionString = z.string().safeParse(lastMessage?.data);
+    if (!actionString.success) {
       return;
     }
-    try {
-      const messageString = z.string().parse(lastMessage.data);
-      const messageJson = JSON.parse(messageString);
-      const { type, payload } = Action.parse(messageJson);
-
-      if (type === "SEND_MESSAGE") {
-        store.addMessage(payload.groupId, payload.message);
-      }
-    } catch (err) {
-      console.error(err);
+    const actionJson = JSON.parse(actionString.data);
+    const action = Action.safeParse(actionJson);
+    if (!action.success) {
+      console.error(action.error);
+      return;
+    }
+    const { type, payload } = action.data;
+    if (type === "SEND_MESSAGE") {
+      store.addMessage(payload.groupId, payload.message);
     }
   }, [lastMessage]);
 

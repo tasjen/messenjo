@@ -1,12 +1,11 @@
-// Original file: chat.proto
+// Original file: lib/chat_proto/chat.proto
 
 import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'
 import type { AddFriendReq as _AddFriendReq, AddFriendReq__Output as _AddFriendReq__Output } from './AddFriendReq';
 import type { AddMemberReq as _AddMemberReq, AddMemberReq__Output as _AddMemberReq__Output } from './AddMemberReq';
+import type { ChangeUsernameReq as _ChangeUsernameReq, ChangeUsernameReq__Output as _ChangeUsernameReq__Output } from './ChangeUsernameReq';
 import type { CreateGroupReq as _CreateGroupReq, CreateGroupReq__Output as _CreateGroupReq__Output } from './CreateGroupReq';
-import type { CreateUserReq as _CreateUserReq, CreateUserReq__Output as _CreateUserReq__Output } from './CreateUserReq';
-import type { CreateUserRes as _CreateUserRes, CreateUserRes__Output as _CreateUserRes__Output } from './CreateUserRes';
 import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from './google/protobuf/Empty';
 import type { GetByUsernameReq as _GetByUsernameReq, GetByUsernameReq__Output as _GetByUsernameReq__Output } from './GetByUsernameReq';
 import type { GetByUsernameRes as _GetByUsernameRes, GetByUsernameRes__Output as _GetByUsernameRes__Output } from './GetByUsernameRes';
@@ -38,6 +37,15 @@ export interface ChatClient extends grpc.Client {
   addMember(argument: _AddMemberReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   addMember(argument: _AddMemberReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
+  ChangeUsername(argument: _ChangeUsernameReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ChangeUsername(argument: _ChangeUsernameReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ChangeUsername(argument: _ChangeUsernameReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  ChangeUsername(argument: _ChangeUsernameReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  changeUsername(argument: _ChangeUsernameReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  changeUsername(argument: _ChangeUsernameReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  changeUsername(argument: _ChangeUsernameReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  changeUsername(argument: _ChangeUsernameReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  
   CreateGroup(argument: _CreateGroupReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   CreateGroup(argument: _CreateGroupReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   CreateGroup(argument: _CreateGroupReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
@@ -46,15 +54,6 @@ export interface ChatClient extends grpc.Client {
   createGroup(argument: _CreateGroupReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   createGroup(argument: _CreateGroupReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   createGroup(argument: _CreateGroupReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  
-  CreateUser(argument: _CreateUserReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  CreateUser(argument: _CreateUserReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  CreateUser(argument: _CreateUserReq, options: grpc.CallOptions, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  CreateUser(argument: _CreateUserReq, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  createUser(argument: _CreateUserReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  createUser(argument: _CreateUserReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  createUser(argument: _CreateUserReq, options: grpc.CallOptions, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
-  createUser(argument: _CreateUserReq, callback: grpc.requestCallback<_CreateUserRes__Output>): grpc.ClientUnaryCall;
   
   GetByUsername(argument: _GetByUsernameReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_GetByUsernameRes__Output>): grpc.ClientUnaryCall;
   GetByUsername(argument: _GetByUsernameReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_GetByUsernameRes__Output>): grpc.ClientUnaryCall;
@@ -108,9 +107,9 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
   
   AddMember: grpc.handleUnaryCall<_AddMemberReq__Output, _google_protobuf_Empty>;
   
-  CreateGroup: grpc.handleUnaryCall<_CreateGroupReq__Output, _google_protobuf_Empty>;
+  ChangeUsername: grpc.handleUnaryCall<_ChangeUsernameReq__Output, _google_protobuf_Empty>;
   
-  CreateUser: grpc.handleUnaryCall<_CreateUserReq__Output, _CreateUserRes>;
+  CreateGroup: grpc.handleUnaryCall<_CreateGroupReq__Output, _google_protobuf_Empty>;
   
   GetByUsername: grpc.handleUnaryCall<_GetByUsernameReq__Output, _GetByUsernameRes>;
   
@@ -127,8 +126,8 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
 export interface ChatDefinition extends grpc.ServiceDefinition {
   AddFriend: MethodDefinition<_AddFriendReq, _google_protobuf_Empty, _AddFriendReq__Output, _google_protobuf_Empty__Output>
   AddMember: MethodDefinition<_AddMemberReq, _google_protobuf_Empty, _AddMemberReq__Output, _google_protobuf_Empty__Output>
+  ChangeUsername: MethodDefinition<_ChangeUsernameReq, _google_protobuf_Empty, _ChangeUsernameReq__Output, _google_protobuf_Empty__Output>
   CreateGroup: MethodDefinition<_CreateGroupReq, _google_protobuf_Empty, _CreateGroupReq__Output, _google_protobuf_Empty__Output>
-  CreateUser: MethodDefinition<_CreateUserReq, _CreateUserRes, _CreateUserReq__Output, _CreateUserRes__Output>
   GetByUsername: MethodDefinition<_GetByUsernameReq, _GetByUsernameRes, _GetByUsernameReq__Output, _GetByUsernameRes__Output>
   GetContacts: MethodDefinition<_GetContactsReq, _GetContactsRes, _GetContactsReq__Output, _GetContactsRes__Output>
   GetMessages: MethodDefinition<_GetMessagesReq, _GetMessagesRes, _GetMessagesReq__Output, _GetMessagesRes__Output>

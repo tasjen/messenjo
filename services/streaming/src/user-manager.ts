@@ -32,7 +32,7 @@ export class UserManager {
     }
   }
 
-  addRoom(groupId: string, userId: string) {
+  addContact(groupId: string, userId: string) {
     const conns = this.users.get(userId);
     if (!conns) {
       return;

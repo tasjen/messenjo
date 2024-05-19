@@ -60,7 +60,10 @@ export function newDeadline(durationInSec: number) {
   return deadline.setSeconds(deadline.getSeconds() + durationInSec);
 }
 
-export function toDateFormat(unixMilli: number): [string, string] {
+export function toDateFormat(unixMilli: number): {
+  date: string;
+  time: string;
+} {
   const date = new Date(unixMilli);
 
   const day = date.getDate().toString().padStart(2, "0");
@@ -68,5 +71,5 @@ export function toDateFormat(unixMilli: number): [string, string] {
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  return [`${day}/${month}`, `${hours}:${minutes}`];
+  return { date: `${day}/${month}`, time: `${hours}:${minutes}` };
 }

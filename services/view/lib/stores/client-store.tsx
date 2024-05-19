@@ -7,19 +7,20 @@ type ClientState = {
   user: User;
   contacts: Contact[];
   chatRooms: ChatRoom[];
+  isWsDisconnected: boolean;
 };
 
 type ClientAction =
   | {
-      type: "LOAD_USER";
+      type: "SET_USER";
       payload: User;
     }
   | {
-      type: "LOAD_CONTACTS";
+      type: "SET_CONTACTS";
       payload: Contact[];
     }
   | {
-      type: "LOAD_MESSAGES";
+      type: "SET_MESSAGES";
       payload: {
         groupId: string;
         messages: Message[];
@@ -31,12 +32,21 @@ type ClientAction =
         groupId: string;
         message: Message;
       };
+    }
+  | {
+      type: "CONNECT_WS";
+      payload: null;
+    }
+  | {
+      type: "DISCONNECT_WS";
+      payload: null;
     };
 
 const initClientState: ClientState = {
   user: {} as User,
   contacts: [],
   chatRooms: [],
+  isWsDisconnected: false,
 };
 
 function clientStoreReducer(
@@ -45,11 +55,11 @@ function clientStoreReducer(
 ): ClientState {
   const { type, payload } = action;
   switch (type) {
-    case "LOAD_USER":
+    case "SET_USER":
       return { ...state, user: payload };
-    case "LOAD_CONTACTS":
+    case "SET_CONTACTS":
       return { ...state, contacts: payload };
-    case "LOAD_MESSAGES":
+    case "SET_MESSAGES":
       return {
         ...state,
         chatRooms: [
@@ -61,7 +71,8 @@ function clientStoreReducer(
       return {
         ...state,
         chatRooms: state.chatRooms.map((room) =>
-          room.groupId !== payload.groupId
+          room.groupId !== payload.groupId ||
+          room.messages.find((m) => m.id === payload.message.id)
             ? room
             : {
                 ...room,
@@ -77,6 +88,10 @@ function clientStoreReducer(
               }
         ),
       };
+    case "CONNECT_WS":
+      return { ...state, isWsDisconnected: false };
+    case "DISCONNECT_WS":
+      return { ...state, isWsDisconnected: true };
   }
 }
 
@@ -84,10 +99,13 @@ type TClientStore = {
   user: User;
   contacts: Contact[];
   chatRooms: ChatRoom[];
-  loadUser: (user: User) => void;
-  loadContacts: (c: Contact[]) => void;
-  loadMessages: (groupId: string, message: Message[]) => void;
+  setUser: (user: User) => void;
+  setContacts: (c: Contact[]) => void;
+  setMessages: (groupId: string, message: Message[]) => void;
   addMessage: (groupId: string, message: Message) => void;
+  isWsDisconnected: boolean;
+  connectWs: () => void;
+  disConnectWs: () => void;
 };
 
 const ClientStore = createContext<TClientStore | null>(null);
@@ -99,20 +117,28 @@ export default function ClientStoreProvider({
 }) {
   const [state, dispatch] = useReducer(clientStoreReducer, initClientState);
 
-  function loadUser(user: User) {
-    dispatch({ type: "LOAD_USER", payload: user });
+  function setUser(user: User) {
+    dispatch({ type: "SET_USER", payload: user });
   }
 
-  function loadContacts(contacts: Contact[]) {
-    dispatch({ type: "LOAD_CONTACTS", payload: contacts });
+  function setContacts(contacts: Contact[]) {
+    dispatch({ type: "SET_CONTACTS", payload: contacts });
   }
 
-  function loadMessages(groupId: string, messages: Message[]) {
-    dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
+  function setMessages(groupId: string, messages: Message[]) {
+    dispatch({ type: "SET_MESSAGES", payload: { groupId, messages } });
   }
 
   function addMessage(groupId: string, message: Message) {
     dispatch({ type: "ADD_MESSAGE", payload: { groupId, message } });
+  }
+
+  function connectWs() {
+    dispatch({ type: "CONNECT_WS", payload: null });
+  }
+
+  function disConnectWs() {
+    dispatch({ type: "DISCONNECT_WS", payload: null });
   }
 
   return (
@@ -121,10 +147,13 @@ export default function ClientStoreProvider({
         user: state.user,
         contacts: state.contacts,
         chatRooms: state.chatRooms,
-        loadUser,
-        loadContacts,
-        loadMessages,
+        setUser,
+        setContacts,
+        setMessages,
         addMessage,
+        isWsDisconnected: state.isWsDisconnected,
+        connectWs,
+        disConnectWs,
       }}
     >
       {children}

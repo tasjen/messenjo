@@ -1,12 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+import clsx from "clsx";
+import { useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
 import { Message } from "@/lib/schema";
 import { toDateFormat } from "@/lib/utils";
-import { useEffect, useRef } from "react";
-import clsx from "clsx";
-import { useParams } from "next/navigation";
-import ChatBoardSkeleton from "../skeletons/chat-board";
 import { useClientStore } from "@/lib/stores/client-store";
+import ChatBoardSkeleton from "../skeletons/chat-board";
+import { isToday, isYesterday } from "date-fns";
+import Link from "next/link";
+import { Search } from "lucide-react";
 
 type Props = {
   messages: Message[];
@@ -18,14 +21,11 @@ export default function ChatBoard(props: Props) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    store.loadMessages(groupId, props.messages);
+    store.setMessages(groupId, props.messages);
   }, []);
 
   const contact = store.contacts?.find((e) => e.groupId === groupId);
   const room = store.chatRooms?.find((e) => e.groupId === groupId);
-
-  console.log(room);
-  console.log(store.chatRooms);
 
   if (!store.user || !contact || !room) {
     return <ChatBoardSkeleton />;
@@ -33,15 +33,24 @@ export default function ChatBoard(props: Props) {
 
   return (
     <>
-      <div className="font-bold text-lg mb-4">{contact.name}</div>
+      <div className="mb-4 flex items-center">
+        <div className="font-bold text-lg mr-auto">{contact.name}</div>
+        <div className="mt-2">
+          <Link href="/" className="flex justify-center items-center w-20">
+            <Search className="h-6 w-6" />
+          </Link>
+        </div>
+      </div>
       <ul
         ref={listRef}
-        className="flex flex-col-reverse gap-2 overflow-auto h-full"
+        className="flex flex-col-reverse gap-2 overflow-auto mb-auto"
       >
-        {room?.messages.map((e) => {
+        {room.messages.map((e) => {
           const isFromMe = store.user?.username === e.fromUsername;
+          const { date, time } = toDateFormat(e.sentAt);
+
           return (
-            <li key={e.id} className={clsx("flex flex-col")}>
+            <li key={e.id} className={"flex flex-col"}>
               {contact?.type === "group" && (
                 <div
                   className={clsx("text-xs font-medium", isFromMe && "ml-auto")}
@@ -55,11 +64,18 @@ export default function ChatBoard(props: Props) {
                   isFromMe ? "ml-auto flex-row-reverse" : "mr-auto"
                 )}
               >
-                <div className="flex-1 rounded-xl bg-gray-200 p-2 break-words max-w-[768px]">
+                <div className="flex-1 rounded-xl bg-muted p-2 break-words max-w-[768px]">
                   {e.content}
                 </div>
-                <div className="self-end text-xs">
-                  {toDateFormat(e.sentAt)[1]}
+                <div className="self-center text-[0.7rem] flex flex-col text-ring">
+                  <div>
+                    {isToday(e.sentAt)
+                      ? "today"
+                      : isYesterday(e.sentAt)
+                        ? "yesterday"
+                        : date}
+                  </div>
+                  <div className={clsx(isFromMe && "self-end")}>{time}</div>
                 </div>
               </div>
             </li>

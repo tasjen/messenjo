@@ -1,4 +1,4 @@
-// Original file: chat.proto
+// Original file: lib/chat_proto/chat.proto
 
 
 export interface AddMemberReq {

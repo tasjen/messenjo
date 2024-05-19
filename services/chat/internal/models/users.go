@@ -2,10 +2,12 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type IUserModel interface {
@@ -13,6 +15,7 @@ type IUserModel interface {
 	GetByUsername(ctx context.Context, username string) (uuid.UUID, error)
 	GetById(ctx context.Context, userId uuid.UUID) (string, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
+	ChangeUsername(ctx context.Context, userId uuid.UUID, username string) error
 }
 
 type UserModel struct{}
@@ -72,4 +75,27 @@ func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (b
 		log.Println(err)
 		return true, err
 	}
+}
+
+func (m *UserModel) ChangeUsername(ctx context.Context, userId uuid.UUID, username string) error {
+	stmt := `
+		UPDATE users
+		SET username = $2
+		WHERE id = $1;`
+
+	_, err := DB.Exec(ctx, stmt, userId, username)
+	var pgErr *pgconn.PgError
+	if err != nil && errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return &DupUsernameError{Username: username}
+	}
+	return err
+}
+
+type DupUsernameError struct {
+	Username string
+	Err      error
+}
+
+func (err *DupUsernameError) Error() string {
+	return fmt.Sprintf("username '%s' already exists", err.Username)
 }
