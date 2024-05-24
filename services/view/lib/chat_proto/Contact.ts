@@ -5,6 +5,7 @@ import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _goo
 export interface Contact {
   'type'?: (string);
   'groupId'?: (Buffer | Uint8Array | string);
+  'userId'?: (Buffer | Uint8Array | string);
   'name'?: (string);
   'memberCount'?: (number);
   'lastMessageId'?: (number);
@@ -15,6 +16,7 @@ export interface Contact {
 export interface Contact__Output {
   'type'?: (string);
   'groupId'?: (Uint8Array);
+  'userId'?: (Uint8Array);
   'name'?: (string);
   'memberCount'?: (number);
   'lastMessageId'?: (number);

@@ -1,26 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 "use client";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useWebSocket from "react-use-websocket";
 import { z } from "zod";
 import { Action } from "@/lib/schema";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 
 export default function Streaming() {
-  const store = useClientStore();
-  const { lastMessage } = useWebSocket(
-    typeof window !== "undefined"
-      ? `${window.location.protocol.replace("http", "ws")}//${window.location.host}/api/streaming/`
-      : "",
-    {
-      heartbeat: false,
-      share: true,
-      onOpen: () => store.connectWs(),
-      onClose: () => store.disConnectWs(),
-      onError: () => store.disConnectWs(),
-    }
-  );
+  const store = useStore();
+  const wsUrl = useMemo(() => {
+    const { protocol, host } = window.location;
+    return `${protocol.replace("http", "ws")}//${host}/api/streaming/`;
+  }, []);
+  const { lastMessage } = useWebSocket(wsUrl, {
+    heartbeat: false,
+    share: true,
+    onOpen: () => store.connectWs(),
+    onClose: () => store.disConnectWs(),
+    onError: () => store.disConnectWs(),
+  });
 
   useEffect(() => {
     const actionString = z.string().safeParse(lastMessage?.data);

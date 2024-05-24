@@ -56,6 +56,10 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 			ELSE 'group'
 		END AS contact_type,
 		groups.id AS group_id,
+		CASE
+			WHEN groups.name = '' THEN users.id
+			ELSE NULL
+		END AS user_id,
 		COALESCE(
 			NULLIF(groups.name, ''),
 			users.username
@@ -111,7 +115,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
 		var memberCount sql.NullInt32
-		err := row.Scan(&c.Type, &c.GroupId, &c.Name, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
+		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
 		c.MemberCount = memberCount.Int32
 		c.LastMessageId = lastMessageId.Int32
 		c.LastSentAt = timestamp.New(lastSentAt.Time)
@@ -212,10 +216,8 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	if l := len(groupName); l < 1 || l > 16 {
 		return &empty.Empty{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
-		return &empty.Empty{}, err
-	}
+
+	userIds := req.GetUserIds()
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
@@ -229,7 +231,15 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		return &empty.Empty{}, err
 	}
 
-	err = app.members.Add(ctx, tx, userId, groupId)
+	_, err = tx.CopyFrom(
+		ctx,
+		pgx.Identifier{"members"},
+		[]string{"user_id", "group_id"},
+		pgx.CopyFromSlice(len(userIds), func(i int) ([]any, error) {
+			userId, err := uuid.FromBytes(userIds[i])
+			return []any{userId, groupId}, err
+		}),
+	)
 	if err != nil {
 		return &empty.Empty{}, err
 	}

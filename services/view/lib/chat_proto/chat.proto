@@ -40,11 +40,12 @@ message GetContactsRes {
 message Contact {
   string type = 1;
   bytes group_id = 2;
-  string name = 3;
-  int32 member_count = 4;
-  int32 last_message_id = 5;
-  string last_content = 6;
-  google.protobuf.Timestamp last_sent_at = 7;
+  bytes user_id = 3;
+  string name = 4;
+  int32 member_count = 5;
+  int32 last_message_id = 6;
+  string last_content = 7;
+  google.protobuf.Timestamp last_sent_at = 8;
 }
 
 message GetMessagesReq {
@@ -62,8 +63,8 @@ message Message {
 }
 
 message CreateGroupReq {
-  bytes user_id = 1;
-  string group_name = 2;
+  string group_name = 1;
+  repeated bytes user_ids = 2;
 }
 
 message ChangeUsernameReq {

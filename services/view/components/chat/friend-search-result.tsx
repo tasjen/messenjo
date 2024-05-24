@@ -6,7 +6,7 @@ type Props = {
   username?: string;
 };
 
-export default async function Result({ username }: Props) {
+export default async function FriendSearchResult({ username }: Props) {
   if (!username) {
     return <></>;
   }

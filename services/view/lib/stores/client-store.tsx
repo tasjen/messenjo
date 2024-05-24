@@ -161,7 +161,7 @@ export default function ClientStoreProvider({
   );
 }
 
-function useClientStore() {
+function useStore() {
   const clientStore = useContext(ClientStore);
   if (!clientStore) {
     throw new Error("invalid usage: no ClientStore provider");
@@ -170,4 +170,4 @@ function useClientStore() {
   return clientStore;
 }
 
-export { useClientStore };
+export { useStore };

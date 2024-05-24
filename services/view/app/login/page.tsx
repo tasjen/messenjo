@@ -1,11 +1,12 @@
 import HomeButton from "@/components/login/home-button";
-import SignInButton from "@/components/login/sign-in-button";
+import GoogleLoginButton from "@/components/login/google-login-button";
+import GitHubLoginButton from "@/components/login/github-login-button";
 
 export default function LoginPage() {
   return (
     <main className="flex flex-col h-screen justify-center items-center gap-4">
-      <SignInButton provider="Google" />
-      <SignInButton provider="GitHub" />
+      <GoogleLoginButton />
+      <GitHubLoginButton />
       <HomeButton />
     </main>
   );

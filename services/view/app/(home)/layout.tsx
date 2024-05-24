@@ -1,4 +1,4 @@
-import FriendButton from "@/components/add-friend-button";
+import AddContactButton from "@/components/add-contact-button";
 import SignOutButton from "@/components/sign-out-button";
 import ContactListServer from "@/components/contact-list-server";
 import { Suspense } from "react";
@@ -12,6 +12,7 @@ import { Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ClientStoreProvider from "@/lib/stores/client-store";
+import SettingsButton from "@/components/settings-button";
 
 export default async function Layout({
   children,
@@ -26,9 +27,9 @@ export default async function Layout({
     <ClientStoreProvider>
       <div className="flex h-screen p-4 gap-4">
         <NoSSR>
-          <NewUsernameDialog />
+          <NewUsernameDialog isNewUser={true} />
+          <Streaming />
         </NoSSR>
-        <Streaming />
         <aside className="flex-none w-64 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
           <Suspense fallback={<ContactListSkeleton />}>
             <ContactListServer />
@@ -40,7 +41,8 @@ export default async function Layout({
                 <Home />
               </Button>
             </Link>
-            <FriendButton />
+            <AddContactButton />
+            <SettingsButton />
             <SignOutButton />
           </div>
         </aside>

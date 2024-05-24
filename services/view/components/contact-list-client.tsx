@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 import NoSSR from "./no-ssr";
 import { Contact, User } from "@/lib/schema";
 import { useEffect, useState } from "react";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 import { isToday, isYesterday } from "date-fns";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
@@ -20,7 +20,7 @@ type Props = {
 
 export default function ContactListClient(props: Props) {
   const pathname = usePathname();
-  const store = useClientStore();
+  const store = useStore();
   const [term, setTerm] = useState("");
 
   useEffect(() => {
@@ -28,12 +28,11 @@ export default function ContactListClient(props: Props) {
     store.setContacts(props.contacts);
   }, []);
 
-  const contacts =
-    store.contacts.length !== 0 ? store.contacts : props.contacts;
-
   if (store.isWsDisconnected) {
     return <></>;
   }
+
+  const { contacts } = store.contacts.length ? store : props;
 
   return (
     <>
@@ -44,10 +43,10 @@ export default function ContactListClient(props: Props) {
           value={term}
           onChange={({ target }) => setTerm(target.value)}
           autoComplete="false"
-          className="h-7 pl-8"
+          className="h-7 pl-8 rounded-full"
         />
       </div>
-      <ul className="flex flex-col overflow-auto gap-2 h-full">
+      <ul className="flex flex-col divide-y h-full overflow-auto">
         {contacts
           .filter(
             (e) =>
@@ -60,7 +59,7 @@ export default function ContactListClient(props: Props) {
             return (
               <li
                 key={e.groupId}
-                className={clsx("rounded-md p-2 border", {
+                className={clsx("p-2", {
                   "bg-secondary": pathname === `/chat/${e.groupId}`,
                 })}
               >

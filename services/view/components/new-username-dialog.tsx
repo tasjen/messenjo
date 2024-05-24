@@ -9,12 +9,16 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { DialogHeader } from "./ui/dialog";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 import { changeUsername } from "@/lib/actions";
 import { useState } from "react";
 
-export default function NewUsernameDialog() {
-  const store = useClientStore();
+type Props = {
+  isNewUser: boolean;
+};
+
+export default function NewUsernameDialog({ isNewUser }: Props) {
+  const store = useStore();
   const [isOpen, setIsOpen] = useState(true);
   const [formError, setFormError] = useState("");
 
@@ -22,11 +26,10 @@ export default function NewUsernameDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Pick a username</DialogTitle>
+          <DialogTitle>Choose your username</DialogTitle>
           <DialogDescription>
-            {
-              "Your username is what identifies you. It must be unique. You can skip this and change it later."
-            }
+            {"Your username is what identifies you. It must be unique. "}
+            {isNewUser && "You can skip this and change it later."}
           </DialogDescription>
         </DialogHeader>
         <form

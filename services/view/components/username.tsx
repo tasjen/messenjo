@@ -1,8 +1,8 @@
 "use client";
 
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 
 export default function Username() {
-  const store = useClientStore();
+  const store = useStore();
   return <div>{store.user.username}</div>;
 }

@@ -4,13 +4,13 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useParams } from "next/navigation";
 import { sendMessage } from "@/lib/actions";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 import ChatFormSkeleton from "../skeletons/chat-form";
 import { SendHorizonal } from "lucide-react";
 
 export default function ChatForm() {
   const { groupId } = useParams<{ groupId: string }>();
-  const store = useClientStore();
+  const store = useStore();
   const contentInput = useRef<HTMLInputElement>(null);
   const sendButton = useRef<HTMLButtonElement>(null);
 

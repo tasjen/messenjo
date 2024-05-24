@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { UserRoundPlus } from "lucide-react";
+import { MessageCirclePlus } from "lucide-react";
 import Link from "next/link";
 
-export default function FriendButton() {
+export default function AddContactButton() {
   return (
-    <Link href="/friends">
+    <Link href="/chat/new">
       <Button size="icon" variant="secondary">
-        <UserRoundPlus className="h-6 w-6" />
+        <MessageCirclePlus className="h-6 w-6" />
       </Button>
     </Link>
   );

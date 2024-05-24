@@ -1,3 +1,4 @@
+import { SendHorizonal } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
@@ -7,7 +8,7 @@ export default function ChatFormSkeleton() {
       <div className="flex gap-4">
         <Input disabled />
         <Button type="submit" disabled>
-          send
+          <SendHorizonal />
         </Button>
       </div>
     </form>

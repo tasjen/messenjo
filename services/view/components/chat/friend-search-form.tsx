@@ -3,16 +3,16 @@
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Input } from "../ui/input";
 import { FormEvent, useState } from "react";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 import { Button } from "../ui/button";
 import { Search } from "lucide-react";
 
-export default function SearchForm() {
+export default function FriendSearchForm() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
-  const store = useClientStore();
+  const store = useStore();
 
   function handleSearch(event: FormEvent) {
     event.preventDefault();
@@ -31,7 +31,7 @@ export default function SearchForm() {
   return (
     <form className="flex place-items-center" onSubmit={handleSearch}>
       <Input
-        type="text"
+        type="search"
         onChange={(e) => setTerm(e.target.value)}
         value={term}
         placeholder="username"

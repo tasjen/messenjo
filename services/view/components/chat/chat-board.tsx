@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Message } from "@/lib/schema";
 import { toDateFormat } from "@/lib/utils";
-import { useClientStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "../skeletons/chat-board";
 import { isToday, isYesterday } from "date-fns";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 type Props = {
   messages: Message[];
@@ -17,7 +17,7 @@ type Props = {
 
 export default function ChatBoard(props: Props) {
   const { groupId } = useParams<{ groupId: string }>();
-  const store = useClientStore();
+  const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
@@ -33,25 +33,23 @@ export default function ChatBoard(props: Props) {
 
   return (
     <>
-      <div className="mb-4 flex items-center">
+      <div className="my-2 flex items-center">
         <div className="font-bold text-lg mr-auto">{contact.name}</div>
-        <div className="mt-2">
-          <Link href="/" className="flex justify-center items-center w-20">
-            <Search className="h-6 w-6" />
-          </Link>
-        </div>
+        <Link href="/" className="flex justify-center items-center w-20">
+          <ChevronLeft className="h-6 w-6" />
+        </Link>
       </div>
       <ul
         ref={listRef}
-        className="flex flex-col-reverse gap-2 overflow-auto mb-auto"
+        className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2"
       >
         {room.messages.map((e) => {
-          const isFromMe = store.user?.username === e.fromUsername;
+          const isFromMe = store.user.username === e.fromUsername;
           const { date, time } = toDateFormat(e.sentAt);
 
           return (
-            <li key={e.id} className={"flex flex-col"}>
-              {contact?.type === "group" && (
+            <li key={e.id} className={"flex flex-col mr-1"}>
+              {contact.type === "group" && (
                 <div
                   className={clsx("text-xs font-medium", isFromMe && "ml-auto")}
                 >

@@ -20,6 +20,7 @@ export const Message = z.object({
 export const Contact = z.object({
   type: z.union([z.literal("friend"), z.literal("group")]),
   groupId: z.string(),
+  userId: z.string().optional(),
   name: z.string(),
   memberCount: z.number().optional(),
   lastMessage: Message.optional(),

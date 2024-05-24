@@ -96,6 +96,7 @@ export async function fetchContacts(): Promise<Contact[]> {
               Contact.parse({
                 type: e.type,
                 groupId: uuidStringify(e.groupId!),
+                userId: e.userId && uuidStringify(e.userId),
                 name: e.name,
                 memberCount: e.memberCount,
                 lastMessage:
