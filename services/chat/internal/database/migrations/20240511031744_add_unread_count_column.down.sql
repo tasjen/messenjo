@@ -1,1 +1,1 @@
-ALTER TABLE members DROP unread_count
+ALTER TABLE members DROP unread_count;

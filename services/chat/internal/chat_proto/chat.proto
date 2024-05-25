@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 service Chat {
   // for Auth
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
+  rpc ChangePfp (ChangePfpReq) returns (google.protobuf.Empty) {}
 
   // for View
   rpc GetByUsername (GetByUsernameReq) returns (GetByUsernameRes) {}
@@ -83,6 +84,11 @@ message CreateUserReq {
 }
 message CreateUserRes {
   bytes user_id = 1;
+}
+
+message ChangePfpReq {
+  bytes user_id = 1;
+  string pfp_url = 2;
 }
 
 message CreateGroupReq {

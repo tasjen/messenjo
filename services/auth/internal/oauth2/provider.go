@@ -3,7 +3,8 @@ package oauth2
 import "golang.org/x/oauth2"
 
 type AccountInfo struct {
-	Id string
+	Id  string
+	Pfp string
 }
 
 type Provider interface {

@@ -14,7 +14,7 @@ import (
 type GoogleAccountInfo struct {
 	Id string `json:"sub"`
 	// Name string `json:"given_name"`
-	// Picture  string `json:"picture"`
+	Pfp string `json:"picture"`
 }
 
 type GoogleProvider struct {
@@ -69,5 +69,5 @@ func (g *GoogleProvider) FetchAccountInfo(accessToken string) (*AccountInfo, err
 		// 	return &AccountInfo{}, errors.New("`name` field is missing from googleapi response")
 	}
 
-	return &AccountInfo{Id: data.Id}, nil
+	return &AccountInfo{Id: data.Id, Pfp: data.Pfp}, nil
 }

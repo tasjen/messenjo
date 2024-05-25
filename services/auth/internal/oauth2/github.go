@@ -15,7 +15,7 @@ import (
 type GithubAccountInfo struct {
 	Id int `json:"id"`
 	// Name string `json:"login"`
-	// Picture  string `json:"avatar_url"`
+	Pfp string `json:"avatar_url"`
 }
 
 type GithubProvider struct {
@@ -66,5 +66,5 @@ func (g *GithubProvider) FetchAccountInfo(accessToken string) (*AccountInfo, err
 		// 	return &AccountInfo{}, errors.New("`login`(username) field is missing from github response")
 	}
 
-	return &AccountInfo{Id: fmt.Sprint(data.Id)}, nil
+	return &AccountInfo{Id: fmt.Sprint(data.Id), Pfp: data.Pfp}, nil
 }

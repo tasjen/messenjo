@@ -211,6 +211,21 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
+func (app *application) ChangePfp(ctx context.Context, req *pb.ChangePfpReq) (*empty.Empty, error) {
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
+	pfpUrl := req.GetPfpUrl()
+	if l := len(pfpUrl); l < 1 || l > 512 {
+		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 512 characters")
+	}
+
+	err = app.users.ChangePfp(ctx, userId, pfpUrl)
+	return &empty.Empty{}, err
+}
+
 func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*empty.Empty, error) {
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
