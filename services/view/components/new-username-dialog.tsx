@@ -51,7 +51,7 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
             name="username"
             placeholder="username"
             className="col-span-3"
-            autoComplete="false"
+            autoComplete="off"
             minLength={1}
             required
           />

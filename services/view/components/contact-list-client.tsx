@@ -42,7 +42,6 @@ export default function ContactListClient(props: Props) {
           type="search"
           value={term}
           onChange={({ target }) => setTerm(target.value)}
-          autoComplete="false"
           className="h-7 pl-8 rounded-full"
         />
       </div>

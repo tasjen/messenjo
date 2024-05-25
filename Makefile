@@ -3,8 +3,10 @@ migration_command_path=/app/internal/database/migrations/migrate.sh
 
 run_dev:
 	@docker compose -f docker-compose.dev.yml up pgadmin chatdb -d
-	MY_UID="$(id -u)" MY_GID="$(id -g)" docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway streaming messagech
+	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway streaming messagech
 
+migration_create:
+	@$(shell_chat) "migrate create -ext=.sql -dir=./internal/database/migrations $(NAME)"
 
 migration_version:
 	@$(shell_chat)	"$(migration_command_path) version"
