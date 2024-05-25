@@ -1,12 +1,12 @@
 // Original file: lib/chat_proto/chat.proto
 
 
-export interface ChangeUsernameReq {
+export interface SetUsernameReq {
   'userId'?: (Buffer | Uint8Array | string);
   'username'?: (string);
 }
 
-export interface ChangeUsernameReq__Output {
+export interface SetUsernameReq__Output {
   'userId'?: (Uint8Array);
   'username'?: (string);
 }

@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 service Chat {
   // for Auth
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
-  rpc ChangePfp (ChangePfpReq) returns (google.protobuf.Empty) {}
+  rpc SetPfp (SetPfpReq) returns (google.protobuf.Empty) {}
 
   // for View
   rpc GetByUsername (GetByUsernameReq) returns (GetByUsernameRes) {}
@@ -15,7 +15,7 @@ service Chat {
   rpc GetContacts (GetContactsReq) returns (GetContactsRes) {}
   rpc GetMessages (GetMessagesReq) returns (GetMessagesRes) {}
   rpc CreateGroup (CreateGroupReq) returns (google.protobuf.Empty) {}
-  rpc ChangeUsername (ChangeUsernameReq) returns (google.protobuf.Empty) {}
+  rpc SetUsername (SetUsernameReq) returns (google.protobuf.Empty) {}
   rpc AddFriend (AddFriendReq) returns (google.protobuf.Empty) {}
   rpc AddMember (AddMemberReq) returns (google.protobuf.Empty) {}
   rpc SendMessage (SendMessageReq) returns (SendMessageRes) {}
@@ -86,7 +86,7 @@ message CreateUserRes {
   bytes user_id = 1;
 }
 
-message ChangePfpReq {
+message SetPfpReq {
   bytes user_id = 1;
   string pfp_url = 2;
 }
@@ -96,7 +96,7 @@ message CreateGroupReq {
   repeated bytes user_ids = 2;
 }
 
-message ChangeUsernameReq {
+message SetUsernameReq {
   bytes user_id = 1;
   string username = 2;
 }

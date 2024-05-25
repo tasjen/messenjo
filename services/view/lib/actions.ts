@@ -20,7 +20,7 @@ export async function changeUsername(formData: FormData): Promise<FormState> {
 
   try {
     await new Promise<void>((resolve, reject) => {
-      chatClient.changeUsername(
+      chatClient.setUsername(
         { userId: uuidParse(getUserId()), username },
         { deadline: newDeadline(5) },
         (err) => (err ? reject(err.details) : resolve())

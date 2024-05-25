@@ -211,7 +211,7 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
-func (app *application) ChangePfp(ctx context.Context, req *pb.ChangePfpReq) (*empty.Empty, error) {
+func (app *application) SetPfp(ctx context.Context, req *pb.SetPfpReq) (*empty.Empty, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return &empty.Empty{}, err
@@ -222,7 +222,7 @@ func (app *application) ChangePfp(ctx context.Context, req *pb.ChangePfpReq) (*e
 		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 512 characters")
 	}
 
-	err = app.users.ChangePfp(ctx, userId, pfpUrl)
+	err = app.users.SetPfp(ctx, userId, pfpUrl)
 	return &empty.Empty{}, err
 }
 
@@ -263,7 +263,7 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	return &empty.Empty{}, err
 }
 
-func (app *application) ChangeUsername(ctx context.Context, req *pb.ChangeUsernameReq) (*empty.Empty, error) {
+func (app *application) SetUsername(ctx context.Context, req *pb.SetUsernameReq) (*empty.Empty, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return &empty.Empty{}, err
@@ -273,7 +273,7 @@ func (app *application) ChangeUsername(ctx context.Context, req *pb.ChangeUserna
 		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 32 characters")
 	}
 
-	err = app.users.ChangeUsername(ctx, userId, username)
+	err = app.users.SetUsername(ctx, userId, username)
 	var dupUsernameError *models.DupUsernameError
 	if err != nil && !errors.As(err, &dupUsernameError) {
 		return &empty.Empty{}, errors.New("internal server error")
@@ -294,10 +294,10 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*e
 	}
 
 	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
-	if err != nil {
+	switch {
+	case err != nil:
 		return &empty.Empty{}, err
-	}
-	if isFriend {
+	case isFriend:
 		return &empty.Empty{}, errors.New("already friends")
 	}
 

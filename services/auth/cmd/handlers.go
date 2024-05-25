@@ -137,9 +137,9 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	_, err = app.chatClient.ChangePfp(
+	_, err = app.chatClient.SetPfp(
 		r.Context(),
-		&chat_pb.ChangePfpReq{
+		&chat_pb.SetPfpReq{
 			UserId: userId[:],
 			PfpUrl: oauthAccountInfo.Pfp,
 		},

@@ -21,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Chat_CreateUser_FullMethodName = "/Chat/CreateUser"
-	Chat_ChangePfp_FullMethodName  = "/Chat/ChangePfp"
+	Chat_SetPfp_FullMethodName     = "/Chat/SetPfp"
 )
 
 // ChatClient is the client API for Chat service.
@@ -29,7 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
-	ChangePfp(ctx context.Context, in *ChangePfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetPfp(ctx context.Context, in *SetPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type chatClient struct {
@@ -49,9 +49,9 @@ func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...
 	return out, nil
 }
 
-func (c *chatClient) ChangePfp(ctx context.Context, in *ChangePfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+func (c *chatClient) SetPfp(ctx context.Context, in *SetPfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, Chat_ChangePfp_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Chat_SetPfp_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *chatClient) ChangePfp(ctx context.Context, in *ChangePfpReq, opts ...gr
 // for forward compatibility
 type ChatServer interface {
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
-	ChangePfp(context.Context, *ChangePfpReq) (*empty.Empty, error)
+	SetPfp(context.Context, *SetPfpReq) (*empty.Empty, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -74,8 +74,8 @@ type UnimplementedChatServer struct {
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedChatServer) ChangePfp(context.Context, *ChangePfpReq) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangePfp not implemented")
+func (UnimplementedChatServer) SetPfp(context.Context, *SetPfpReq) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetPfp not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 
@@ -108,20 +108,20 @@ func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_ChangePfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangePfpReq)
+func _Chat_SetPfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPfpReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServer).ChangePfp(ctx, in)
+		return srv.(ChatServer).SetPfp(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Chat_ChangePfp_FullMethodName,
+		FullMethod: Chat_SetPfp_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).ChangePfp(ctx, req.(*ChangePfpReq))
+		return srv.(ChatServer).SetPfp(ctx, req.(*SetPfpReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -138,8 +138,8 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Chat_CreateUser_Handler,
 		},
 		{
-			MethodName: "ChangePfp",
-			Handler:    _Chat_ChangePfp_Handler,
+			MethodName: "SetPfp",
+			Handler:    _Chat_SetPfp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

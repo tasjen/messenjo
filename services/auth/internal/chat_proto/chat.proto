@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 
 service Chat {
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
-  rpc ChangePfp (ChangePfpReq) returns (google.protobuf.Empty) {}
+  rpc SetPfp (SetPfpReq) returns (google.protobuf.Empty) {}
 }
 
 message CreateUserReq {
@@ -15,7 +15,7 @@ message CreateUserRes {
   bytes user_id = 1;
 }
 
-message ChangePfpReq {
+message SetPfpReq {
   bytes user_id = 1;
   string pfp_url = 2;
 }

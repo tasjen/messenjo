@@ -15,8 +15,8 @@ type IUserModel interface {
 	GetByUsername(ctx context.Context, username string) (uuid.UUID, error)
 	GetById(ctx context.Context, userId uuid.UUID) (string, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
-	ChangeUsername(ctx context.Context, userId uuid.UUID, username string) error
-	ChangePfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error
+	SetUsername(ctx context.Context, userId uuid.UUID, username string) error
+	SetPfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error
 }
 
 type UserModel struct{}
@@ -78,7 +78,7 @@ func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (b
 	}
 }
 
-func (m *UserModel) ChangeUsername(ctx context.Context, userId uuid.UUID, username string) error {
+func (m *UserModel) SetUsername(ctx context.Context, userId uuid.UUID, username string) error {
 	stmt := `
 		UPDATE users
 		SET username = $2
@@ -92,7 +92,7 @@ func (m *UserModel) ChangeUsername(ctx context.Context, userId uuid.UUID, userna
 	return err
 }
 
-func (m *UserModel) ChangePfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error {
+func (m *UserModel) SetPfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error {
 	stmt := `
 		UPDATE users
 		SET pfp = $2
