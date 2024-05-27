@@ -7,7 +7,7 @@ import { useState } from "react";
 import { MultiSelect } from "../ui/multi-select";
 import { Button } from "../ui/button";
 
-export default function GroupCreateForm() {
+export default function CreateGroupForm() {
   const store = useStore();
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -29,12 +29,31 @@ export default function GroupCreateForm() {
         console.log(formData.getAll("user-ids"));
       }}
     >
-      <Label htmlFor="group-name">
+      <Label>
         <div className="mb-2">Group name</div>
         <Input id="group-name" name="group-name" autoComplete="off" />
       </Label>
       <Label>
-        <div className="mb-2">Select initial members</div>
+        <div className="mb-2">
+          <div className="flex gap-2">
+            Group profile picture
+            <div className="text-muted-foreground">(optional)</div>
+          </div>
+        </div>
+        <Input
+          id="group-name"
+          name="group-name"
+          placeholder="Image URL"
+          autoComplete="off"
+        />
+      </Label>
+      <Label>
+        <div className="mb-2">
+          <div className="flex gap-2">
+            Initial members
+            <div className="text-muted-foreground">(optional)</div>
+          </div>
+        </div>
         <MultiSelect
           options={options}
           selected={selected}

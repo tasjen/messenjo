@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,10 +21,11 @@ func NewMessageModel() *MessageModel {
 }
 
 type Message struct {
-	Id           int       `db:"id"`
-	FromUsername string    `db:"from_username"`
-	Content      string    `db:"content"`
-	SentAt       time.Time `db:"sent_at"`
+	Id           int            `db:"id"`
+	FromUsername string         `db:"from_username"`
+	FromPfp      sql.NullString `db:"from_pfp"`
+	Content      string         `db:"content"`
+	SentAt       time.Time      `db:"sent_at"`
 }
 
 func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error) {
@@ -31,17 +33,20 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 		SELECT
 			messages.id AS "id",
 			users.username AS "fromUsername",
+			CASE
+				WHEN users.id = $1 THEN NULL
+				ELSE users.pfp
+			END AS "fromPfp",
 			"content", sent_at
-		FROM (
-			SELECT messages.id, messages.user_id, messages.group_id, "content", sent_at
-			FROM messages
-			JOIN members
-			ON messages.group_id = members.group_id
-			WHERE messages.group_id = $2
-			AND members.user_id = $1
-		) AS messages
-		JOIN users
-		ON users.id = messages.user_id
+		FROM
+			members
+			JOIN messages
+			ON members.group_id = messages.group_id
+			JOIN users
+			ON messages.user_id = users.id
+		WHERE
+			members.user_id = $1
+			AND members.group_id = $2
 		ORDER BY sent_at DESC;`
 
 	rows, err := DB.Query(ctx, stmt, userId, groupId)
@@ -51,7 +56,7 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 
 	messages, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Message, error) {
 		var m Message
-		err := row.Scan(&m.Id, &m.FromUsername, &m.Content, &m.SentAt)
+		err := row.Scan(&m.Id, &m.FromUsername, &m.FromPfp, &m.Content, &m.SentAt)
 		return m, err
 	})
 	if err != nil {
@@ -61,7 +66,6 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 	return messages, nil
 }
 
-// `sentAt` represents timestamp in milliseconds
 func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, error) {
 	stmt := `
 		INSERT INTO messages (user_id, group_id, content, sent_at)

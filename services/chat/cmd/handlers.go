@@ -39,8 +39,8 @@ func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq)
 	if err != nil {
 		return &pb.GetUserByIdRes{}, err
 	}
-	username, err := app.users.GetById(ctx, userId)
-	return &pb.GetUserByIdRes{Username: username}, err
+	user, err := app.users.GetById(ctx, userId)
+	return &pb.GetUserByIdRes{Username: user.Username, Pfp: user.Pfp}, err
 }
 
 func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
@@ -54,7 +54,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		CASE
 			WHEN groups.name = '' THEN  'friend'
 			ELSE 'group'
-		END AS contact_type,
+		END AS "type",
 		groups.id AS group_id,
 		CASE
 			WHEN groups.name = '' THEN users.id
@@ -63,7 +63,11 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		COALESCE(
 			NULLIF(groups.name, ''),
 			users.username
-		) AS contact_name,
+		) AS name,
+		CASE
+			WHEN groups.name = '' THEN users.pfp
+			ELSE groups.pfp
+		END AS pfp,
 		CASE
 			WHEN groups.name = '' THEN NULL
 			ELSE m2.count
@@ -71,7 +75,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		messages.id AS last_message_id,
 		messages.content AS last_content,
 		messages.sent_at AS last_sent_at
-	FROM 
+	FROM
 		"groups"
 		JOIN members AS m1
 		ON groups.id = m1.group_id
@@ -115,7 +119,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
 		var memberCount sql.NullInt32
-		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
+		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
 		c.MemberCount = memberCount.Int32
 		c.LastMessageId = lastMessageId.Int32
 		c.LastSentAt = timestamp.New(lastSentAt.Time)
@@ -151,6 +155,7 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 		pbMessages = append(pbMessages, &pb.Message{
 			Id:           int32(e.Id),
 			FromUsername: e.FromUsername,
+			FromPfp:      e.FromPfp.String,
 			Content:      e.Content,
 			SentAt:       timestamp.New(e.SentAt),
 		})

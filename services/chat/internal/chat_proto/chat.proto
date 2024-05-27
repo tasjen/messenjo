@@ -37,6 +37,7 @@ message GetUserByIdReq {
 }
 message GetUserByIdRes {
   string username = 1;
+  string pfp = 2;
 }
 
 message GetContactsReq {
@@ -45,16 +46,17 @@ message GetContactsReq {
 message GetContactsRes {
   repeated Contact contacts = 1;
 }
-
 message Contact {
   string type = 1;
   bytes group_id = 2;
   bytes user_id = 3;
   string name = 4;
-  int32 member_count = 5;
-  int32 last_message_id = 6;
-  string last_content = 7;
-  google.protobuf.Timestamp last_sent_at = 8;
+  string pfp = 5;
+  int32 member_count = 6;
+  int32 unread_count = 7;
+  int32 last_message_id = 8;
+  string last_content = 9;
+  google.protobuf.Timestamp last_sent_at = 10;
 }
 
 message GetMessagesReq {
@@ -67,14 +69,14 @@ message GetMessagesRes {
 message Message {
   int32 id = 1;
   string from_username = 2;
-  string content = 3;
-  google.protobuf.Timestamp sent_at = 4;
+  string from_pfp = 3;
+  string content = 4;
+  google.protobuf.Timestamp sent_at = 5;
 }
 
 message GetGroupIdsReq {
   bytes user_id = 1;
 }
-
 message GetGroupIdsRes {
   repeated bytes group_ids = 1;
 }
@@ -117,7 +119,6 @@ message SendMessageReq {
   string content = 3;
   google.protobuf.Timestamp sent_at = 4;
 }
-
 message SendMessageRes {
   int32 message_id = 1;
 }

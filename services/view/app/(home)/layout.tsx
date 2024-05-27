@@ -30,7 +30,7 @@ export default async function Layout({
           <NewUsernameDialog isNewUser={true} />
           <Streaming />
         </NoSSR>
-        <aside className="flex-none w-64 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
+        <aside className="flex-none w-72 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
           <Suspense fallback={<ContactListSkeleton />}>
             <ContactListServer />
           </Suspense>

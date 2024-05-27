@@ -1,18 +1,21 @@
 import NoSSR from "@/components/no-ssr";
+import { ThemeSwitchSkeleton } from "@/components/skeletons/theme-switch";
 import { ThemeSwitch } from "@/components/theme-switch";
-import Username from "@/components/username";
-import { getUserId } from "@/lib/data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserInfo } from "@/lib/stores/server-store";
 
 export default async function HomePage() {
-  const userId = getUserId();
+  const user = await getUserInfo();
   return (
     <>
       <div>Logged in</div>
-      <div>
-        username: <Username />
-      </div>
-      <div>userId: {userId.toString()}</div>
-      <NoSSR>
+      <Avatar className="self-center h-20 w-20">
+        <AvatarImage src={user.pfp} alt="your pfp" />
+        <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+      </Avatar>
+      <div>username: {user.username}</div>
+      <div>userId: {user.id}</div>
+      <NoSSR fallback={<ThemeSwitchSkeleton />}>
         <ThemeSwitch />
       </NoSSR>
     </>

@@ -1,14 +1,8 @@
-import { ServiceError } from "@grpc/grpc-js";
 import { chatClient } from "./grpc-client";
-import { GetByUsernameRes } from "./chat_proto/GetByUsernameRes";
 import { redirect } from "next/navigation";
 import { newDeadline, uuidStringify, uuidParse, toDateMs } from "./utils";
-import { GetContactsRes } from "./chat_proto/GetContactsRes";
-import { GetMessagesRes } from "./chat_proto/GetMessagesRes";
 import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
-import { GetUserByIdRes } from "./chat_proto/GetUserByIdRes";
-import Long from "long";
 import { Contact, Message, User, Timestamp } from "@/lib/schema";
 
 export function getUserId(): string {
@@ -19,23 +13,20 @@ export function getUserId(): string {
 
 export async function fetchUserInfo(): Promise<User> {
   noStore();
-  // console.log("fetchUserData --------------------");
   try {
     const userId = getUserId();
     return await new Promise((resolve, reject) => {
-      chatClient.GetUserById(
+      chatClient.getUserById(
         { userId: uuidParse(userId) },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null, res?: GetUserByIdRes) => {
+        (err, res) => {
           if (err) {
             return reject(err);
-          } else if (!res?.username) {
-            return reject(
-              new Error("no response from ChatService: `GetUserById`")
-            );
           }
 
-          resolve(User.parse({ id: userId, username: res.username }));
+          resolve(
+            User.parse({ id: userId, username: res?.username, pfp: res?.pfp })
+          );
         }
       );
     });
@@ -56,7 +47,7 @@ export async function fetchUserByUsername(username: string): Promise<User> {
       chatClient.GetByUsername(
         { username },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null, res?: GetByUsernameRes) => {
+        (err, res) => {
           if (err) {
             return reject(err);
           } else if (!res?.userId) {
@@ -79,10 +70,10 @@ export async function fetchContacts(): Promise<Contact[]> {
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
     return await new Promise((resolve, reject) => {
-      chatClient.GetContacts(
+      chatClient.getContacts(
         { userId: uuidParse(getUserId()) },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null, res?: GetContactsRes) => {
+        (err, res) => {
           if (err) {
             return reject(err);
           } else if (!res) {
@@ -90,7 +81,6 @@ export async function fetchContacts(): Promise<Contact[]> {
           } else if (!res.contacts) {
             return resolve([]);
           }
-
           resolve(
             res.contacts.map((e) =>
               Contact.parse({
@@ -98,6 +88,7 @@ export async function fetchContacts(): Promise<Contact[]> {
                 groupId: uuidStringify(e.groupId!),
                 userId: e.userId && uuidStringify(e.userId),
                 name: e.name,
+                pfp: e.pfp ?? "",
                 memberCount: e.memberCount,
                 lastMessage:
                   e.lastMessageId && e.lastContent && e.lastSentAt
@@ -107,9 +98,7 @@ export async function fetchContacts(): Promise<Contact[]> {
                         content: e.lastContent,
                         sentAt: toDateMs(
                           Timestamp.parse({
-                            seconds: !e.lastSentAt.seconds
-                              ? 0
-                              : (e.lastSentAt.seconds as Long).toNumber(),
+                            seconds: e.lastSentAt.seconds?.toNumber() ?? 0,
                             nanos: e.lastSentAt.nanos ?? 0,
                           })
                         ),
@@ -135,12 +124,11 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
   await new Promise((resolve) => setTimeout(resolve, 500));
   try {
-    console.log("fetchMessages");
     return await new Promise((resolve, reject) => {
       chatClient.GetMessages(
         { userId: uuidParse(getUserId()), groupId: uuidParse(groupId) },
         { deadline: newDeadline(5) },
-        (err?: ServiceError | null, res?: GetMessagesRes) => {
+        (err, res) => {
           if (err) {
             return reject(err);
           } else if (!res?.messages) {
@@ -152,7 +140,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
                 ...e,
                 sentAt: toDateMs(
                   Timestamp.parse({
-                    seconds: (e.sentAt?.seconds as Long)?.toNumber(),
+                    seconds: e.sentAt?.seconds?.toNumber() ?? 0,
                     nanos: e.sentAt?.nanos ?? 0,
                   })
                 ),

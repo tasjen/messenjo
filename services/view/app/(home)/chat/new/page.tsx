@@ -1,6 +1,6 @@
 import FriendSearchResult from "@/components/chat/friend-search-result";
 import FriendSearchForm from "@/components/chat/friend-search-form";
-import GroupCreateForm from "@/components/chat/group-create-form";
+import CreateGroupForm from "@/components/chat/create-group-form";
 
 type Props = {
   searchParams: { q?: string | undefined };
@@ -18,7 +18,7 @@ export default function NewContactPage({ searchParams }: Props) {
       </div>
       <div className="flex-1 space-y-4">
         <div className="text-lg font-bold">Create a group</div>
-        <GroupCreateForm />
+        <CreateGroupForm />
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ services:
       dockerfile: ./services/view/Dockerfile.dev
     volumes:
       - ./services/view:/app
-      - /app/protos
       - /app/node_modules
       - /app/.next
     depends_on:

@@ -10,6 +10,7 @@ import ChatBoardSkeleton from "../skeletons/chat-board";
 import { isToday, isYesterday } from "date-fns";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Props = {
   messages: Message[];
@@ -43,17 +44,15 @@ export default function ChatBoard(props: Props) {
         ref={listRef}
         className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2"
       >
-        {room.messages.map((e) => {
-          const isFromMe = store.user.username === e.fromUsername;
-          const { date, time } = toDateFormat(e.sentAt);
+        {room.messages.map((message) => {
+          const isFromMe = store.user.username === message.fromUsername;
+          const { date, time } = toDateFormat(message.sentAt);
 
           return (
-            <li key={e.id} className={"flex flex-col mr-1"}>
-              {contact.type === "group" && (
-                <div
-                  className={clsx("text-xs font-medium", isFromMe && "ml-auto")}
-                >
-                  {!isFromMe && e.fromUsername}
+            <li key={message.id} className={"mr-1"}>
+              {contact.type === "group" && !isFromMe && (
+                <div className="text-xs mb-1 font-medium">
+                  {message.fromUsername}
                 </div>
               )}
               <div
@@ -62,14 +61,25 @@ export default function ChatBoard(props: Props) {
                   isFromMe ? "ml-auto flex-row-reverse" : "mr-auto"
                 )}
               >
-                <div className="flex-1 rounded-xl bg-muted p-2 break-words max-w-[768px]">
-                  {e.content}
+                {!isFromMe && (
+                  <Avatar className="self-center">
+                    <AvatarImage
+                      src={message.fromPfp}
+                      alt={`${message.fromUsername}'s pfp`}
+                    />
+                    <AvatarFallback>
+                      {message.fromUsername[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div className="flex-none rounded-xl bg-muted p-2 break-words max-w-[768px]">
+                  {message.content}
                 </div>
                 <div className="self-center text-[0.7rem] flex flex-col text-ring">
                   <div>
-                    {isToday(e.sentAt)
+                    {isToday(message.sentAt)
                       ? "today"
-                      : isYesterday(e.sentAt)
+                      : isYesterday(message.sentAt)
                         ? "yesterday"
                         : date}
                   </div>

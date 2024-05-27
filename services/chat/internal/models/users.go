@@ -13,7 +13,7 @@ import (
 type IUserModel interface {
 	Add(ctx context.Context, userId uuid.UUID, username string) error
 	GetByUsername(ctx context.Context, username string) (uuid.UUID, error)
-	GetById(ctx context.Context, userId uuid.UUID) (string, error)
+	GetById(ctx context.Context, userId uuid.UUID) (User, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
 	SetUsername(ctx context.Context, userId uuid.UUID, username string) error
 	SetPfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error
@@ -28,6 +28,7 @@ func NewUserModel() *UserModel {
 type User struct {
 	UserId   uuid.UUID `db:"id"`
 	Username string    `db:"username"`
+	Pfp      string    `db:"pfp"`
 }
 
 func (m *UserModel) Add(ctx context.Context, userId uuid.UUID, username string) error {
@@ -43,11 +44,11 @@ func (m *UserModel) GetByUsername(ctx context.Context, username string) (uuid.UU
 	return userId, err
 }
 
-func (m *UserModel) GetById(ctx context.Context, userId uuid.UUID) (string, error) {
-	var username string
+func (m *UserModel) GetById(ctx context.Context, userId uuid.UUID) (User, error) {
+	user := User{UserId: userId}
 	err := DB.QueryRow(ctx,
-		`SELECT username FROM users WHERE id = $1`, userId).Scan(&username)
-	return username, err
+		`SELECT username, pfp FROM users WHERE id = $1`, userId).Scan(&user.Username, &user.Pfp)
+	return user, err
 }
 
 func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error) {

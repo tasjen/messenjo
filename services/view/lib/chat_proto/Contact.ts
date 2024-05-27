@@ -7,7 +7,9 @@ export interface Contact {
   'groupId'?: (Buffer | Uint8Array | string);
   'userId'?: (Buffer | Uint8Array | string);
   'name'?: (string);
+  'pfp'?: (string);
   'memberCount'?: (number);
+  'unreadCount'?: (number);
   'lastMessageId'?: (number);
   'lastContent'?: (string);
   'lastSentAt'?: (_google_protobuf_Timestamp | null);
@@ -18,7 +20,9 @@ export interface Contact__Output {
   'groupId'?: (Uint8Array);
   'userId'?: (Uint8Array);
   'name'?: (string);
+  'pfp'?: (string);
   'memberCount'?: (number);
+  'unreadCount'?: (number);
   'lastMessageId'?: (number);
   'lastContent'?: (string);
   'lastSentAt'?: (_google_protobuf_Timestamp__Output);

@@ -5,6 +5,7 @@ import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _goo
 export interface Message {
   'id'?: (number);
   'fromUsername'?: (string);
+  'fromPfp'?: (string);
   'content'?: (string);
   'sentAt'?: (_google_protobuf_Timestamp | null);
 }
@@ -12,6 +13,7 @@ export interface Message {
 export interface Message__Output {
   'id'?: (number);
   'fromUsername'?: (string);
+  'fromPfp'?: (string);
   'content'?: (string);
   'sentAt'?: (_google_protobuf_Timestamp__Output);
 }

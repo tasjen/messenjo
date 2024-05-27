@@ -12,6 +12,7 @@ import { useStore } from "@/lib/stores/client-store";
 import { isToday, isYesterday } from "date-fns";
 import { Input } from "./ui/input";
 import { Search } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 type Props = {
   user: User;
@@ -45,7 +46,7 @@ export default function ContactListClient(props: Props) {
           className="h-7 pl-8 rounded-full"
         />
       </div>
-      <ul className="flex flex-col divide-y h-full overflow-auto">
+      <ul className="flex flex-col h-full overflow-auto">
         {contacts
           .filter(
             (e) =>
@@ -53,32 +54,44 @@ export default function ContactListClient(props: Props) {
           )
           .sort((a, b) => b.lastMessage!.sentAt - a.lastMessage!.sentAt)
           .map((e) => {
-            const { content, sentAt } = e.lastMessage!;
-            const { date, time } = toDateFormat(sentAt);
+            const { content: lastContent, sentAt: lastSentAt } = e.lastMessage!;
+            const { date, time } = toDateFormat(lastSentAt);
             return (
               <li
                 key={e.groupId}
-                className={clsx("p-2", {
-                  "bg-secondary": pathname === `/chat/${e.groupId}`,
+                className={clsx("p-2 rounded-lg", {
+                  "bg-[#dddddd] dark:bg-[#333333]":
+                    pathname === `/chat/${e.groupId}`,
                 })}
               >
                 <Link href={`/chat/${e.groupId}`}>
-                  <div className="flex">
-                    <div className="font-bold text-ellipsis max-w-[60%] overflow-hidden">
-                      {e.name} {e.type === "group" && `(${e.memberCount})`}
-                    </div>
-                    <NoSSR>
-                      <div className="ml-auto text-xs self-center">
-                        {isToday(sentAt)
-                          ? time
-                          : isYesterday(sentAt)
-                            ? "yesterday"
-                            : date}
+                  <div className="flex gap-2">
+                    <Avatar className="self-center">
+                      <AvatarImage src={e.pfp} alt={`${e.name}'s pfp`} />
+                      <AvatarFallback>{e.name[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 flex flex-col">
+                      <div className="flex">
+                        <div className="font-bold text-ellipsis max-w-24 overflow-hidden">
+                          {e.name}
+                        </div>
+                        {e.type === "group" && (
+                          <div className="ml-2">({e.memberCount})</div>
+                        )}
+                        <NoSSR>
+                          <div className="ml-auto text-xs self-center">
+                            {isToday(lastSentAt)
+                              ? time
+                              : isYesterday(lastSentAt)
+                                ? "yesterday"
+                                : date}
+                          </div>
+                        </NoSSR>
                       </div>
-                    </NoSSR>
-                  </div>
-                  <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap text-ring">
-                    {content}
+                      <div className="flex-initial text-sm text-ellipsis overflow-hidden whitespace-nowrap text-ring max-w-48">
+                        {lastContent}
+                      </div>
+                    </div>
                   </div>
                 </Link>
               </li>

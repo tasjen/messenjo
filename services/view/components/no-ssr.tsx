@@ -2,12 +2,17 @@
 
 import { ReactNode, useEffect, useState } from "react";
 
-export default function NoSSR({ children }: { children: ReactNode }) {
+type Props = {
+  fallback?: ReactNode;
+  children: ReactNode;
+};
+
+export default function NoSSR({ fallback, children }: Props) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  return isClient && children;
+  return isClient ? children : fallback;
 }

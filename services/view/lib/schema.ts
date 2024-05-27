@@ -8,11 +8,13 @@ export const Timestamp = z.object({
 export const User = z.object({
   id: z.string(),
   username: z.string(),
+  pfp: z.string(),
 });
 
 export const Message = z.object({
   id: z.number(),
   fromUsername: z.string(),
+  fromPfp: z.coerce.string(),
   content: z.string(),
   sentAt: z.number(),
 });
@@ -22,6 +24,7 @@ export const Contact = z.object({
   groupId: z.string(),
   userId: z.string().optional(),
   name: z.string(),
+  pfp: z.string(),
   memberCount: z.number().optional(),
   lastMessage: Message.optional(),
 });
