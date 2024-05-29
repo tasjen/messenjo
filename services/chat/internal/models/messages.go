@@ -11,7 +11,7 @@ import (
 
 type IMessageModel interface {
 	GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error)
-	Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, error)
+	Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error)
 }
 
 type MessageModel struct{}
@@ -66,17 +66,23 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 	return messages, nil
 }
 
-func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, error) {
+func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error) {
 	stmt := `
-		INSERT INTO messages (user_id, group_id, content, sent_at)
-		VALUES ($1, $2, $3, TO_TIMESTAMP($4))
-		RETURNING
-			"id",
-			(SELECT username FROM users WHERE id = $1) AS username`
+		WITH sent_message AS (
+			INSERT INTO messages (user_id, group_id, content, sent_at)
+			VALUES ($1, $2, $3, TO_TIMESTAMP($4))
+			RETURNING *
+		)
+		SELECT sent_message.id, users.username, users.pfp
+		FROM sent_message
+		JOIN users
+		ON sent_message.user_id = users.id
+		WHERE users.id = $1;`
 	var (
-		id       int32
-		username string
+		id           int32
+		fromUsername string
+		fromPfp      string
 	)
-	err := DB.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt.UnixMilli())/1000).Scan(&id, &username)
-	return id, username, err
+	err := DB.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt.UnixMilli())/1000).Scan(&id, &fromUsername, &fromPfp)
+	return id, fromUsername, fromPfp, err
 }

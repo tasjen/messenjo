@@ -72,7 +72,7 @@ export default function ChatBoard(props: Props) {
                     </AvatarFallback>
                   </Avatar>
                 )}
-                <div className="flex-none rounded-xl bg-muted p-2 break-words max-w-[768px]">
+                <div className="flex-none rounded-full px-3 bg-muted p-2 break-words max-w-[768px]">
                   {message.content}
                 </div>
                 <div className="self-center text-[0.7rem] flex flex-col text-ring">

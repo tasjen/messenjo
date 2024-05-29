@@ -3,7 +3,6 @@ import { createClient } from "redis";
 import { getGroupIds, verifyUser } from "./grpc-client";
 import { UserManager } from "./user-manager";
 import { z } from "zod";
-// import { getToken } from "./utils";
 import cookie from "cookie";
 
 let t0 = Date.now();
@@ -85,15 +84,6 @@ app.ws<UserData>("/", {
     console.log("time: ", (t1 - t0) / 1000);
     t0 = t1;
   },
-
-  message: (ws, message, isBynary) => {
-    const [toUsername, msg] = new TextDecoder("utf8")
-      .decode(message)
-      .split("#");
-    ws.publish(toUsername, msg, isBynary);
-
-    console.log("message: ", message);
-  },
 });
 
 app.listen(Number(PORT), async (listenSocket) => {
@@ -132,6 +122,7 @@ const SendMessageAction = z.object({
     message: z.object({
       id: z.number(),
       fromUsername: z.string(),
+      fromPfp: z.coerce.string(),
       content: z.string(),
       sentAt: z.number(),
     }),

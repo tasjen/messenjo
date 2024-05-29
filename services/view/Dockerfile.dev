@@ -1,8 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
 
-COPY /services/view .
-COPY /protos ./protos
+COPY . .
 
 RUN npm install
 

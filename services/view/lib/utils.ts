@@ -23,7 +23,7 @@ export function uuidParse(uuid: string): Uint8Array {
   if (
     !/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(uuid)
   ) {
-    throw new Error("Invalid UUID string format");
+    throw new Error(`Invalid UUID string format: ${uuid}`);
   }
 
   uuid = uuid.replaceAll("-", "");

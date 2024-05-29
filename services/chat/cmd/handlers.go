@@ -365,12 +365,12 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 
 	sentAt := req.GetSentAt().AsTime()
 
-	id, username, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
+	id, fromUsername, fromPfp, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
 	if err != nil {
 		return nil, err
 	}
 
-	sendMessageAction := NewSendMessageAction(groupId.String(), id, username, content, sentAt.UnixMilli())
+	sendMessageAction := NewSendMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 	sendMessageActionJson, err := json.Marshal(sendMessageAction)
 	if err != nil {
 		fmt.Println(err)

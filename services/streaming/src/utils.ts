@@ -47,10 +47,3 @@ export function uuidParse(uuid: string): Uint8Array {
 
   return uuidBytes;
 }
-
-// export function getToken(cookies: string): string {
-//   const start = cookies.indexOf("auth_jwt=") + "auth_jwt=".length;
-//   console.log(cookies);
-//   console.log(start);
-//   return cookies.slice(start, cookies.indexOf("; ", start));
-// }

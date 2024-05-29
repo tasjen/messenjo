@@ -13,11 +13,12 @@ type SendMessagePayload struct {
 type Message struct {
 	Id           int32  `json:"id"`
 	FromUsername string `json:"fromUsername"`
+	FromPfp      string `json:"fromPfp"`
 	Content      string `json:"content"`
 	SentAt       int64  `json:"sentAt"`
 }
 
-func NewSendMessageAction(groupId string, id int32, fromUsername, content string, sentAt int64) SendMessageAction {
+func NewSendMessageAction(groupId string, id int32, fromUsername, fromPfp, content string, sentAt int64) SendMessageAction {
 	return SendMessageAction{
 		Type: "SEND_MESSAGE",
 		Payload: SendMessagePayload{
@@ -25,6 +26,7 @@ func NewSendMessageAction(groupId string, id int32, fromUsername, content string
 			Message: Message{
 				Id:           id,
 				FromUsername: fromUsername,
+				FromPfp:      fromPfp,
 				Content:      content,
 				SentAt:       sentAt,
 			},

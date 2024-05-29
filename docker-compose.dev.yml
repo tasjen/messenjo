@@ -4,8 +4,8 @@ services:
     image: message-app-view-dev
     container_name: message-app-view-dev
     build:
-      context: .
-      dockerfile: ./services/view/Dockerfile.dev
+      context: ./services/view
+      dockerfile: Dockerfile.dev
     volumes:
       - ./services/view:/app
       - /app/node_modules

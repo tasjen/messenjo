@@ -39,6 +39,7 @@ export default function ChatForm() {
       store.addMessage(groupId, {
         id: messageId,
         fromUsername: store.user.username,
+        fromPfp: store.user.pfp,
         content,
         sentAt: sentAt.getTime(),
       });

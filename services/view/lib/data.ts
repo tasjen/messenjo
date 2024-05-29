@@ -123,6 +123,8 @@ export async function fetchContacts(): Promise<Contact[]> {
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
   await new Promise((resolve) => setTimeout(resolve, 500));
+  console.log(`groupId: ${groupId}`);
+  console.log(`userId: ${getUserId()}`);
   try {
     return await new Promise((resolve, reject) => {
       chatClient.GetMessages(
@@ -153,6 +155,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
   } catch (err) {
     if (err instanceof Error) {
       console.error("fetchMessages error: ", err.message);
+      console.log(err);
     } else {
       console.error("fetchMessages unknown error");
     }
