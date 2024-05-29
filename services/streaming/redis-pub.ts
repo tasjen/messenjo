@@ -3,13 +3,8 @@ import { createClient } from "redis";
 const pubClient = createClient({ url: "redis://messagech:6379" });
 (async () => {
   await pubClient.connect();
-})();
-
-const messageChannel = "main";
-
-pubClient
-  .publish(
-    messageChannel,
+  await pubClient.publish(
+    "main",
     JSON.stringify({
       type: "SEND_MESSAGE",
       payload: {
@@ -22,7 +17,6 @@ pubClient
         },
       },
     })
-  )
-  .then(() => {
-    pubClient.disconnect();
-  });
+  );
+  await pubClient.disconnect();
+})();

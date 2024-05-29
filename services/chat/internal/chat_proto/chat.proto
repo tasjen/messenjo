@@ -83,6 +83,7 @@ message GetGroupIdsRes {
 
 message CreateUserReq {
   string username = 1;
+  string pfp = 2;
 }
 message CreateUserRes {
   bytes user_id = 1;

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -207,7 +206,7 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	}
 
 	userId := uuid.New()
-	err := app.users.Add(ctx, userId, username)
+	err := app.users.Add(ctx, userId, username, req.GetPfp())
 	var pgErr *pgconn.PgError
 	if err != nil && !(errors.As(err, &pgErr) && pgErr.Code == "23505") {
 		return &pb.CreateUserRes{}, err
@@ -350,31 +349,32 @@ func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*e
 func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.SendMessageRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return nil, err
+		return &pb.SendMessageRes{}, err
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return nil, err
+		return &pb.SendMessageRes{}, err
 	}
 
 	content := req.GetContent()
 	if l := len(content); l < 1 || l > 300 {
-		return nil, errors.New("message must be at least 1 character and not exceed 300 characters")
+		return &pb.SendMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
 	}
 
 	sentAt := req.GetSentAt().AsTime()
 
 	id, fromUsername, fromPfp, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
 	if err != nil {
-		return nil, err
+		return &pb.SendMessageRes{}, err
 	}
 
 	sendMessageAction := NewSendMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 	sendMessageActionJson, err := json.Marshal(sendMessageAction)
 	if err != nil {
-		fmt.Println(err)
+		app.errorLog.Println(err)
+	} else {
+		app.pubClient.Publish(ctx, "main", sendMessageActionJson)
 	}
-	app.pubClient.Publish(ctx, "main", sendMessageActionJson)
-	return &pb.SendMessageRes{MessageId: id}, err
+	return &pb.SendMessageRes{MessageId: id}, nil
 }

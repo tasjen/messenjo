@@ -8,7 +8,6 @@ package chat_proto
 
 import (
 	context "context"
-	empty "google.golang.org/protobuf/types/known/emptypb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -21,7 +20,6 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Chat_CreateUser_FullMethodName = "/Chat/CreateUser"
-	Chat_SetPfp_FullMethodName     = "/Chat/SetPfp"
 )
 
 // ChatClient is the client API for Chat service.
@@ -29,7 +27,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatClient interface {
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
-	SetPfp(ctx context.Context, in *SetPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type chatClient struct {
@@ -49,21 +46,11 @@ func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...
 	return out, nil
 }
 
-func (c *chatClient) SetPfp(ctx context.Context, in *SetPfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, Chat_SetPfp_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ChatServer is the server API for Chat service.
 // All implementations must embed UnimplementedChatServer
 // for forward compatibility
 type ChatServer interface {
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
-	SetPfp(context.Context, *SetPfpReq) (*empty.Empty, error)
 	mustEmbedUnimplementedChatServer()
 }
 
@@ -73,9 +60,6 @@ type UnimplementedChatServer struct {
 
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
-}
-func (UnimplementedChatServer) SetPfp(context.Context, *SetPfpReq) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetPfp not implemented")
 }
 func (UnimplementedChatServer) mustEmbedUnimplementedChatServer() {}
 
@@ -108,24 +92,6 @@ func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_SetPfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPfpReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServer).SetPfp(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Chat_SetPfp_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).SetPfp(ctx, req.(*SetPfpReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Chat_ServiceDesc is the grpc.ServiceDesc for Chat service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,10 +102,6 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateUser",
 			Handler:    _Chat_CreateUser_Handler,
-		},
-		{
-			MethodName: "SetPfp",
-			Handler:    _Chat_SetPfp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

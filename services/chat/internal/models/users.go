@@ -11,12 +11,12 @@ import (
 )
 
 type IUserModel interface {
-	Add(ctx context.Context, userId uuid.UUID, username string) error
+	Add(ctx context.Context, userId uuid.UUID, username, pfp string) error
 	GetByUsername(ctx context.Context, username string) (uuid.UUID, error)
 	GetById(ctx context.Context, userId uuid.UUID) (User, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
 	SetUsername(ctx context.Context, userId uuid.UUID, username string) error
-	SetPfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error
+	SetPfp(ctx context.Context, userId uuid.UUID, pfp string) error
 }
 
 type UserModel struct{}
@@ -31,9 +31,9 @@ type User struct {
 	Pfp      string    `db:"pfp"`
 }
 
-func (m *UserModel) Add(ctx context.Context, userId uuid.UUID, username string) error {
-	stmt := `INSERT INTO users (id, username) VALUES ($1, $2);`
-	_, err := DB.Exec(ctx, stmt, userId, username)
+func (m *UserModel) Add(ctx context.Context, userId uuid.UUID, username, pfp string) error {
+	stmt := `INSERT INTO users (id, username, pfp) VALUES ($1, $2, $3);`
+	_, err := DB.Exec(ctx, stmt, userId, username, pfp)
 	return err
 }
 
@@ -93,12 +93,12 @@ func (m *UserModel) SetUsername(ctx context.Context, userId uuid.UUID, username 
 	return err
 }
 
-func (m *UserModel) SetPfp(ctx context.Context, userId uuid.UUID, pfpUrl string) error {
+func (m *UserModel) SetPfp(ctx context.Context, userId uuid.UUID, pfp string) error {
 	stmt := `
 		UPDATE users
 		SET pfp = $2
 		WHERE id = $1;`
-	_, err := DB.Exec(ctx, stmt, userId, pfpUrl)
+	_, err := DB.Exec(ctx, stmt, userId, pfp)
 	return err
 }
 

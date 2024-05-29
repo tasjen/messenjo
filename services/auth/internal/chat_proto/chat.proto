@@ -1,21 +1,15 @@
 syntax = "proto3";
 
 option go_package = "github.com/tasjen/message-app-fullstack/services/chat/chat_proto";
-import "google/protobuf/empty.proto";
 
 service Chat {
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
-  rpc SetPfp (SetPfpReq) returns (google.protobuf.Empty) {}
 }
 
 message CreateUserReq {
   string username = 1;
+  string pfp = 2;
 }
 message CreateUserRes {
   bytes user_id = 1;
-}
-
-message SetPfpReq {
-  bytes user_id = 1;
-  string pfp_url = 2;
 }

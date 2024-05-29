@@ -100,6 +100,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			r.Context(),
 			&chat_pb.CreateUserReq{
 				Username: fmt.Sprintf("%v#%v", providerName, oauthAccountInfo.Id),
+				Pfp:      oauthAccountInfo.Pfp,
 			})
 		if err != nil {
 			log.Println(err)
@@ -128,26 +129,6 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			http.Redirect(w, r, "/error", http.StatusFound)
 			return
 		}
-	}
-
-	userId, err := uuid.Parse(account.UserId)
-	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/error", http.StatusFound)
-		return
-	}
-
-	_, err = app.chatClient.SetPfp(
-		r.Context(),
-		&chat_pb.SetPfpReq{
-			UserId: userId[:],
-			PfpUrl: oauthAccountInfo.Pfp,
-		},
-	)
-	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/error", http.StatusFound)
-		return
 	}
 
 	// Sign jwt to cookies with userId
