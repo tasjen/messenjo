@@ -1,13 +1,13 @@
 # for generating AuthService gRPC-web code
-# run: npx buf generate auth.proto
+# run: npx buf generate lib/auth_proto/auth.proto
 
 version: v1
 plugins:
   - plugin: es
-    out: lib/auth_proto2
+    out: lib/auth_proto
     opt:
       - target=ts
   - plugin: connect-es
-    out: lib/auth_proto2
+    out: lib/auth_proto
     opt:
       - target=ts

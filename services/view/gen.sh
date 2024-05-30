@@ -1,4 +1,4 @@
-# npm i @grpc/grpc-js @grpc/proto-loader
+npx buf generate lib/auth_proto/auth.proto
 ./node_modules/.bin/proto-loader-gen-types \
 --bytes=Array \
 --grpcLib=@grpc/grpc-js \

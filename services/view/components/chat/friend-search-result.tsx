@@ -13,7 +13,7 @@ export default async function FriendSearchResult({ username }: Props) {
 
   const userResult = await fetchUserByUsername(username);
 
-  if (!userResult.id) {
+  if (!userResult) {
     return <div>Username not found</div>;
   }
 

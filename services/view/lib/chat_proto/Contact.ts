@@ -1,6 +1,6 @@
 // Original file: lib/chat_proto/chat.proto
 
-import type { Timestamp as _google_protobuf_Timestamp, Timestamp__Output as _google_protobuf_Timestamp__Output } from './google/protobuf/Timestamp';
+import type { Message as _Message, Message__Output as _Message__Output } from './Message';
 
 export interface Contact {
   'type'?: (string);
@@ -10,9 +10,7 @@ export interface Contact {
   'pfp'?: (string);
   'memberCount'?: (number);
   'unreadCount'?: (number);
-  'lastMessageId'?: (number);
-  'lastContent'?: (string);
-  'lastSentAt'?: (_google_protobuf_Timestamp | null);
+  'lastMessage'?: (_Message | null);
 }
 
 export interface Contact__Output {
@@ -23,7 +21,5 @@ export interface Contact__Output {
   'pfp'?: (string);
   'memberCount'?: (number);
   'unreadCount'?: (number);
-  'lastMessageId'?: (number);
-  'lastContent'?: (string);
-  'lastSentAt'?: (_google_protobuf_Timestamp__Output);
+  'lastMessage'?: (_Message__Output);
 }

@@ -1,14 +1,14 @@
+import { ServiceError } from "@grpc/grpc-js";
 import { z } from "zod";
 
-export const Timestamp = z.object({
-  seconds: z.number(),
-  nanos: z.number(),
-});
+export function isServiceError(err: unknown): err is ServiceError {
+  return z.object({ details: z.string() }).safeParse(err).success;
+}
 
 export const User = z.object({
   id: z.string(),
   username: z.string(),
-  pfp: z.string(),
+  pfp: z.coerce.string(),
 });
 
 export const Message = z.object({
@@ -24,7 +24,7 @@ export const Contact = z.object({
   groupId: z.string(),
   userId: z.string().optional(),
   name: z.string(),
-  pfp: z.string(),
+  pfp: z.coerce.string(),
   memberCount: z.number().optional(),
   lastMessage: Message.optional(),
 });
@@ -53,7 +53,6 @@ export const Action = z.discriminatedUnion("type", [
   }),
 ]);
 
-export type Timestamp = z.infer<typeof Timestamp>;
 export type User = z.infer<typeof User>;
 export type Message = z.infer<typeof Message>;
 export type Contact = z.infer<typeof Contact>;

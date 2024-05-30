@@ -46,9 +46,7 @@ message Contact {
   string pfp = 5;
   int32 member_count = 6;
   int32 unread_count = 7;
-  int32 last_message_id = 8;
-  string last_content = 9;
-  google.protobuf.Timestamp last_sent_at = 10;
+  Message lastMessage = 8;
 }
 
 message GetMessagesReq {

@@ -1,11 +1,11 @@
 "use server";
 
-import { chatClient } from "./grpc-client";
+import chatClient from "./grpc-client";
 import { getUserId } from "./data";
-import { newDeadline, uuidParse } from "./utils";
+import { uuidParse } from "./utils";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { Timestamp } from "./schema";
+import { isServiceError } from "./schema";
 
 type FormState = {
   error?: string;
@@ -19,40 +19,23 @@ export async function changeUsername(formData: FormData): Promise<FormState> {
   }
 
   try {
-    await new Promise<void>((resolve, reject) => {
-      chatClient.setUsername(
-        { userId: uuidParse(getUserId()), username },
-        { deadline: newDeadline(5) },
-        (err) => (err ? reject(err.details) : resolve())
-      );
-    });
+    await chatClient.setUsername({ userId: uuidParse(getUserId()), username });
     return {};
   } catch (err) {
-    if (typeof err === "string") {
-      return { error: err };
+    if (isServiceError(err)) {
+      return { error: err.details };
     } else if (err instanceof Error) {
       return { error: err.message };
     }
+    return { error: "unknown error" };
   }
-  return { error: "unknown error" };
 }
 
-export async function addFriend(toUserId: string) {
+export async function addFriend(toUserId: string): Promise<void> {
   try {
-    return await new Promise<void>((resolve, reject) => {
-      chatClient.AddFriend(
-        {
-          fromUserId: uuidParse(getUserId()),
-          toUserId: uuidParse(toUserId),
-        },
-        { deadline: newDeadline(5) },
-        (err) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        }
-      );
+    await chatClient.addFriend({
+      fromUserId: uuidParse(getUserId()),
+      toUserId: uuidParse(toUserId),
     });
   } catch (err) {
     if (err instanceof Error) {
@@ -67,31 +50,17 @@ export async function sendMessage(
   formData: FormData
 ): Promise<number> {
   // await new Promise((resolve) => setTimeout(resolve, 1000));
-
   try {
-    const sentAtTimestamp = Timestamp.parse({
-      seconds: Math.floor(sentAt.getTime() / 1000),
-      nanos: sentAt.getMilliseconds() * 1e6,
+    const res = await chatClient.sendMessage({
+      userId: uuidParse(getUserId()),
+      groupId: uuidParse(toGroupId),
+      content: formData.get("content") as string,
+      sentAt: {
+        seconds: Math.floor(sentAt.getTime() / 1000),
+        nanos: sentAt.getMilliseconds() * 1e6,
+      },
     });
-    return await new Promise<number>((resolve, reject) => {
-      chatClient.SendMessage(
-        {
-          userId: uuidParse(getUserId()),
-          groupId: uuidParse(toGroupId),
-          content: formData.get("content") as string,
-          sentAt: sentAtTimestamp,
-        },
-        { deadline: newDeadline(5) },
-        (err, res) => {
-          if (err) {
-            return reject(err);
-          } else if (!res?.messageId) {
-            return reject(new Error("no response from SendMessage service"));
-          }
-          resolve(z.number().parse(res.messageId));
-        }
-      );
-    });
+    return z.number().parse(res?.messageId);
   } catch (err) {
     if (err instanceof Error) {
       console.log(err.message);

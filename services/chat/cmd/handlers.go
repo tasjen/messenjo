@@ -120,9 +120,13 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var memberCount sql.NullInt32
 		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
 		c.MemberCount = memberCount.Int32
-		c.LastMessageId = lastMessageId.Int32
-		c.LastSentAt = timestamp.New(lastSentAt.Time)
-		c.LastContent = lastContent.String
+		if lastMessageId.Valid {
+			c.LastMessage = &pb.Message{
+				Id:      lastMessageId.Int32,
+				Content: lastContent.String,
+				SentAt:  timestamp.New(lastSentAt.Time),
+			}
+		}
 		return &c, err
 	})
 	if err != nil {
