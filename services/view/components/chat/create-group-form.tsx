@@ -6,10 +6,14 @@ import { Label } from "../ui/label";
 import { useState } from "react";
 import { MultiSelect } from "../ui/multi-select";
 import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import clsx from "clsx";
 
 export default function CreateGroupForm() {
   const store = useStore();
   const [selected, setSelected] = useState<string[]>([]);
+  const [pfp, setPfp] = useState("");
+  const [groupName, setGroupName] = useState("");
 
   const options = store.contacts
     .filter((contact) => contact.type === "friend")
@@ -31,7 +35,13 @@ export default function CreateGroupForm() {
     >
       <Label>
         <div className="mb-2">Group name</div>
-        <Input id="group-name" name="group-name" autoComplete="off" />
+        <Input
+          id="group-name"
+          name="group-name"
+          autoComplete="off"
+          value={groupName}
+          onChange={({ target }) => setGroupName(target.value)}
+        />
       </Label>
       <Label>
         <div className="mb-2">
@@ -40,12 +50,22 @@ export default function CreateGroupForm() {
             <div className="text-muted-foreground">(optional)</div>
           </div>
         </div>
-        <Input
-          id="group-name"
-          name="group-name"
-          placeholder="Image URL"
-          autoComplete="off"
-        />
+        <div className="flex gap-2 items-center">
+          <Avatar className="self-center h-20 w-20">
+            <AvatarImage src={pfp} alt="pfp preview" />
+            <AvatarFallback className={clsx(groupName !== "" && "text-3xl")}>
+              {groupName ? groupName[0].toUpperCase() : "preview"}
+            </AvatarFallback>
+          </Avatar>
+          <Input
+            id="group-name"
+            name="group-name"
+            placeholder="Image URL"
+            autoComplete="off"
+            value={pfp}
+            onChange={({ target }) => setPfp(target.value)}
+          />
+        </div>
       </Label>
       <Label>
         <div className="mb-2">
