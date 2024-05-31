@@ -220,8 +220,8 @@ func (app *application) SetUserPfp(ctx context.Context, req *pb.SetUserPfpReq) (
 	}
 
 	pfpUrl := req.GetPfpUrl()
-	if l := len(pfpUrl); l < 1 || l > 512 {
-		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 512 characters")
+	if l := len(pfpUrl); l < 1 || l > 1024 {
+		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 1024 characters")
 	}
 
 	err = app.users.SetPfp(ctx, userId, pfpUrl)
