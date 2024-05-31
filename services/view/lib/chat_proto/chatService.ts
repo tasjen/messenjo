@@ -13,18 +13,19 @@ export interface ProtoGrpcType {
   Chat: SubtypeConstructor<typeof grpc.Client, _ChatClient> & { service: _ChatDefinition }
   Contact: MessageTypeDefinition
   CreateGroupReq: MessageTypeDefinition
-  GetByUsernameReq: MessageTypeDefinition
-  GetByUsernameRes: MessageTypeDefinition
   GetContactsReq: MessageTypeDefinition
   GetContactsRes: MessageTypeDefinition
   GetMessagesReq: MessageTypeDefinition
   GetMessagesRes: MessageTypeDefinition
   GetUserByIdReq: MessageTypeDefinition
-  GetUserByIdRes: MessageTypeDefinition
+  GetUserByUsernameReq: MessageTypeDefinition
   Message: MessageTypeDefinition
   SendMessageReq: MessageTypeDefinition
   SendMessageRes: MessageTypeDefinition
+  SetGroupPfpReq: MessageTypeDefinition
+  SetUserPfpReq: MessageTypeDefinition
   SetUsernameReq: MessageTypeDefinition
+  User: MessageTypeDefinition
   google: {
     protobuf: {
       Empty: MessageTypeDefinition

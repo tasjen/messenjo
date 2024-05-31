@@ -72,7 +72,7 @@ export default function ContactListClient(props: Props) {
                     </Avatar>
                     <div className="flex-1 flex flex-col">
                       <div className="flex">
-                        <div className="font-bold text-ellipsis max-w-24 overflow-hidden">
+                        <div className="font-bold text-ellipsis max-w-32 overflow-hidden">
                           {e.name}
                         </div>
                         {e.type === "group" && (

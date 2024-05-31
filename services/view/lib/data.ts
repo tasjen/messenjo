@@ -16,7 +16,7 @@ export async function fetchUserInfo(): Promise<User> {
   try {
     const userId = getUserId();
     const res = await chatClient.getUserById({ userId: uuidParse(userId) });
-    return User.parse({ id: userId, ...res });
+    return User.parse({ ...res, id: userId });
   } catch (err) {
     if (err instanceof Error) {
       console.error("fetchUserData error: ", err.message);
@@ -33,15 +33,15 @@ export async function fetchUserByUsername(
   noStore();
   try {
     const res = await chatClient.getByUsername({ username });
-    if (!res?.userId) {
+    if (!res?.id) {
       return null;
     }
-    return User.parse({ id: uuidStringify(res.userId), username });
+    return User.parse({ id: uuidStringify(res.id), username });
   } catch (err) {
     if (err instanceof Error) {
       console.error("fetchUserByUsername error: ", err.message);
     }
-    redirect("/friends");
+    redirect("/error");
   }
 }
 

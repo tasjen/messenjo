@@ -1,10 +1,10 @@
 // Original file: lib/chat_proto/chat.proto
 
 
-export interface GetByUsernameReq {
+export interface GetUserByUsernameReq {
   'username'?: (string);
 }
 
-export interface GetByUsernameReq__Output {
+export interface GetUserByUsernameReq__Output {
   'username'?: (string);
 }

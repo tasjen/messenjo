@@ -34,7 +34,7 @@ export default function CreateGroupForm() {
       }}
     >
       <Label>
-        <div className="mb-2">Group name</div>
+        <div className="mb-2 font-bold">Group name</div>
         <Input
           id="group-name"
           name="group-name"
@@ -44,11 +44,9 @@ export default function CreateGroupForm() {
         />
       </Label>
       <Label>
-        <div className="mb-2">
-          <div className="flex gap-2">
-            Group profile picture
-            <div className="text-muted-foreground">(optional)</div>
-          </div>
+        <div className="mb-2 flex gap-2">
+          <div className="font-bold">Group profile picture</div>
+          <div className="text-muted-foreground">(optional)</div>
         </div>
         <div className="flex gap-2 items-center">
           <Avatar className="self-center h-20 w-20">
@@ -68,11 +66,9 @@ export default function CreateGroupForm() {
         </div>
       </Label>
       <Label>
-        <div className="mb-2">
-          <div className="flex gap-2">
-            Initial members
-            <div className="text-muted-foreground">(optional)</div>
-          </div>
+        <div className="mb-2 flex gap-2">
+          <div className="font-bold">Initial members</div>
+          <div className="text-muted-foreground">(optional)</div>
         </div>
         <MultiSelect
           options={options}

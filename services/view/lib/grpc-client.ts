@@ -6,7 +6,7 @@ import { newDeadline } from "./utils";
 import type { ChatClient } from "./chat_proto/Chat";
 import { AddFriendReq } from "./chat_proto/AddFriendReq";
 import { SetUsernameReq } from "./chat_proto/SetUsernameReq";
-import { GetByUsernameReq } from "./chat_proto/GetByUsernameReq";
+import { GetUserByUsernameReq } from "./chat_proto/GetUserByUsernameReq";
 import { GetUserByIdReq } from "./chat_proto/GetUserByIdReq";
 import { GetContactsReq } from "./chat_proto/GetContactsReq";
 import { GetMessagesReq } from "./chat_proto/GetMessagesReq";
@@ -26,11 +26,13 @@ const { Chat } = grpc.loadPackageDefinition(
 const chatClient = new Chat("chat:3000", grpc.credentials.createInsecure());
 
 async function getByUsername(
-  req: GetByUsernameReq
-): Promise<Parameters<Parameters<ChatClient["GetByUsername"]>[1]>[1]> {
+  req: GetUserByUsernameReq
+): Promise<Parameters<Parameters<ChatClient["GetUserByUsername"]>[1]>[1]> {
   return new Promise((resolve, reject) => {
-    chatClient.GetByUsername(req, { deadline: newDeadline(5) }, (err, res) =>
-      err ? reject(err) : resolve(res)
+    chatClient.GetUserByUsername(
+      req,
+      { deadline: newDeadline(5) },
+      (err, res) => (err ? reject(err) : resolve(res))
     );
   });
 }

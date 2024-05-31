@@ -15,31 +15,31 @@ import (
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (app *application) GetByUsername(ctx context.Context, req *pb.GetByUsernameReq) (*pb.GetByUsernameRes, error) {
+func (app *application) GetUserByUsername(ctx context.Context, req *pb.GetUserByUsernameReq) (*pb.User, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &pb.GetByUsernameRes{}, errors.New("bad request")
+		return &pb.User{}, errors.New("bad request")
 	}
 
-	userId, err := app.users.GetByUsername(ctx, username)
+	user, err := app.users.GetByUsername(ctx, username)
 	switch {
 	case err == pgx.ErrNoRows:
-		return &pb.GetByUsernameRes{}, nil
+		return &pb.User{}, nil
 	case err != nil:
-		app.errorLog.Println(err.Error())
-		return &pb.GetByUsernameRes{}, err
+		app.errorLog.Println(err)
+		return &pb.User{}, err
 	}
 
-	return &pb.GetByUsernameRes{UserId: userId[:]}, nil
+	return &pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
-func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq) (*pb.GetUserByIdRes, error) {
+func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq) (*pb.User, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.GetUserByIdRes{}, err
+		return &pb.User{}, err
 	}
 	user, err := app.users.GetById(ctx, userId)
-	return &pb.GetUserByIdRes{Username: user.Username, Pfp: user.Pfp}, err
+	return &pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, err
 }
 
 func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
@@ -219,7 +219,7 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
-func (app *application) SetPfp(ctx context.Context, req *pb.SetPfpReq) (*empty.Empty, error) {
+func (app *application) SetUserPfp(ctx context.Context, req *pb.SetUserPfpReq) (*empty.Empty, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return &empty.Empty{}, err

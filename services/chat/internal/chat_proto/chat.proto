@@ -1,5 +1,8 @@
-syntax = "proto3";
+// go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.1
+// go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+// export PATH="$PATH:$(go env GOPATH)/bin"
 
+syntax = "proto3";
 option go_package = "github.com/tasjen/message-app-fullstack/services/chat/chat_proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
@@ -7,15 +10,16 @@ import "google/protobuf/timestamp.proto";
 service Chat {
   // for Auth
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
-  rpc SetPfp (SetPfpReq) returns (google.protobuf.Empty) {}
-
+  
   // for View
-  rpc GetByUsername (GetByUsernameReq) returns (GetByUsernameRes) {}
-  rpc GetUserById (GetUserByIdReq) returns (GetUserByIdRes) {}
+  rpc GetUserByUsername (GetUserByUsernameReq) returns (User) {}
+  rpc GetUserById (GetUserByIdReq) returns (User) {}
   rpc GetContacts (GetContactsReq) returns (GetContactsRes) {}
   rpc GetMessages (GetMessagesReq) returns (GetMessagesRes) {}
   rpc CreateGroup (CreateGroupReq) returns (google.protobuf.Empty) {}
   rpc SetUsername (SetUsernameReq) returns (google.protobuf.Empty) {}
+  rpc SetUserPfp (SetUserPfpReq) returns (google.protobuf.Empty) {}
+  rpc SetGroupPfp (SetGroupPfpReq) returns (google.protobuf.Empty) {}
   rpc AddFriend (AddFriendReq) returns (google.protobuf.Empty) {}
   rpc AddMember (AddMemberReq) returns (google.protobuf.Empty) {}
   rpc SendMessage (SendMessageReq) returns (SendMessageRes) {}
@@ -25,19 +29,18 @@ service Chat {
 
 }
 
-message GetByUsernameReq {
-  string username = 1;
+message User {
+  bytes id = 1;
+  string username = 2;
+  string pfp = 3;
 }
-message GetByUsernameRes {
-  bytes user_id = 1;
+
+message GetUserByUsernameReq {
+  string username = 1;
 }
 
 message GetUserByIdReq {
   bytes user_id = 1;
-}
-message GetUserByIdRes {
-  string username = 1;
-  string pfp = 2;
 }
 
 message GetContactsReq {
@@ -87,8 +90,13 @@ message CreateUserRes {
   bytes user_id = 1;
 }
 
-message SetPfpReq {
+message SetUserPfpReq {
   bytes user_id = 1;
+  string pfp_url = 2;
+}
+
+message SetGroupPfpReq {
+  bytes group_id = 1;
   string pfp_url = 2;
 }
 

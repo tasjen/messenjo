@@ -1,10 +1,12 @@
 // Original file: lib/chat_proto/chat.proto
 
 
-export interface GetByUsernameRes {
+export interface SetUserPfpReq {
   'userId'?: (Buffer | Uint8Array | string);
+  'pfpUrl'?: (string);
 }
 
-export interface GetByUsernameRes__Output {
+export interface SetUserPfpReq__Output {
   'userId'?: (Uint8Array);
+  'pfpUrl'?: (string);
 }
