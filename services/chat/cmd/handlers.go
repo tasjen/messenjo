@@ -26,7 +26,6 @@ func (app *application) GetUserByUsername(ctx context.Context, req *pb.GetUserBy
 	case err == pgx.ErrNoRows:
 		return &pb.User{}, nil
 	case err != nil:
-		app.errorLog.Println(err)
 		return &pb.User{}, err
 	}
 
@@ -108,7 +107,6 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 	case err == pgx.ErrNoRows:
 		return &pb.GetContactsRes{}, nil
 	case err != nil:
-		app.errorLog.Println(err.Error())
 		return &pb.GetContactsRes{}, err
 	}
 
@@ -130,7 +128,6 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		return &c, err
 	})
 	if err != nil {
-		app.errorLog.Println(err.Error())
 		return &pb.GetContactsRes{}, err
 	}
 
@@ -170,7 +167,6 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq) (*pb.GetGroupIdsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		app.errorLog.Println(err.Error())
 		return &pb.GetGroupIdsRes{}, err
 	}
 
@@ -184,7 +180,6 @@ func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq)
 	case err == pgx.ErrNoRows:
 		return &pb.GetGroupIdsRes{}, nil
 	case err != nil:
-		app.errorLog.Println(err.Error())
 		return &pb.GetGroupIdsRes{}, err
 	}
 
@@ -194,7 +189,6 @@ func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq)
 		return groupId, err
 	})
 	if err != nil {
-		app.errorLog.Println(err.Error())
 		return &pb.GetGroupIdsRes{}, err
 	}
 

@@ -42,7 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := grpc.NewServer()
 	app := &application{
 		errorLog: errorLog,
 		users:    models.NewUserModel(),
@@ -53,6 +52,7 @@ func main() {
 			Addr: "messagech:6379",
 		}),
 	}
+	s := grpc.NewServer(grpc.UnaryInterceptor(app.errHandler))
 
 	pb.RegisterChatServer(s, app)
 	log.Printf("gRPC service listening at %v", lis.Addr())
@@ -64,8 +64,7 @@ func getDbPool(ctx context.Context, pgURI string) (*pgxpool.Pool, error) {
 	if err != nil {
 		return &pgxpool.Pool{}, err
 	}
-	if err = pool.Ping(ctx); err != nil {
-		return &pgxpool.Pool{}, err
-	}
-	return pool, nil
+
+	err = pool.Ping(ctx)
+	return pool, err
 }
