@@ -11,7 +11,7 @@ type FormState = {
   error?: string;
 };
 
-export async function changeUsername(formData: FormData): Promise<FormState> {
+export async function setUsername(formData: FormData): Promise<FormState> {
   const username = formData.get("username") as string;
 
   if (!username || username.length < 1) {

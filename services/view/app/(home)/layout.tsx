@@ -11,7 +11,7 @@ import NoSSR from "@/components/no-ssr";
 import { Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import ClientStoreProvider from "@/lib/stores/client-store";
+import StoreProvider from "@/lib/stores/client-store";
 import SettingsButton from "@/components/settings-button";
 
 export default async function Layout({
@@ -24,7 +24,7 @@ export default async function Layout({
   getContacts();
 
   return (
-    <ClientStoreProvider>
+    <StoreProvider>
       <div className="flex h-screen p-4 gap-4">
         <NoSSR>
           <NewUsernameDialog isNewUser={true} />
@@ -48,6 +48,6 @@ export default async function Layout({
         </aside>
         <main className="flex-1 p-4 rounded-2xl border">{children}</main>
       </div>
-    </ClientStoreProvider>
+    </StoreProvider>
   );
 }

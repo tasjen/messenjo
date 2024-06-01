@@ -104,7 +104,6 @@ func (m *UserModel) SetPfp(ctx context.Context, userId uuid.UUID, pfp string) er
 
 type DupUsernameError struct {
 	Username string
-	Err      error
 }
 
 func (err *DupUsernameError) Error() string {

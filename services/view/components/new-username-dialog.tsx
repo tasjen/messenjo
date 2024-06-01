@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/stores/client-store";
-import { changeUsername } from "@/lib/actions";
+import { setUsername } from "@/lib/actions";
 import { useState } from "react";
 
 type Props = {
@@ -34,14 +34,11 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
         </DialogHeader>
         <form
           action={async (formData) => {
-            const formState = await changeUsername(formData);
+            const formState = await setUsername(formData);
             if (formState.error) {
               return setFormError(formState.error);
             }
-            store.setUser({
-              ...store.user,
-              username: formData.get("username") as string,
-            });
+            store.setUsername(formData.get("username") as string);
             return setIsOpen(false);
           }}
           className="grid grid-cols-4 items-center gap-4"

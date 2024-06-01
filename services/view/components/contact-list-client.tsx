@@ -25,8 +25,8 @@ export default function ContactListClient(props: Props) {
   const [term, setTerm] = useState("");
 
   useEffect(() => {
-    store.setUser(props.user);
-    store.setContacts(props.contacts);
+    store.loadUser(props.user);
+    store.loadContacts(props.contacts);
   }, []);
 
   if (store.isWsDisconnected) {

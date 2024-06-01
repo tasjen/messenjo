@@ -2,29 +2,34 @@
 
 import { createContext, useContext, ReactNode, useReducer } from "react";
 import { User, Message, Contact, ChatRoom } from "@/lib/schema";
+import { toast } from "sonner";
 
-type ClientState = {
+type State = {
   user: User;
   contacts: Contact[];
   chatRooms: ChatRoom[];
   isWsDisconnected: boolean;
 };
 
-type ClientAction =
+type Action =
   | {
-      type: "SET_USER";
+      type: "LOAD_USER";
       payload: User;
     }
   | {
-      type: "SET_CONTACTS";
+      type: "LOAD_CONTACTS";
       payload: Contact[];
     }
   | {
-      type: "SET_MESSAGES";
+      type: "LOAD_MESSAGES";
       payload: {
         groupId: string;
         messages: Message[];
       };
+    }
+  | {
+      type: "SET_USERNAME";
+      payload: string;
     }
   | {
       type: "ADD_MESSAGE";
@@ -34,38 +39,36 @@ type ClientAction =
       };
     }
   | {
-      type: "CONNECT_WS";
-      payload: null;
-    }
-  | {
-      type: "DISCONNECT_WS";
-      payload: null;
+      type: "SET_IS_DISCONNECTED";
+      payload: boolean;
     };
 
-const initClientState: ClientState = {
+const initState: State = {
   user: {} as User,
   contacts: [],
   chatRooms: [],
   isWsDisconnected: false,
 };
 
-function clientStoreReducer(
-  state: ClientState,
-  action: ClientAction
-): ClientState {
+function StoreReducer(state: State, action: Action): State {
   const { type, payload } = action;
   switch (type) {
-    case "SET_USER":
+    case "LOAD_USER":
       return { ...state, user: payload };
-    case "SET_CONTACTS":
+    case "LOAD_CONTACTS":
       return { ...state, contacts: payload };
-    case "SET_MESSAGES":
+    case "LOAD_MESSAGES":
       return {
         ...state,
-        chatRooms: [
-          ...state.chatRooms,
-          { groupId: payload.groupId, messages: payload.messages },
-        ],
+        chatRooms: [...state.chatRooms, payload],
+      };
+    case "SET_USERNAME":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          username: payload,
+        },
       };
     case "ADD_MESSAGE":
       return {
@@ -88,45 +91,50 @@ function clientStoreReducer(
               }
         ),
       };
-    case "CONNECT_WS":
-      return { ...state, isWsDisconnected: false };
-    case "DISCONNECT_WS":
-      return { ...state, isWsDisconnected: true };
+    case "SET_IS_DISCONNECTED":
+      return { ...state, isWsDisconnected: payload };
   }
 }
 
-type TClientStore = {
+type TStore = {
   user: User;
   contacts: Contact[];
   chatRooms: ChatRoom[];
-  setUser: (user: User) => void;
-  setContacts: (c: Contact[]) => void;
-  setMessages: (groupId: string, message: Message[]) => void;
+  loadUser: (user: User) => void;
+  loadContacts: (c: Contact[]) => void;
+  loadMessages: (groupId: string, message: Message[]) => void;
+  setUsername: (username: string) => void;
   addMessage: (groupId: string, message: Message) => void;
   isWsDisconnected: boolean;
   connectWs: () => void;
   disConnectWs: () => void;
 };
 
-const ClientStore = createContext<TClientStore | null>(null);
+const StoreContext = createContext<TStore | null>(null);
 
-export default function ClientStoreProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const [state, dispatch] = useReducer(clientStoreReducer, initClientState);
+export default function StoreProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(StoreReducer, initState);
 
-  function setUser(user: User) {
-    dispatch({ type: "SET_USER", payload: user });
+  function loadUser(user: User) {
+    dispatch({ type: "LOAD_USER", payload: user });
   }
 
-  function setContacts(contacts: Contact[]) {
-    dispatch({ type: "SET_CONTACTS", payload: contacts });
+  function loadContacts(contacts: Contact[]) {
+    dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
-  function setMessages(groupId: string, messages: Message[]) {
-    dispatch({ type: "SET_MESSAGES", payload: { groupId, messages } });
+  function loadMessages(groupId: string, messages: Message[]) {
+    dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
+  }
+
+  function setUsername(username: string) {
+    dispatch({ type: "SET_USERNAME", payload: username });
+    toast(`Your username has been changed to ${username}`, {
+      action: {
+        label: "Close",
+        onClick: () => {},
+      },
+    });
   }
 
   function addMessage(groupId: string, message: Message) {
@@ -134,40 +142,38 @@ export default function ClientStoreProvider({
   }
 
   function connectWs() {
-    dispatch({ type: "CONNECT_WS", payload: null });
+    dispatch({ type: "SET_IS_DISCONNECTED", payload: false });
   }
 
   function disConnectWs() {
-    dispatch({ type: "DISCONNECT_WS", payload: null });
+    dispatch({ type: "SET_IS_DISCONNECTED", payload: true });
   }
 
   return (
-    <ClientStore.Provider
+    <StoreContext.Provider
       value={{
-        user: state.user,
-        contacts: state.contacts,
-        chatRooms: state.chatRooms,
-        setUser,
-        setContacts,
-        setMessages,
+        ...state,
+        loadUser,
+        loadContacts,
+        loadMessages,
+        setUsername,
         addMessage,
-        isWsDisconnected: state.isWsDisconnected,
         connectWs,
         disConnectWs,
       }}
     >
       {children}
-    </ClientStore.Provider>
+    </StoreContext.Provider>
   );
 }
 
 function useStore() {
-  const clientStore = useContext(ClientStore);
-  if (!clientStore) {
-    throw new Error("invalid usage: no ClientStore provider");
+  const store = useContext(StoreContext);
+  if (!store) {
+    throw new Error("invalid usage: no Store provider");
   }
 
-  return clientStore;
+  return store;
 }
 
 export { useStore };

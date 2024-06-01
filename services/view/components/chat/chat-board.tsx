@@ -22,7 +22,7 @@ export default function ChatBoard(props: Props) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    store.setMessages(groupId, props.messages);
+    store.loadMessages(groupId, props.messages);
   }, []);
 
   const contact = store.contacts?.find((e) => e.groupId === groupId);
