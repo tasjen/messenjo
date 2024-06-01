@@ -4,7 +4,7 @@ import CreateGroupForm from "@/components/chat/create-group-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Props = {
-  searchParams: { q?: string | undefined };
+  searchParams: { q?: string };
 };
 
 export default function NewContactPage({ searchParams }: Props) {
@@ -23,7 +23,7 @@ export default function NewContactPage({ searchParams }: Props) {
           <div className="space-y-2 mt-8">
             <div className="font-bold">Search by username</div>
             <FriendSearchForm />
-            <div className="flex flex-col items-center mt-4">
+            <div className="mt-4">
               <FriendSearchResult username={searchParams.q} />
             </div>
           </div>

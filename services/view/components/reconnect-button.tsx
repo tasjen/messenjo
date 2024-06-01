@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@/lib/stores/client-store";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 export default function ReconnectButton() {
   const { isWsDisconnected } = useStore();

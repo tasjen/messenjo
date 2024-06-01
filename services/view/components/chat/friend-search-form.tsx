@@ -1,10 +1,10 @@
 "use client";
 
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import { FormEvent, useState } from "react";
 import { useStore } from "@/lib/stores/client-store";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 
 export default function FriendSearchForm() {

@@ -5,10 +5,10 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "./ui/dialog";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { DialogHeader } from "./ui/dialog";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/stores/client-store";
 import { changeUsername } from "@/lib/actions";
 import { useState } from "react";

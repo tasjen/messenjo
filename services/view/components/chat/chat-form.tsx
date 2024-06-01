@@ -1,11 +1,11 @@
 "use client";
 import { useRef } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
 import { sendMessage } from "@/lib/actions";
 import { useStore } from "@/lib/stores/client-store";
-import ChatFormSkeleton from "../skeletons/chat-form";
+import ChatFormSkeleton from "@/components/skeletons/chat-form";
 import { SendHorizonal } from "lucide-react";
 
 export default function ChatForm() {

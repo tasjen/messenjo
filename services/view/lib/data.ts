@@ -1,6 +1,6 @@
-import chatClient from "./grpc-client";
+import chatClient from "@/lib/grpc-clients/chat";
 import { redirect } from "next/navigation";
-import { uuidStringify, uuidParse, toDateMs } from "./utils";
+import { uuidStringify, uuidParse, toDateMs } from "@/lib/utils";
 import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
@@ -36,7 +36,7 @@ export async function fetchUserByUsername(
     if (!res?.id) {
       return null;
     }
-    return User.parse({ id: uuidStringify(res.id), username });
+    return User.parse({ ...res, id: uuidStringify(res.id) });
   } catch (err) {
     if (err instanceof Error) {
       console.error("fetchUserByUsername error: ", err.message);

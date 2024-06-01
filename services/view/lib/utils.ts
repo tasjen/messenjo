@@ -1,12 +1,14 @@
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Timestamp } from "./schema";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function toDateMs(timestamp: Timestamp): number {
+export function toDateMs(timestamp: {
+  seconds: number;
+  nanos: number;
+}): number {
   return timestamp.seconds * 1e3 + timestamp.nanos / 1e6;
 }
 

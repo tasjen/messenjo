@@ -1,5 +1,5 @@
 import { ChevronLeft } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import clsx from "clsx";
 import Link from "next/link";
 

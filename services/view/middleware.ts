@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uuidStringify } from "./lib/utils";
-
-// grpc-web client for Auth service
-import { createPromiseClient } from "@connectrpc/connect";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { Auth } from "./lib/auth_proto/auth_connect";
-const transport = createGrpcWebTransport({
-  baseUrl: "http://grpc-gateway:3000",
-});
-const authClient = createPromiseClient(Auth, transport);
+import { uuidStringify } from "@/lib/utils";
+import authClient from "@/lib/grpc-clients/auth";
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname !== "/login") {

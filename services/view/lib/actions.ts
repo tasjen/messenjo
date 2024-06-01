@@ -1,11 +1,11 @@
 "use server";
 
-import chatClient from "./grpc-client";
-import { getUserId } from "./data";
-import { uuidParse } from "./utils";
+import chatClient from "@/lib/grpc-clients/chat";
+import { getUserId } from "@/lib/data";
+import { uuidParse } from "@/lib/utils";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { isServiceError } from "./schema";
+import { isServiceError } from "@/lib/schema";
 
 type FormState = {
   error?: string;

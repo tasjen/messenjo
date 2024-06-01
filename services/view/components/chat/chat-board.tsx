@@ -6,11 +6,11 @@ import { useParams } from "next/navigation";
 import { Message } from "@/lib/schema";
 import { toDateFormat } from "@/lib/utils";
 import { useStore } from "@/lib/stores/client-store";
-import ChatBoardSkeleton from "../skeletons/chat-board";
+import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import { isToday, isYesterday } from "date-fns";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Props = {
   messages: Message[];
@@ -72,7 +72,10 @@ export default function ChatBoard(props: Props) {
                     </AvatarFallback>
                   </Avatar>
                 )}
-                <div className="flex-none rounded-3xl px-3 bg-muted p-2 break-words max-w-[320px] lg:max-w-[640px] 2xl:max-w-[960px]">
+                <div
+                  className="flex-none rounded-3xl px-3 bg-muted p-2 break-words
+                  max-w-[320px] lg:max-w-[540px] 2xl:max-w-[960px]"
+                >
                   {message.content}
                 </div>
                 <div className="self-center text-[0.7rem] flex flex-col text-ring">

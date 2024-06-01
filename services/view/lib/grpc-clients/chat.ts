@@ -1,18 +1,18 @@
 import path from "path";
 import * as grpc from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
-import { ProtoGrpcType as ChatProtoGrpcType } from "./chat_proto/chatService";
-import { newDeadline } from "./utils";
-import type { ChatClient } from "./chat_proto/Chat";
-import { AddFriendReq } from "./chat_proto/AddFriendReq";
-import { SetUsernameReq } from "./chat_proto/SetUsernameReq";
-import { GetUserByUsernameReq } from "./chat_proto/GetUserByUsernameReq";
-import { GetUserByIdReq } from "./chat_proto/GetUserByIdReq";
-import { GetContactsReq } from "./chat_proto/GetContactsReq";
-import { GetMessagesReq } from "./chat_proto/GetMessagesReq";
-import { CreateGroupReq } from "./chat_proto/CreateGroupReq";
-import { AddMemberReq } from "./chat_proto/AddMemberReq";
-import { SendMessageReq } from "./chat_proto/SendMessageReq";
+import { ProtoGrpcType as ChatProtoGrpcType } from "@/lib/chat_proto/chatService";
+import { newDeadline } from "@/lib/utils";
+import type { ChatClient } from "@/lib/chat_proto/Chat";
+import { AddFriendReq } from "@/lib/chat_proto/AddFriendReq";
+import { SetUsernameReq } from "@/lib/chat_proto/SetUsernameReq";
+import { GetUserByUsernameReq } from "@/lib/chat_proto/GetUserByUsernameReq";
+import { GetUserByIdReq } from "@/lib/chat_proto/GetUserByIdReq";
+import { GetContactsReq } from "@/lib/chat_proto/GetContactsReq";
+import { GetMessagesReq } from "@/lib/chat_proto/GetMessagesReq";
+import { CreateGroupReq } from "@/lib/chat_proto/CreateGroupReq";
+import { AddMemberReq } from "@/lib/chat_proto/AddMemberReq";
+import { SendMessageReq } from "@/lib/chat_proto/SendMessageReq";
 
 const packageDefinition = loadSync(
   path.join(process.cwd(), "/lib/chat_proto/chat.proto"),
