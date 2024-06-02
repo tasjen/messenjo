@@ -1,9 +1,10 @@
 import chatClient from "@/lib/grpc-clients/chat";
 import { redirect } from "next/navigation";
-import { uuidStringify, uuidParse, toDateMs } from "@/lib/utils";
+import { toDateMs } from "@/lib/utils";
 import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 
 export function getUserId(): string {
   const userId = headers().get("userId");

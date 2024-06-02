@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import clsx from "clsx";
+import dayjs from "dayjs";
 import { useEffect, useRef } from "react";
+import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "@/lib/schema";
-import { toDateFormat } from "@/lib/utils";
 import { useStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "@/components/skeletons/chat-board";
-import { isToday, isYesterday } from "date-fns";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Props = {
   messages: Message[];
@@ -46,7 +45,7 @@ export default function ChatBoard(props: Props) {
       >
         {room.messages.map((message) => {
           const isFromMe = store.user.username === message.fromUsername;
-          const { date, time } = toDateFormat(message.sentAt);
+          const now = dayjs();
 
           return (
             <li key={message.id} className={"mr-1"}>
@@ -80,13 +79,17 @@ export default function ChatBoard(props: Props) {
                 </div>
                 <div className="self-center text-[0.7rem] flex flex-col text-ring">
                   <div>
-                    {isToday(message.sentAt)
+                    {now.isSame(message.sentAt, "day")
                       ? "today"
-                      : isYesterday(message.sentAt)
+                      : now.subtract(1, "day").isSame(message.sentAt, "day")
                         ? "yesterday"
-                        : date}
+                        : now.isSame(message.sentAt, "year")
+                          ? dayjs(message.sentAt).format("DD/MM")
+                          : dayjs(message.sentAt).format("DD/MM/YYYY")}
                   </div>
-                  <div className={clsx(isFromMe && "self-end")}>{time}</div>
+                  <div className={clsx(isFromMe && "self-end")}>
+                    {dayjs(message.sentAt).format("HH:mm")}
+                  </div>
                 </div>
               </div>
             </li>

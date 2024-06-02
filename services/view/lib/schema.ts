@@ -34,23 +34,22 @@ export const ChatRoom = z.object({
   messages: z.array(Message),
 });
 
+const AddMessageAction = z.object({
+  type: z.literal("ADD_MESSAGE"),
+  payload: z.object({
+    groupId: z.string(),
+    message: Message,
+  }),
+});
+
+const AddContactAction = z.object({
+  type: z.literal("ADD_CONTACT"),
+  payload: Contact,
+});
+
 export const Action = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("SEND_MESSAGE"),
-    payload: z.object({
-      groupId: z.string(),
-      message: Message,
-    }),
-  }),
-  z.object({
-    type: z.literal("ADD_CONTACT"),
-    payload: z.object({
-      type: z.union([z.literal("friend"), z.literal("group")]),
-      groupId: z.string(),
-      name: z.string(),
-      userId: z.string(),
-    }),
-  }),
+  AddMessageAction,
+  AddContactAction,
 ]);
 
 export type User = z.infer<typeof User>;

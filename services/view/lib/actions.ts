@@ -2,24 +2,31 @@
 
 import chatClient from "@/lib/grpc-clients/chat";
 import { getUserId } from "@/lib/data";
-import { uuidParse } from "@/lib/utils";
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import { isServiceError } from "@/lib/schema";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 
 type FormState = {
   error?: string;
 };
 
 export async function setUsername(formData: FormData): Promise<FormState> {
-  const username = formData.get("username") as string;
+  const validatedUsername = z
+    .string()
+    .min(1)
+    .max(16)
+    .safeParse(formData.get("username"));
 
-  if (!username || username.length < 1) {
+  if (!validatedUsername.success) {
     return { error: "too short" };
   }
 
+  const username = validatedUsername.data;
+
   try {
-    await chatClient.setUsername({ userId: uuidParse(getUserId()), username });
+    const userId = uuidParse(getUserId());
+    await chatClient.setUsername({ userId, username });
     return {};
   } catch (err) {
     if (isServiceError(err)) {
@@ -31,17 +38,15 @@ export async function setUsername(formData: FormData): Promise<FormState> {
   }
 }
 
-export async function addFriend(toUserId: string): Promise<void> {
-  try {
-    await chatClient.addFriend({
-      fromUserId: uuidParse(getUserId()),
-      toUserId: uuidParse(toUserId),
-    });
-  } catch (err) {
-    if (err instanceof Error) {
-      console.log(err.message);
-    }
+export async function addFriend(toUserId: string): Promise<string> {
+  const res = await chatClient.addFriend({
+    fromUserId: uuidParse(getUserId()),
+    toUserId: uuidParse(toUserId),
+  });
+  if (!res?.groupId) {
+    throw new Error("addFriend error: no `groupId` returned from Chat service");
   }
+  return uuidStringify(res.groupId);
 }
 
 export async function sendMessage(
@@ -56,7 +61,7 @@ export async function sendMessage(
       groupId: uuidParse(toGroupId),
       content: formData.get("content") as string,
       sentAt: {
-        seconds: Math.floor(sentAt.getTime() / 1000),
+        seconds: Math.floor(sentAt.getTime() / 1e3),
         nanos: sentAt.getMilliseconds() * 1e6,
       },
     });

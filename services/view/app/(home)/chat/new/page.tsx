@@ -1,4 +1,4 @@
-import FriendSearchResult from "@/components/chat/friend-search-result";
+import FriendSearchResultServer from "@/components/chat/friend-search-result-server";
 import FriendSearchForm from "@/components/chat/friend-search-form";
 import CreateGroupForm from "@/components/chat/create-group-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,7 +24,7 @@ export default function NewContactPage({ searchParams }: Props) {
             <div className="font-bold">Search by username</div>
             <FriendSearchForm />
             <div className="mt-4">
-              <FriendSearchResult username={searchParams.q} />
+              <FriendSearchResultServer username={searchParams.q} />
             </div>
           </div>
         </TabsContent>

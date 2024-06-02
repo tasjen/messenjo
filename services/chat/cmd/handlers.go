@@ -284,49 +284,49 @@ func (app *application) SetUsername(ctx context.Context, req *pb.SetUsernameReq)
 	return &empty.Empty{}, err
 }
 
-func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*empty.Empty, error) {
+func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.AddFriendRes, error) {
 	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 
 	toUserId, err := uuid.FromBytes(req.GetToUserId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 
 	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
 	switch {
 	case err != nil:
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	case isFriend:
-		return &empty.Empty{}, errors.New("already friends")
+		return &pb.AddFriendRes{}, errors.New("already friends")
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, "")
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 
 	err = app.members.Add(ctx, tx, fromUserId, groupId)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 
 	err = app.members.Add(ctx, tx, toUserId, groupId)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.AddFriendRes{}, err
 	}
 
 	err = tx.Commit(ctx)
-	return &empty.Empty{}, err
+	return &pb.AddFriendRes{GroupId: groupId[:]}, err
 }
 
 func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.Empty, error) {

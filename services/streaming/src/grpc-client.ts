@@ -1,9 +1,10 @@
 import path from "path";
 import { credentials, loadPackageDefinition } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { ProtoGrpcType as AuthProtoGrpcType } from "../auth_proto/authService";
 import { ProtoGrpcType as ChatProtoGrpcType } from "../chat_proto/chatService";
-import { newDeadline, uuidParse, uuidStringify } from "./utils";
+import { newDeadline } from "./utils";
 
 const packageDefinition = loadSync(
   [

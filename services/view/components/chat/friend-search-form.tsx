@@ -3,7 +3,6 @@
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { FormEvent, useState } from "react";
-import { useStore } from "@/lib/stores/client-store";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 
@@ -12,20 +11,14 @@ export default function FriendSearchForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
-  const store = useStore();
 
-  function handleSearch(event: FormEvent) {
+  function handleSearch(event: FormEvent): void {
     event.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (term) params.set("q", term);
     else params.delete("q");
 
-    const contact = store.contacts?.find((e) => e.name === term);
-    if (!contact || contact.type === "group") {
-      router.replace(`${pathname}?${params.toString()}`);
-      return;
-    }
-    router.replace(`/chat/${contact.groupId}`);
+    router.replace(`${pathname}?${params.toString()}`);
   }
 
   return (

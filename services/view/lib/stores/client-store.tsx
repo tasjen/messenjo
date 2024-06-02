@@ -32,6 +32,10 @@ type Action =
       payload: string;
     }
   | {
+      type: "ADD_CONTACT";
+      payload: Contact;
+    }
+  | {
       type: "ADD_MESSAGE";
       payload: {
         groupId: string;
@@ -50,7 +54,7 @@ const initState: State = {
   isWsDisconnected: false,
 };
 
-function StoreReducer(state: State, action: Action): State {
+function storeReducer(state: State, action: Action): State {
   const { type, payload } = action;
   switch (type) {
     case "LOAD_USER":
@@ -91,6 +95,8 @@ function StoreReducer(state: State, action: Action): State {
               }
         ),
       };
+    case "ADD_CONTACT":
+      return { ...state, contacts: [...state.contacts, payload] };
     case "SET_IS_DISCONNECTED":
       return { ...state, isWsDisconnected: payload };
   }
@@ -105,6 +111,7 @@ type TStore = {
   loadMessages: (groupId: string, message: Message[]) => void;
   setUsername: (username: string) => void;
   addMessage: (groupId: string, message: Message) => void;
+  addContact: (contact: Contact) => void;
   isWsDisconnected: boolean;
   connectWs: () => void;
   disConnectWs: () => void;
@@ -113,21 +120,21 @@ type TStore = {
 const StoreContext = createContext<TStore | null>(null);
 
 export default function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(StoreReducer, initState);
+  const [state, dispatch] = useReducer(storeReducer, initState);
 
-  function loadUser(user: User) {
+  function loadUser(user: User): void {
     dispatch({ type: "LOAD_USER", payload: user });
   }
 
-  function loadContacts(contacts: Contact[]) {
+  function loadContacts(contacts: Contact[]): void {
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
-  function loadMessages(groupId: string, messages: Message[]) {
+  function loadMessages(groupId: string, messages: Message[]): void {
     dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
   }
 
-  function setUsername(username: string) {
+  function setUsername(username: string): void {
     dispatch({ type: "SET_USERNAME", payload: username });
     toast(`Your username has been changed to ${username}`, {
       action: {
@@ -137,15 +144,19 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function addMessage(groupId: string, message: Message) {
+  function addMessage(groupId: string, message: Message): void {
     dispatch({ type: "ADD_MESSAGE", payload: { groupId, message } });
   }
 
-  function connectWs() {
+  function addContact(contact: Contact): void {
+    dispatch({ type: "ADD_CONTACT", payload: contact });
+  }
+
+  function connectWs(): void {
     dispatch({ type: "SET_IS_DISCONNECTED", payload: false });
   }
 
-  function disConnectWs() {
+  function disConnectWs(): void {
     dispatch({ type: "SET_IS_DISCONNECTED", payload: true });
   }
 
@@ -158,6 +169,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
         loadMessages,
         setUsername,
         addMessage,
+        addContact,
         connectWs,
         disConnectWs,
       }}
@@ -167,7 +179,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function useStore() {
+function useStore(): TStore {
   const store = useContext(StoreContext);
   if (!store) {
     throw new Error("invalid usage: no Store provider");

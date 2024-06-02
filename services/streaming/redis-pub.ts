@@ -6,7 +6,7 @@ const pubClient = createClient({ url: "redis://messagech:6379" });
   await pubClient.publish(
     "main",
     JSON.stringify({
-      type: "SEND_MESSAGE",
+      type: "ADD_MESSAGE",
       payload: {
         groupId: "f1f0cfb5-fab9-416b-8815-3dbad782db09",
         message: {

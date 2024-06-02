@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uuidStringify } from "@/lib/utils";
+import { stringify as uuidStringify } from "uuid";
 import authClient from "@/lib/grpc-clients/auth";
 
 export async function middleware(req: NextRequest) {

@@ -103,7 +103,7 @@ app.listen(Number(PORT), async (listenSocket) => {
     if (!success) return;
     const { type, payload } = data;
     switch (type) {
-      case "SEND_MESSAGE":
+      case "ADD_MESSAGE":
         console.log(payload);
         app.publish(payload.groupId, actionString);
         break;
@@ -116,7 +116,7 @@ app.listen(Number(PORT), async (listenSocket) => {
 });
 
 const SendMessageAction = z.object({
-  type: z.literal("SEND_MESSAGE"),
+  type: z.literal("ADD_MESSAGE"),
   payload: z.object({
     groupId: z.string(),
     message: z.object({

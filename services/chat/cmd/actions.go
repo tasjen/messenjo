@@ -20,7 +20,7 @@ type Message struct {
 
 func NewSendMessageAction(groupId string, id int32, fromUsername, fromPfp, content string, sentAt int64) SendMessageAction {
 	return SendMessageAction{
-		Type: "SEND_MESSAGE",
+		Type: "ADD_MESSAGE",
 		Payload: SendMessagePayload{
 			GroupId: groupId,
 			Message: Message{

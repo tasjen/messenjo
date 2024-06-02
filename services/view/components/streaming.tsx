@@ -33,8 +33,11 @@ export default function Streaming() {
       return;
     }
     const { type, payload } = action.data;
-    if (type === "SEND_MESSAGE") {
-      store.addMessage(payload.groupId, payload.message);
+    switch (type) {
+      case "ADD_MESSAGE":
+        return store.addMessage(payload.groupId, payload.message);
+      case "ADD_CONTACT":
+        return store.addContact(payload);
     }
   }, [lastMessage]);
 

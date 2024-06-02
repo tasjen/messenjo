@@ -3,6 +3,7 @@
 import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'
 import type { AddFriendReq as _AddFriendReq, AddFriendReq__Output as _AddFriendReq__Output } from './AddFriendReq';
+import type { AddFriendRes as _AddFriendRes, AddFriendRes__Output as _AddFriendRes__Output } from './AddFriendRes';
 import type { AddMemberReq as _AddMemberReq, AddMemberReq__Output as _AddMemberReq__Output } from './AddMemberReq';
 import type { CreateGroupReq as _CreateGroupReq, CreateGroupReq__Output as _CreateGroupReq__Output } from './CreateGroupReq';
 import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from './google/protobuf/Empty';
@@ -20,14 +21,14 @@ import type { SetUsernameReq as _SetUsernameReq, SetUsernameReq__Output as _SetU
 import type { User as _User, User__Output as _User__Output } from './User';
 
 export interface ChatClient extends grpc.Client {
-  AddFriend(argument: _AddFriendReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddFriend(argument: _AddFriendReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddFriend(argument: _AddFriendReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddFriend(argument: _AddFriendReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addFriend(argument: _AddFriendReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addFriend(argument: _AddFriendReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addFriend(argument: _AddFriendReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addFriend(argument: _AddFriendReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  AddFriend(argument: _AddFriendReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  AddFriend(argument: _AddFriendReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  AddFriend(argument: _AddFriendReq, options: grpc.CallOptions, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  AddFriend(argument: _AddFriendReq, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  addFriend(argument: _AddFriendReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  addFriend(argument: _AddFriendReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  addFriend(argument: _AddFriendReq, options: grpc.CallOptions, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
+  addFriend(argument: _AddFriendReq, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
   
   AddMember(argument: _AddMemberReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   AddMember(argument: _AddMemberReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
@@ -122,7 +123,7 @@ export interface ChatClient extends grpc.Client {
 }
 
 export interface ChatHandlers extends grpc.UntypedServiceImplementation {
-  AddFriend: grpc.handleUnaryCall<_AddFriendReq__Output, _google_protobuf_Empty>;
+  AddFriend: grpc.handleUnaryCall<_AddFriendReq__Output, _AddFriendRes>;
   
   AddMember: grpc.handleUnaryCall<_AddMemberReq__Output, _google_protobuf_Empty>;
   
@@ -147,7 +148,7 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
 }
 
 export interface ChatDefinition extends grpc.ServiceDefinition {
-  AddFriend: MethodDefinition<_AddFriendReq, _google_protobuf_Empty, _AddFriendReq__Output, _google_protobuf_Empty__Output>
+  AddFriend: MethodDefinition<_AddFriendReq, _AddFriendRes, _AddFriendReq__Output, _AddFriendRes__Output>
   AddMember: MethodDefinition<_AddMemberReq, _google_protobuf_Empty, _AddMemberReq__Output, _google_protobuf_Empty__Output>
   CreateGroup: MethodDefinition<_CreateGroupReq, _google_protobuf_Empty, _CreateGroupReq__Output, _google_protobuf_Empty__Output>
   GetContacts: MethodDefinition<_GetContactsReq, _GetContactsRes, _GetContactsReq__Output, _GetContactsRes__Output>

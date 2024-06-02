@@ -25,13 +25,13 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Chat_CreateUser_FullMethodName        = "/Chat/CreateUser"
-	Chat_SetUserPfp_FullMethodName        = "/Chat/SetUserPfp"
 	Chat_GetUserByUsername_FullMethodName = "/Chat/GetUserByUsername"
 	Chat_GetUserById_FullMethodName       = "/Chat/GetUserById"
 	Chat_GetContacts_FullMethodName       = "/Chat/GetContacts"
 	Chat_GetMessages_FullMethodName       = "/Chat/GetMessages"
 	Chat_CreateGroup_FullMethodName       = "/Chat/CreateGroup"
 	Chat_SetUsername_FullMethodName       = "/Chat/SetUsername"
+	Chat_SetUserPfp_FullMethodName        = "/Chat/SetUserPfp"
 	Chat_SetGroupPfp_FullMethodName       = "/Chat/SetGroupPfp"
 	Chat_AddFriend_FullMethodName         = "/Chat/AddFriend"
 	Chat_AddMember_FullMethodName         = "/Chat/AddMember"
@@ -45,7 +45,6 @@ const (
 type ChatClient interface {
 	// for Auth
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
-	SetUserPfp(ctx context.Context, in *SetUserPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	// for View
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*User, error)
 	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*User, error)
@@ -53,8 +52,9 @@ type ChatClient interface {
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
 	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetUsername(ctx context.Context, in *SetUsernameReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	SetUserPfp(ctx context.Context, in *SetUserPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetGroupPfp(ctx context.Context, in *SetGroupPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
-	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*AddFriendRes, error)
 	AddMember(ctx context.Context, in *AddMemberReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error)
 	// for Streaming
@@ -72,15 +72,6 @@ func NewChatClient(cc grpc.ClientConnInterface) ChatClient {
 func (c *chatClient) CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error) {
 	out := new(CreateUserRes)
 	err := c.cc.Invoke(ctx, Chat_CreateUser_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *chatClient) SetUserPfp(ctx context.Context, in *SetUserPfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, Chat_SetUserPfp_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +132,15 @@ func (c *chatClient) SetUsername(ctx context.Context, in *SetUsernameReq, opts .
 	return out, nil
 }
 
+func (c *chatClient) SetUserPfp(ctx context.Context, in *SetUserPfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, Chat_SetUserPfp_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *chatClient) SetGroupPfp(ctx context.Context, in *SetGroupPfpReq, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, Chat_SetGroupPfp_FullMethodName, in, out, opts...)
@@ -150,8 +150,8 @@ func (c *chatClient) SetGroupPfp(ctx context.Context, in *SetGroupPfpReq, opts .
 	return out, nil
 }
 
-func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*AddFriendRes, error) {
+	out := new(AddFriendRes)
 	err := c.cc.Invoke(ctx, Chat_AddFriend_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,6 @@ func (c *chatClient) GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts .
 type ChatServer interface {
 	// for Auth
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
-	SetUserPfp(context.Context, *SetUserPfpReq) (*empty.Empty, error)
 	// for View
 	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*User, error)
 	GetUserById(context.Context, *GetUserByIdReq) (*User, error)
@@ -200,8 +199,9 @@ type ChatServer interface {
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
 	CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error)
 	SetUsername(context.Context, *SetUsernameReq) (*empty.Empty, error)
+	SetUserPfp(context.Context, *SetUserPfpReq) (*empty.Empty, error)
 	SetGroupPfp(context.Context, *SetGroupPfpReq) (*empty.Empty, error)
-	AddFriend(context.Context, *AddFriendReq) (*empty.Empty, error)
+	AddFriend(context.Context, *AddFriendReq) (*AddFriendRes, error)
 	AddMember(context.Context, *AddMemberReq) (*empty.Empty, error)
 	SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error)
 	// for Streaming
@@ -215,9 +215,6 @@ type UnimplementedChatServer struct {
 
 func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
-}
-func (UnimplementedChatServer) SetUserPfp(context.Context, *SetUserPfpReq) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetUserPfp not implemented")
 }
 func (UnimplementedChatServer) GetUserByUsername(context.Context, *GetUserByUsernameReq) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
@@ -237,10 +234,13 @@ func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*e
 func (UnimplementedChatServer) SetUsername(context.Context, *SetUsernameReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetUsername not implemented")
 }
+func (UnimplementedChatServer) SetUserPfp(context.Context, *SetUserPfpReq) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetUserPfp not implemented")
+}
 func (UnimplementedChatServer) SetGroupPfp(context.Context, *SetGroupPfpReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetGroupPfp not implemented")
 }
-func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*empty.Empty, error) {
+func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*AddFriendRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
 }
 func (UnimplementedChatServer) AddMember(context.Context, *AddMemberReq) (*empty.Empty, error) {
@@ -279,24 +279,6 @@ func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ChatServer).CreateUser(ctx, req.(*CreateUserReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Chat_SetUserPfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetUserPfpReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ChatServer).SetUserPfp(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Chat_SetUserPfp_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).SetUserPfp(ctx, req.(*SetUserPfpReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -409,6 +391,24 @@ func _Chat_SetUsername_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_SetUserPfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetUserPfpReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).SetUserPfp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_SetUserPfp_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).SetUserPfp(ctx, req.(*SetUserPfpReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Chat_SetGroupPfp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetGroupPfpReq)
 	if err := dec(in); err != nil {
@@ -511,10 +511,6 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Chat_CreateUser_Handler,
 		},
 		{
-			MethodName: "SetUserPfp",
-			Handler:    _Chat_SetUserPfp_Handler,
-		},
-		{
 			MethodName: "GetUserByUsername",
 			Handler:    _Chat_GetUserByUsername_Handler,
 		},
@@ -537,6 +533,10 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetUsername",
 			Handler:    _Chat_SetUsername_Handler,
+		},
+		{
+			MethodName: "SetUserPfp",
+			Handler:    _Chat_SetUserPfp_Handler,
 		},
 		{
 			MethodName: "SetGroupPfp",

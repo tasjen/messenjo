@@ -32,7 +32,7 @@ export class UserManager {
     }
   }
 
-  addContact(groupId: string, userId: string) {
+  addContact(groupId: string, userId: string): void {
     const conns = this.users.get(userId);
     if (!conns) {
       return;
