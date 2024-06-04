@@ -26,7 +26,7 @@ func NewGoogleProvider() *GoogleProvider {
 		config: &oauth2.Config{
 			ClientID:     os.Getenv("GOOGLE_KEY"),
 			ClientSecret: os.Getenv("GOOGLE_SECRET"),
-			RedirectURL:  "http://" + os.Getenv("DOMAIN") + "/api/auth/callback/google",
+			RedirectURL:  "http://" + os.Getenv("HOST") + "/api/auth/callback/google",
 			Endpoint:     google.Endpoint,
 			Scopes:       []string{"https://www.googleapis.com/auth/userinfo.profile"},
 		}}

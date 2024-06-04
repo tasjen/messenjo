@@ -82,7 +82,7 @@ async function setUsername(
 ): Promise<Parameters<Parameters<ChatClient["SetUsername"]>[1]>[1]> {
   return new Promise((resolve, reject) => {
     chatClient.SetUsername(req, { deadline: newDeadline(5) }, (err, res) =>
-      err ? reject(err.details) : resolve(res)
+      err ? reject(err) : resolve(res)
     );
   });
 }

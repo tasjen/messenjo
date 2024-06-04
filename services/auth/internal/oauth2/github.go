@@ -27,7 +27,7 @@ func NewGithubProvider() *GithubProvider {
 		config: &oauth2.Config{
 			ClientID:     os.Getenv("GITHUB_KEY"),
 			ClientSecret: os.Getenv("GITHUB_SECRET"),
-			RedirectURL:  "http://" + os.Getenv("DOMAIN") + "/api/auth/callback/github",
+			RedirectURL:  "http://" + os.Getenv("HOST") + "/api/auth/callback/github",
 			Endpoint:     github.Endpoint,
 			Scopes:       []string{"user"},
 		}}

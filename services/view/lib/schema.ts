@@ -19,15 +19,28 @@ export const Message = z.object({
   sentAt: z.number(),
 });
 
-export const Contact = z.object({
-  type: z.union([z.literal("friend"), z.literal("group")]),
+export const FriendContact = z.object({
+  type: z.literal("friend"),
   groupId: z.string(),
-  userId: z.string().optional(),
+  userId: z.string(),
   name: z.string(),
   pfp: z.coerce.string(),
-  memberCount: z.number().optional(),
   lastMessage: Message.optional(),
 });
+
+export const GroupContact = z.object({
+  type: z.literal("group"),
+  groupId: z.string(),
+  name: z.string(),
+  pfp: z.coerce.string(),
+  memberCount: z.number(),
+  lastMessage: Message.optional(),
+});
+
+export const Contact = z.discriminatedUnion("type", [
+  FriendContact,
+  GroupContact,
+]);
 
 export const ChatRoom = z.object({
   groupId: z.string(),
@@ -54,6 +67,8 @@ export const Action = z.discriminatedUnion("type", [
 
 export type User = z.infer<typeof User>;
 export type Message = z.infer<typeof Message>;
+export type FriendContact = z.infer<typeof FriendContact>;
+export type GroupContact = z.infer<typeof GroupContact>;
 export type Contact = z.infer<typeof Contact>;
 export type ChatRoom = z.infer<typeof ChatRoom>;
 export type Action = z.infer<typeof Action>;

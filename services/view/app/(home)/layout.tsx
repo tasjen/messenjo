@@ -14,11 +14,7 @@ import Link from "next/link";
 import StoreProvider from "@/lib/stores/client-store";
 import SettingsButton from "@/components/settings-button";
 
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   // start prefetching and caching data asynchronously before rendering children components
   getUserInfo();
   getContacts();

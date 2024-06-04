@@ -12,14 +12,12 @@ type FormState = {
 };
 
 export async function setUsername(formData: FormData): Promise<FormState> {
-  const validatedUsername = z
-    .string()
-    .min(1)
-    .max(16)
-    .safeParse(formData.get("username"));
+  const validatedUsername = z.string().safeParse(formData.get("username"));
 
   if (!validatedUsername.success) {
-    return { error: "too short" };
+    return {
+      error: "username must be a string with at least 1 character long",
+    };
   }
 
   const username = validatedUsername.data;

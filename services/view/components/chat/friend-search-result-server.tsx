@@ -11,9 +11,9 @@ export default async function FriendSearchResultServer({ username }: Props) {
   }
 
   const userResult = await fetchUserByUsername(username);
-
   if (!userResult) {
-    return <div>Username not found</div>;
+    return <div className="text-center">User not found</div>;
   }
+
   return <FriendSearchResultClient user={userResult} />;
 }

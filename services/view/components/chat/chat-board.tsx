@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -16,14 +16,13 @@ type Props = {
 export default function ChatBoard(props: Props) {
   const { groupId } = useParams<{ groupId: string }>();
   const store = useStore();
-  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     store.loadMessages(groupId, props.messages);
   }, []);
 
-  const contact = store.contacts?.find((e) => e.groupId === groupId);
-  const room = store.chatRooms?.find((e) => e.groupId === groupId);
+  const contact = store.contacts.find((e) => e.groupId === groupId);
+  const room = store.chatRooms.find((e) => e.groupId === groupId);
 
   if (!store.user || !contact || !room) {
     return <ChatBoardSkeleton />;
@@ -37,10 +36,7 @@ export default function ChatBoard(props: Props) {
           <ChevronLeft className="h-6 w-6" />
         </Link>
       </div>
-      <ul
-        ref={listRef}
-        className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2"
-      >
+      <ul className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2">
         {room.messages.map((message) => (
           <MessageItem key={message.id} contact={contact} message={message} />
         ))}

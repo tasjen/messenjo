@@ -20,7 +20,16 @@ type Props = {
 export default function NewUsernameDialog({ isNewUser }: Props) {
   const store = useStore();
   const [isOpen, setIsOpen] = useState(true);
-  const [formError, setFormError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function handleSubmit(formData: FormData) {
+    const formState = await setUsername(formData);
+    if (formState.error) {
+      return setErrorMessage(formState.error);
+    }
+    store.setUsername(formData.get("username") as string);
+    return setIsOpen(false);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -28,19 +37,12 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
         <DialogHeader>
           <DialogTitle>Choose your username</DialogTitle>
           <DialogDescription>
-            {"Your username is what identifies you. It must be unique. "}
-            {isNewUser && "You can skip this and change it later."}
+            {"Your username is your unique identifier. "}
+            {isNewUser && "You can skip this step and change it later."}
           </DialogDescription>
         </DialogHeader>
         <form
-          action={async (formData) => {
-            const formState = await setUsername(formData);
-            if (formState.error) {
-              return setFormError(formState.error);
-            }
-            store.setUsername(formData.get("username") as string);
-            return setIsOpen(false);
-          }}
+          action={handleSubmit}
           className="grid grid-cols-4 items-center gap-4"
         >
           <Input
@@ -54,7 +56,7 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
           />
           <Button type="submit">Confirm</Button>
         </form>
-        <div className="text-red-500 text-xs">{formError}</div>
+        <div className="text-red-500 text-xs">{errorMessage}</div>
       </DialogContent>
     </Dialog>
   );

@@ -1,13 +1,13 @@
 "use client";
 
-import { addFriend } from "@/lib/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Contact, User } from "@/lib/schema";
+import { FriendContact, User } from "@/lib/schema";
 import { useStore } from "@/lib/stores/client-store";
-import { toast } from "sonner";
 import Link from "next/link";
 import { UserCheck } from "lucide-react";
+import AddFriendButton from "./add-friend-button";
+import { useSearchParams } from "next/navigation";
 
 type Props = {
   user: User;
@@ -15,7 +15,16 @@ type Props = {
 
 export default function FriendSearchResultClient({ user }: Props) {
   const store = useStore();
-  const contact = store.contacts.find((e) => e.userId === user.id);
+
+  // for preventing the previous search result from showing up even if there is no `q` searchParam
+  const searchParams = useSearchParams();
+  if (!searchParams.get("q")) {
+    return <></>;
+  }
+
+  const contact = store.contacts.find(
+    (contact) => (contact as FriendContact).userId === user.id
+  );
 
   return (
     <div className="mt-4 flex flex-col items-center">
@@ -31,28 +40,7 @@ export default function FriendSearchResultClient({ user }: Props) {
           <Button>Chat</Button>
         </Link>
       ) : (
-        <form
-          action={async () => {
-            try {
-              const groupId = await addFriend(user.id);
-              store.addContact(
-                Contact.parse({
-                  type: "friend",
-                  groupId,
-                  pfp: user.pfp,
-                  name: user.username,
-                  userId: user.id,
-                })
-              );
-            } catch (err) {
-              if (err instanceof Error) {
-                toast(err.message);
-              }
-            }
-          }}
-        >
-          <Button>Add</Button>
-        </form>
+        <AddFriendButton user={user} />
       )}
     </div>
   );

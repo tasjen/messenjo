@@ -12,7 +12,7 @@ export default function FriendSearchForm() {
   const searchParams = useSearchParams();
   const [term, setTerm] = useState("");
 
-  function handleSearch(event: FormEvent): void {
+  function handleSubmit(event: FormEvent): void {
     event.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (term) params.set("q", term);
@@ -22,7 +22,7 @@ export default function FriendSearchForm() {
   }
 
   return (
-    <form className="flex place-items-center" onSubmit={handleSearch}>
+    <form className="flex place-items-center" onSubmit={handleSubmit}>
       <Input
         type="search"
         onChange={(e) => setTerm(e.target.value)}

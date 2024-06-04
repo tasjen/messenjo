@@ -14,13 +14,8 @@ export default function ChatForm() {
   const contentInput = useRef<HTMLInputElement>(null);
   const sendButton = useRef<HTMLButtonElement>(null);
 
-  if (!store.user || !store.contacts) {
+  if (!store.user || !store.contacts || store.isWsDisconnected) {
     return <ChatFormSkeleton />;
-  }
-
-  if (store.isWsDisconnected) {
-    contentInput.current!.disabled = true;
-    sendButton.current!.disabled = true;
   }
 
   async function handleSubmit(formData: FormData) {

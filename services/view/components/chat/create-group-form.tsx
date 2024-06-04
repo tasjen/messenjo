@@ -8,6 +8,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
+import type { FriendContact } from "@/lib/schema";
 
 export default function CreateGroupForm() {
   const store = useStore();
@@ -16,9 +17,10 @@ export default function CreateGroupForm() {
   const [groupName, setGroupName] = useState("");
 
   const options = store.contacts
-    .filter((contact) => contact.type === "friend")
+    .filter((contact): contact is FriendContact => contact.type === "friend")
     .map((contact) => ({
-      value: contact.userId!,
+      img: contact.pfp,
+      value: contact.userId,
       label: contact.name,
     }));
 

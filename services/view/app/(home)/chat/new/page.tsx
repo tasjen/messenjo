@@ -2,12 +2,14 @@ import FriendSearchResultServer from "@/components/chat/friend-search-result-ser
 import FriendSearchForm from "@/components/chat/friend-search-form";
 import CreateGroupForm from "@/components/chat/create-group-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   searchParams: { q?: string };
 };
 
-export default function NewContactPage({ searchParams }: Props) {
+export default async function NewContactPage({ searchParams }: Props) {
   return (
     <div className="flex justify-center">
       <Tabs defaultValue="friend" className="w-full">
@@ -20,12 +22,16 @@ export default function NewContactPage({ searchParams }: Props) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="friend">
-          <div className="space-y-2 mt-8">
-            <div className="font-bold">Search by username</div>
+          <div className="font-bold mt-8 mb-2">Search by username</div>
+          <div className="space-y-8 flex flex-col">
             <FriendSearchForm />
-            <div className="mt-4">
+            <Suspense
+              fallback={
+                <Loader2 className="animate-spin h-20 w-20 self-center" />
+              }
+            >
               <FriendSearchResultServer username={searchParams.q} />
-            </div>
+            </Suspense>
           </div>
         </TabsContent>
         <TabsContent value="group">

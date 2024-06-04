@@ -17,8 +17,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 export type Option = {
+  img: string;
   label: string;
   value: string;
 };
@@ -90,7 +92,7 @@ const MultiSelect = ({
         <Command className={className}>
           <CommandInput placeholder="Search ..." />
           <CommandEmpty>No item found.</CommandEmpty>
-          <CommandGroup className="max-h-64 overflow-auto">
+          <CommandGroup className="max-h-64">
             <CommandList>
               {options.map((option) => (
                 <CommandItem
@@ -112,6 +114,15 @@ const MultiSelect = ({
                         : "opacity-0"
                     )}
                   />
+                  <Avatar className="mr-2 h-6 w-6">
+                    <AvatarImage
+                      src={option.img}
+                      alt={`${option.label}'s pfp`}
+                    />
+                    <AvatarFallback>
+                      {option.label[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   {option.label}
                 </CommandItem>
               ))}
