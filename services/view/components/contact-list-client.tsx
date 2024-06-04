@@ -26,7 +26,19 @@ export default function ContactListClient(props: Props) {
     return <></>;
   }
 
-  const { contacts } = store.contacts.length ? store : props;
+  const contacts = (store.contacts.length ? store : props).contacts
+    .filter((e) => e.name.toLowerCase().includes(term.toLowerCase()))
+    .sort((a, b) => {
+      if (a.lastMessage && b.lastMessage) {
+        return b.lastMessage.sentAt - a.lastMessage.sentAt;
+      } else if (a.lastMessage) {
+        return -1;
+      } else if (b.lastMessage) {
+        return 1;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
 
   return (
     <>
@@ -40,22 +52,9 @@ export default function ContactListClient(props: Props) {
         />
       </div>
       <ul className="flex flex-col h-full overflow-auto">
-        {contacts
-          .filter((e) => e.name.toLowerCase().includes(term.toLowerCase()))
-          .sort((a, b) => {
-            if (a.lastMessage && b.lastMessage) {
-              return b.lastMessage.sentAt - a.lastMessage.sentAt;
-            } else if (a.lastMessage) {
-              return -1;
-            } else if (b.lastMessage) {
-              return 1;
-            } else {
-              return a.name.localeCompare(b.name);
-            }
-          })
-          .map((contact) => (
-            <ContactItem key={contact.groupId} contact={contact} />
-          ))}
+        {contacts.map((contact) => (
+          <ContactItem key={contact.groupId} contact={contact} />
+        ))}
       </ul>
     </>
   );
