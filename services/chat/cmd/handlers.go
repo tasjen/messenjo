@@ -228,26 +228,27 @@ func (app *application) SetUserPfp(ctx context.Context, req *pb.SetUserPfpReq) (
 	return &empty.Empty{}, err
 }
 
-func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*empty.Empty, error) {
+func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.CreateGroupRes, error) {
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
-		return &empty.Empty{}, errors.New("group name must be at least 1 and not exceed 16 characters")
+		return &pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
-
-	userIds := req.GetUserIds()
+	println(1)
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.CreateGroupRes{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
-	err = app.groups.Add(ctx, tx, groupId, groupName)
+	pfp := req.GetPfpUrl()
+	err = app.groups.Add(ctx, tx, groupId, groupName, pfp)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.CreateGroupRes{}, err
 	}
 
+	userIds := req.GetUserIds()
 	_, err = tx.CopyFrom(
 		ctx,
 		pgx.Identifier{"members"},
@@ -258,11 +259,11 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		}),
 	)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &pb.CreateGroupRes{}, err
 	}
 
 	err = tx.Commit(ctx)
-	return &empty.Empty{}, err
+	return &pb.CreateGroupRes{GroupId: groupId[:]}, err
 }
 
 func (app *application) SetUsername(ctx context.Context, req *pb.SetUsernameReq) (*empty.Empty, error) {
@@ -310,7 +311,7 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
-	err = app.groups.Add(ctx, tx, groupId, "")
+	err = app.groups.Add(ctx, tx, groupId, "", "")
 	if err != nil {
 		return &pb.AddFriendRes{}, err
 	}

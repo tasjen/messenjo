@@ -50,7 +50,7 @@ type ChatClient interface {
 	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*User, error)
 	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
-	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error)
+	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*CreateGroupRes, error)
 	SetUsername(ctx context.Context, in *SetUsernameReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetUserPfp(ctx context.Context, in *SetUserPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetGroupPfp(ctx context.Context, in *SetGroupPfpReq, opts ...grpc.CallOption) (*empty.Empty, error)
@@ -114,8 +114,8 @@ func (c *chatClient) GetMessages(ctx context.Context, in *GetMessagesReq, opts .
 	return out, nil
 }
 
-func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *chatClient) CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*CreateGroupRes, error) {
+	out := new(CreateGroupRes)
 	err := c.cc.Invoke(ctx, Chat_CreateGroup_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -197,7 +197,7 @@ type ChatServer interface {
 	GetUserById(context.Context, *GetUserByIdReq) (*User, error)
 	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
-	CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error)
+	CreateGroup(context.Context, *CreateGroupReq) (*CreateGroupRes, error)
 	SetUsername(context.Context, *SetUsernameReq) (*empty.Empty, error)
 	SetUserPfp(context.Context, *SetUserPfpReq) (*empty.Empty, error)
 	SetGroupPfp(context.Context, *SetGroupPfpReq) (*empty.Empty, error)
@@ -228,7 +228,7 @@ func (UnimplementedChatServer) GetContacts(context.Context, *GetContactsReq) (*G
 func (UnimplementedChatServer) GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
-func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*empty.Empty, error) {
+func (UnimplementedChatServer) CreateGroup(context.Context, *CreateGroupReq) (*CreateGroupRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGroup not implemented")
 }
 func (UnimplementedChatServer) SetUsername(context.Context, *SetUsernameReq) (*empty.Empty, error) {

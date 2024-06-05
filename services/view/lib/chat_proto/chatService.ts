@@ -14,6 +14,7 @@ export interface ProtoGrpcType {
   Chat: SubtypeConstructor<typeof grpc.Client, _ChatClient> & { service: _ChatDefinition }
   Contact: MessageTypeDefinition
   CreateGroupReq: MessageTypeDefinition
+  CreateGroupRes: MessageTypeDefinition
   GetContactsReq: MessageTypeDefinition
   GetContactsRes: MessageTypeDefinition
   GetMessagesReq: MessageTypeDefinition

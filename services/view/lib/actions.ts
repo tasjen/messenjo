@@ -12,15 +12,15 @@ type FormState = {
 };
 
 export async function setUsername(formData: FormData): Promise<FormState> {
-  const validatedUsername = z.string().safeParse(formData.get("username"));
+  const parsedUsername = z.string().safeParse(formData.get("username"));
 
-  if (!validatedUsername.success) {
+  if (!parsedUsername.success) {
     return {
       error: "username must be a string with at least 1 character long",
     };
   }
 
-  const username = validatedUsername.data;
+  const username = parsedUsername.data;
 
   try {
     const userId = uuidParse(getUserId());
@@ -42,9 +42,46 @@ export async function addFriend(toUserId: string): Promise<string> {
     toUserId: uuidParse(toUserId),
   });
   if (!res?.groupId) {
-    throw new Error("addFriend error: no `groupId` returned from Chat service");
+    throw new Error("internal server error: `addFriend`");
   }
   return uuidStringify(res.groupId);
+}
+
+export async function createGroup(formData: FormData): Promise<string> {
+  formData.append("user-ids", getUserId());
+  const parsedForm = z
+    .object({
+      groupName: z.string(),
+      pfpUrl: z.string().optional(),
+      userIds: z.array(z.string()),
+    })
+    .safeParse({
+      groupName: formData.get("group-name"),
+      pfpUrl: formData.get("pfp"),
+      userIds: formData.getAll("user-ids"),
+    });
+
+  if (!parsedForm.success) {
+    throw new Error("failed to parse formData");
+  }
+
+  try {
+    const res = await chatClient.createGroup({
+      ...parsedForm.data,
+      userIds: parsedForm.data.userIds.map((id) => uuidParse(id)),
+    });
+    if (!res?.groupId) {
+      throw new Error("internal server error: `createGroup`");
+    }
+    return uuidStringify(res.groupId);
+  } catch (err) {
+    if (isServiceError(err)) {
+      throw new Error(err.details);
+    } else if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error("unknown server error");
+  }
 }
 
 export async function sendMessage(

@@ -92,7 +92,7 @@ const MultiSelect = ({
         <Command className={className}>
           <CommandInput placeholder="Search ..." />
           <CommandEmpty>No item found.</CommandEmpty>
-          <CommandGroup className="max-h-64">
+          <CommandGroup className="max-h-64 overflow-auto">
             <CommandList>
               {options.map((option) => (
                 <CommandItem
