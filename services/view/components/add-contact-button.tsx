@@ -5,8 +5,8 @@ import Link from "next/link";
 export default function AddContactButton() {
   return (
     <Link href="/chat/new">
-      <Button size="icon" variant="secondary">
-        <MessageCirclePlus className="h-6 w-6" />
+      <Button variant="secondary">
+        <MessageCirclePlus />
       </Button>
     </Link>
   );

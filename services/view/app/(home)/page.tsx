@@ -11,7 +11,7 @@ export default async function HomePage() {
       <div>Logged in</div>
       <Avatar className="self-center h-20 w-20">
         <AvatarImage src={user.pfp} alt="your pfp" />
-        <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{user.username[0]}</AvatarFallback>
       </Avatar>
       <div>username: {user.username}</div>
       <div>userId: {user.id}</div>

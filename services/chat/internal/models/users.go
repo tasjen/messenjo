@@ -15,8 +15,7 @@ type IUserModel interface {
 	GetByUsername(ctx context.Context, username string) (User, error)
 	GetById(ctx context.Context, userId uuid.UUID) (User, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
-	SetUsername(ctx context.Context, userId uuid.UUID, username string) error
-	SetPfp(ctx context.Context, userId uuid.UUID, pfp string) error
+	Update(ctx context.Context, userId uuid.UUID, username, pfp string) error
 }
 
 type UserModel struct{}
@@ -79,26 +78,16 @@ func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (b
 	}
 }
 
-func (m *UserModel) SetUsername(ctx context.Context, userId uuid.UUID, username string) error {
+func (m *UserModel) Update(ctx context.Context, userId uuid.UUID, username, pfp string) error {
 	stmt := `
 		UPDATE users
-		SET username = $2
+		SET username = $2, pfp = $3
 		WHERE id = $1;`
-
-	_, err := DB.Exec(ctx, stmt, userId, username)
+	_, err := DB.Exec(ctx, stmt, userId, username, pfp)
 	var pgErr *pgconn.PgError
 	if err != nil && errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		return &DupUsernameError{Username: username}
 	}
-	return err
-}
-
-func (m *UserModel) SetPfp(ctx context.Context, userId uuid.UUID, pfp string) error {
-	stmt := `
-		UPDATE users
-		SET pfp = $2
-		WHERE id = $1;`
-	_, err := DB.Exec(ctx, stmt, userId, pfp)
 	return err
 }
 

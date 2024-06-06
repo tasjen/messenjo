@@ -4,7 +4,7 @@ import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'
 import type { AddFriendReq as _AddFriendReq, AddFriendReq__Output as _AddFriendReq__Output } from './AddFriendReq';
 import type { AddFriendRes as _AddFriendRes, AddFriendRes__Output as _AddFriendRes__Output } from './AddFriendRes';
-import type { AddMemberReq as _AddMemberReq, AddMemberReq__Output as _AddMemberReq__Output } from './AddMemberReq';
+import type { AddMembersReq as _AddMembersReq, AddMembersReq__Output as _AddMembersReq__Output } from './AddMembersReq';
 import type { CreateGroupReq as _CreateGroupReq, CreateGroupReq__Output as _CreateGroupReq__Output } from './CreateGroupReq';
 import type { CreateGroupRes as _CreateGroupRes, CreateGroupRes__Output as _CreateGroupRes__Output } from './CreateGroupRes';
 import type { Empty as _google_protobuf_Empty, Empty__Output as _google_protobuf_Empty__Output } from './google/protobuf/Empty';
@@ -16,9 +16,8 @@ import type { GetUserByIdReq as _GetUserByIdReq, GetUserByIdReq__Output as _GetU
 import type { GetUserByUsernameReq as _GetUserByUsernameReq, GetUserByUsernameReq__Output as _GetUserByUsernameReq__Output } from './GetUserByUsernameReq';
 import type { SendMessageReq as _SendMessageReq, SendMessageReq__Output as _SendMessageReq__Output } from './SendMessageReq';
 import type { SendMessageRes as _SendMessageRes, SendMessageRes__Output as _SendMessageRes__Output } from './SendMessageRes';
-import type { SetGroupPfpReq as _SetGroupPfpReq, SetGroupPfpReq__Output as _SetGroupPfpReq__Output } from './SetGroupPfpReq';
-import type { SetUserPfpReq as _SetUserPfpReq, SetUserPfpReq__Output as _SetUserPfpReq__Output } from './SetUserPfpReq';
-import type { SetUsernameReq as _SetUsernameReq, SetUsernameReq__Output as _SetUsernameReq__Output } from './SetUsernameReq';
+import type { UpdateGroupReq as _UpdateGroupReq, UpdateGroupReq__Output as _UpdateGroupReq__Output } from './UpdateGroupReq';
+import type { UpdateUserReq as _UpdateUserReq, UpdateUserReq__Output as _UpdateUserReq__Output } from './UpdateUserReq';
 import type { User as _User, User__Output as _User__Output } from './User';
 
 export interface ChatClient extends grpc.Client {
@@ -31,14 +30,14 @@ export interface ChatClient extends grpc.Client {
   addFriend(argument: _AddFriendReq, options: grpc.CallOptions, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
   addFriend(argument: _AddFriendReq, callback: grpc.requestCallback<_AddFriendRes__Output>): grpc.ClientUnaryCall;
   
-  AddMember(argument: _AddMemberReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddMember(argument: _AddMemberReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddMember(argument: _AddMemberReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  AddMember(argument: _AddMemberReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addMember(argument: _AddMemberReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addMember(argument: _AddMemberReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addMember(argument: _AddMemberReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  addMember(argument: _AddMemberReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  AddMembers(argument: _AddMembersReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  AddMembers(argument: _AddMembersReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  AddMembers(argument: _AddMembersReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  AddMembers(argument: _AddMembersReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  addMembers(argument: _AddMembersReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  addMembers(argument: _AddMembersReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  addMembers(argument: _AddMembersReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  addMembers(argument: _AddMembersReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
   CreateGroup(argument: _CreateGroupReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_CreateGroupRes__Output>): grpc.ClientUnaryCall;
   CreateGroup(argument: _CreateGroupReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_CreateGroupRes__Output>): grpc.ClientUnaryCall;
@@ -94,39 +93,30 @@ export interface ChatClient extends grpc.Client {
   sendMessage(argument: _SendMessageReq, options: grpc.CallOptions, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
   sendMessage(argument: _SendMessageReq, callback: grpc.requestCallback<_SendMessageRes__Output>): grpc.ClientUnaryCall;
   
-  SetGroupPfp(argument: _SetGroupPfpReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetGroupPfp(argument: _SetGroupPfpReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetGroupPfp(argument: _SetGroupPfpReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetGroupPfp(argument: _SetGroupPfpReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setGroupPfp(argument: _SetGroupPfpReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setGroupPfp(argument: _SetGroupPfpReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setGroupPfp(argument: _SetGroupPfpReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setGroupPfp(argument: _SetGroupPfpReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateGroup(argument: _UpdateGroupReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateGroup(argument: _UpdateGroupReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateGroup(argument: _UpdateGroupReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateGroup(argument: _UpdateGroupReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateGroup(argument: _UpdateGroupReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateGroup(argument: _UpdateGroupReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateGroup(argument: _UpdateGroupReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateGroup(argument: _UpdateGroupReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
-  SetUserPfp(argument: _SetUserPfpReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUserPfp(argument: _SetUserPfpReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUserPfp(argument: _SetUserPfpReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUserPfp(argument: _SetUserPfpReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUserPfp(argument: _SetUserPfpReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUserPfp(argument: _SetUserPfpReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUserPfp(argument: _SetUserPfpReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUserPfp(argument: _SetUserPfpReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  
-  SetUsername(argument: _SetUsernameReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUsername(argument: _SetUsernameReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUsername(argument: _SetUsernameReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  SetUsername(argument: _SetUsernameReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUsername(argument: _SetUsernameReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUsername(argument: _SetUsernameReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUsername(argument: _SetUsernameReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
-  setUsername(argument: _SetUsernameReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateUser(argument: _UpdateUserReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateUser(argument: _UpdateUserReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateUser(argument: _UpdateUserReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  UpdateUser(argument: _UpdateUserReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateUser(argument: _UpdateUserReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateUser(argument: _UpdateUserReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateUser(argument: _UpdateUserReq, options: grpc.CallOptions, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
+  updateUser(argument: _UpdateUserReq, callback: grpc.requestCallback<_google_protobuf_Empty__Output>): grpc.ClientUnaryCall;
   
 }
 
 export interface ChatHandlers extends grpc.UntypedServiceImplementation {
   AddFriend: grpc.handleUnaryCall<_AddFriendReq__Output, _AddFriendRes>;
   
-  AddMember: grpc.handleUnaryCall<_AddMemberReq__Output, _google_protobuf_Empty>;
+  AddMembers: grpc.handleUnaryCall<_AddMembersReq__Output, _google_protobuf_Empty>;
   
   CreateGroup: grpc.handleUnaryCall<_CreateGroupReq__Output, _CreateGroupRes>;
   
@@ -140,24 +130,21 @@ export interface ChatHandlers extends grpc.UntypedServiceImplementation {
   
   SendMessage: grpc.handleUnaryCall<_SendMessageReq__Output, _SendMessageRes>;
   
-  SetGroupPfp: grpc.handleUnaryCall<_SetGroupPfpReq__Output, _google_protobuf_Empty>;
+  UpdateGroup: grpc.handleUnaryCall<_UpdateGroupReq__Output, _google_protobuf_Empty>;
   
-  SetUserPfp: grpc.handleUnaryCall<_SetUserPfpReq__Output, _google_protobuf_Empty>;
-  
-  SetUsername: grpc.handleUnaryCall<_SetUsernameReq__Output, _google_protobuf_Empty>;
+  UpdateUser: grpc.handleUnaryCall<_UpdateUserReq__Output, _google_protobuf_Empty>;
   
 }
 
 export interface ChatDefinition extends grpc.ServiceDefinition {
   AddFriend: MethodDefinition<_AddFriendReq, _AddFriendRes, _AddFriendReq__Output, _AddFriendRes__Output>
-  AddMember: MethodDefinition<_AddMemberReq, _google_protobuf_Empty, _AddMemberReq__Output, _google_protobuf_Empty__Output>
+  AddMembers: MethodDefinition<_AddMembersReq, _google_protobuf_Empty, _AddMembersReq__Output, _google_protobuf_Empty__Output>
   CreateGroup: MethodDefinition<_CreateGroupReq, _CreateGroupRes, _CreateGroupReq__Output, _CreateGroupRes__Output>
   GetContacts: MethodDefinition<_GetContactsReq, _GetContactsRes, _GetContactsReq__Output, _GetContactsRes__Output>
   GetMessages: MethodDefinition<_GetMessagesReq, _GetMessagesRes, _GetMessagesReq__Output, _GetMessagesRes__Output>
   GetUserById: MethodDefinition<_GetUserByIdReq, _User, _GetUserByIdReq__Output, _User__Output>
   GetUserByUsername: MethodDefinition<_GetUserByUsernameReq, _User, _GetUserByUsernameReq__Output, _User__Output>
   SendMessage: MethodDefinition<_SendMessageReq, _SendMessageRes, _SendMessageReq__Output, _SendMessageRes__Output>
-  SetGroupPfp: MethodDefinition<_SetGroupPfpReq, _google_protobuf_Empty, _SetGroupPfpReq__Output, _google_protobuf_Empty__Output>
-  SetUserPfp: MethodDefinition<_SetUserPfpReq, _google_protobuf_Empty, _SetUserPfpReq__Output, _google_protobuf_Empty__Output>
-  SetUsername: MethodDefinition<_SetUsernameReq, _google_protobuf_Empty, _SetUsernameReq__Output, _google_protobuf_Empty__Output>
+  UpdateGroup: MethodDefinition<_UpdateGroupReq, _google_protobuf_Empty, _UpdateGroupReq__Output, _google_protobuf_Empty__Output>
+  UpdateUser: MethodDefinition<_UpdateUserReq, _google_protobuf_Empty, _UpdateUserReq__Output, _google_protobuf_Empty__Output>
 }

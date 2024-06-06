@@ -18,11 +18,11 @@ export default function ContactItem({ contact }: Props) {
   function formattedTime(lastSentAt?: number): string {
     const now = dayjs();
     if (!lastSentAt) {
-      return "no data";
+      return "No data";
     } else if (now.isSame(lastSentAt, "day")) {
       return dayjs(lastSentAt).format("HH:mm");
     } else if (now.subtract(1, "day").isSame(lastSentAt, "day")) {
-      return "yesterday";
+      return "Yesterday";
     } else if (now.subtract(7, "day").isBefore(lastSentAt, "day")) {
       return dayjs(lastSentAt).format("ddd");
     } else if (now.isSame(lastSentAt, "year")) {
@@ -43,11 +43,11 @@ export default function ContactItem({ contact }: Props) {
         <div className="flex gap-2">
           <Avatar className="self-center">
             <AvatarImage src={contact.pfp} alt={`${contact.name}'s pfp`} />
-            <AvatarFallback>{contact.name[0].toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{contact.name[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 flex flex-col">
             <div className="flex">
-              <div className="font-bold text-ellipsis max-w-32 overflow-hidden">
+              <div className="font-bold text-ellipsis max-w-44 overflow-hidden">
                 {contact.name}
               </div>
               <div className="ml-2">

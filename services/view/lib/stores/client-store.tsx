@@ -136,12 +136,6 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
 
   function setUsername(username: string): void {
     dispatch({ type: "SET_USERNAME", payload: username });
-    toast(`Your username has been changed to ${username}`, {
-      action: {
-        label: "Close",
-        onClick: () => {},
-      },
-    });
   }
 
   function addMessage(groupId: string, message: Message): void {

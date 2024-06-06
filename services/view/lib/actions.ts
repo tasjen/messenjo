@@ -11,28 +11,33 @@ type FormState = {
   error?: string;
 };
 
-export async function setUsername(formData: FormData): Promise<FormState> {
-  const parsedUsername = z.string().safeParse(formData.get("username"));
+export async function updateUser(formData: FormData): Promise<void> {
+  const parsedForm = z
+    .object({
+      username: z.string(),
+      pfp: z.string(),
+    })
+    .safeParse({
+      username: formData.get("username"),
+      pfp: formData.get("pfp"),
+    });
 
-  if (!parsedUsername.success) {
-    return {
-      error: "username must be a string with at least 1 character long",
-    };
+  if (!parsedForm.success) {
+    throw new Error("failed to parse formData");
   }
 
-  const username = parsedUsername.data;
+  const { username, pfp } = parsedForm.data;
 
   try {
     const userId = uuidParse(getUserId());
-    await chatClient.setUsername({ userId, username });
-    return {};
+    await chatClient.updateUser({ userId, username, pfp });
   } catch (err) {
     if (isServiceError(err)) {
-      return { error: err.details };
+      throw new Error(err.details);
     } else if (err instanceof Error) {
-      return { error: err.message };
+      throw err;
     }
-    return { error: "unknown error" };
+    throw new Error("unknown error");
   }
 }
 
@@ -48,17 +53,16 @@ export async function addFriend(toUserId: string): Promise<string> {
 }
 
 export async function createGroup(formData: FormData): Promise<string> {
-  formData.append("user-ids", getUserId());
   const parsedForm = z
     .object({
       groupName: z.string(),
-      pfpUrl: z.string().optional(),
+      pfp: z.string().optional(),
       userIds: z.array(z.string()),
     })
     .safeParse({
       groupName: formData.get("group-name"),
-      pfpUrl: formData.get("pfp"),
-      userIds: formData.getAll("user-ids"),
+      pfp: formData.get("pfp"),
+      userIds: [...formData.getAll("user-ids"), getUserId()],
     });
 
   if (!parsedForm.success) {

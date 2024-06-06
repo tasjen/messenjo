@@ -7,6 +7,7 @@ import { useStore } from "@/lib/stores/client-store";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import ContactItem from "./contact-item";
+import { Button } from "./ui/button";
 
 type Props = {
   user: User;
@@ -23,7 +24,12 @@ export default function ContactListClient(props: Props) {
   }, []);
 
   if (store.isWsDisconnected) {
-    return <></>;
+    return (
+      <div className="flex flex-col gap-2 items-center my-auto">
+        <div>{"You're disconnected"}</div>
+        <Button onClick={() => window.location.reload()}>Reconnect</Button>
+      </div>
+    );
   }
 
   const contacts = (store.contacts.length ? store : props).contacts
@@ -52,9 +58,13 @@ export default function ContactListClient(props: Props) {
         />
       </div>
       <ul className="flex flex-col h-full overflow-auto">
-        {contacts.map((contact) => (
-          <ContactItem key={contact.groupId} contact={contact} />
-        ))}
+        {!contacts.length ? (
+          <div className="self-center">No contacts found</div>
+        ) : (
+          contacts.map((contact) => (
+            <ContactItem key={contact.groupId} contact={contact} />
+          ))
+        )}
       </ul>
     </>
   );

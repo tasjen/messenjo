@@ -1,12 +1,12 @@
-import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 import Link from "next/link";
 
-export default function SettingsButton() {
+export default function HomeButton() {
   return (
-    <Link href="/settings">
+    <Link href="/">
       <Button variant="secondary">
-        <Settings />
+        <Home />
       </Button>
     </Link>
   );

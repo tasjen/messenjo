@@ -32,7 +32,7 @@ export async function fetchUserByUsername(
   username: string
 ): Promise<User | null> {
   noStore();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
     const res = await chatClient.getByUsername({ username });
     if (!res?.id) {

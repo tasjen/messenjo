@@ -30,7 +30,7 @@ export default function FriendSearchResultClient({ user }: Props) {
     <div className="mt-4 flex flex-col items-center">
       <Avatar className="self-center h-36 w-36 mb-4">
         <AvatarImage src={user.pfp} alt={`${user.pfp}'s pfp`} />
-        <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{user.username[0]}</AvatarFallback>
       </Avatar>
       <div className="flex text-xl mb-2 gap-2.5">
         {user.username} {contact && <UserCheck />}

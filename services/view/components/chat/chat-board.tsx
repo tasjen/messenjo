@@ -1,13 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useEffect } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Settings } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Message } from "@/lib/schema";
 import { useStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
+import GroupMenuButton from "./group-menu-button";
+import clsx from "clsx";
 
 type Props = {
   messages: Message[];
@@ -30,8 +32,9 @@ export default function ChatBoard(props: Props) {
 
   return (
     <>
-      <div className="my-2 flex items-center">
-        <div className="font-bold text-lg mr-auto">{contact.name}</div>
+      <div className="my-2 flex items-center gap-4 justify-between">
+        <div className="font-bold text-xl ml-2">{contact.name}</div>
+        {contact.type === "group" && <GroupMenuButton className="mr-auto" />}
         <Link href="/" className="flex justify-center items-center w-20">
           <ChevronLeft className="h-6 w-6" />
         </Link>

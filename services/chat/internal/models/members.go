@@ -8,7 +8,7 @@ import (
 )
 
 type IMemberModel interface {
-	Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.UUID) error
+	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds []uuid.UUID) error
 }
 
 type MemberModel struct{}
@@ -22,12 +22,14 @@ type Member struct {
 	GroupId uuid.UUID `db:"group_id"`
 }
 
-func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.UUID) (err error) {
-	stmt := `INSERT INTO members (user_id, group_id) VALUES ($1, $2);`
-	if tx != nil {
-		_, err = tx.Exec(ctx, stmt, userId, groupId)
-	} else {
-		_, err = DB.Exec(ctx, stmt, userId, groupId)
-	}
+func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds []uuid.UUID) error {
+	_, err := tx.CopyFrom(
+		ctx,
+		pgx.Identifier{"members"},
+		[]string{"user_id", "group_id"},
+		pgx.CopyFromSlice(len(userIds), func(i int) ([]any, error) {
+			return []any{userIds[i], groupId}, nil
+		}),
+	)
 	return err
 }

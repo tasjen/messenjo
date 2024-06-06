@@ -213,18 +213,26 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
-func (app *application) SetUserPfp(ctx context.Context, req *pb.SetUserPfpReq) (*empty.Empty, error) {
+func (app *application) UpdateUser(ctx context.Context, req *pb.UpdateUserReq) (*empty.Empty, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return &empty.Empty{}, err
 	}
-
-	pfpUrl := req.GetPfpUrl()
-	if l := len(pfpUrl); l < 1 || l > 1024 {
+	pfp := req.GetPfp()
+	if l := len(pfp); l < 1 || l > 1024 {
 		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 1024 characters")
 	}
 
-	err = app.users.SetPfp(ctx, userId, pfpUrl)
+	username := req.GetUsername()
+	if l := len(username); l < 1 || l > 32 {
+		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 32 characters")
+	}
+
+	err = app.users.Update(ctx, userId, username, pfp)
+	var dupUsernameError *models.DupUsernameError
+	if err != nil && !errors.As(err, &dupUsernameError) {
+		return &empty.Empty{}, errors.New("internal server error")
+	}
 	return &empty.Empty{}, err
 }
 
@@ -233,7 +241,10 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	if l := len(groupName); l < 1 || l > 16 {
 		return &pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
-	println(1)
+	pfp := req.GetPfp()
+	if l := len(groupName); l < 1 || l > 1024 {
+		return &pb.CreateGroupRes{}, errors.New("profile picture's url must be at least 1 and not exceed 1024 characters")
+	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
@@ -242,47 +253,27 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
-	pfp := req.GetPfpUrl()
 	err = app.groups.Add(ctx, tx, groupId, groupName, pfp)
 	if err != nil {
 		return &pb.CreateGroupRes{}, err
 	}
 
-	userIds := req.GetUserIds()
-	_, err = tx.CopyFrom(
-		ctx,
-		pgx.Identifier{"members"},
-		[]string{"user_id", "group_id"},
-		pgx.CopyFromSlice(len(userIds), func(i int) ([]any, error) {
-			userId, err := uuid.FromBytes(userIds[i])
-			return []any{userId, groupId}, err
-		}),
-	)
+	var userIds []uuid.UUID
+	for _, e := range req.GetUserIds() {
+		userId, err := uuid.FromBytes(e)
+		if err != nil {
+			return &pb.CreateGroupRes{}, err
+		}
+		userIds = append(userIds, userId)
+	}
+
+	err = app.members.Add(ctx, tx, groupId, userIds)
 	if err != nil {
 		return &pb.CreateGroupRes{}, err
 	}
 
 	err = tx.Commit(ctx)
 	return &pb.CreateGroupRes{GroupId: groupId[:]}, err
-}
-
-func (app *application) SetUsername(ctx context.Context, req *pb.SetUsernameReq) (*empty.Empty, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
-		return &empty.Empty{}, err
-	}
-	username := req.GetUsername()
-	if l := len(username); l < 1 || l > 32 {
-		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 32 characters")
-	}
-
-	err = app.users.SetUsername(ctx, userId, username)
-	var dupUsernameError *models.DupUsernameError
-	if err != nil && !errors.As(err, &dupUsernameError) {
-		return &empty.Empty{}, errors.New("internal server error")
-	}
-
-	return &empty.Empty{}, err
 }
 
 func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.AddFriendRes, error) {
@@ -316,12 +307,7 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 		return &pb.AddFriendRes{}, err
 	}
 
-	err = app.members.Add(ctx, tx, fromUserId, groupId)
-	if err != nil {
-		return &pb.AddFriendRes{}, err
-	}
-
-	err = app.members.Add(ctx, tx, toUserId, groupId)
+	err = app.members.Add(ctx, tx, groupId, []uuid.UUID{fromUserId, toUserId})
 	if err != nil {
 		return &pb.AddFriendRes{}, err
 	}
@@ -330,18 +316,28 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 	return &pb.AddFriendRes{GroupId: groupId[:]}, err
 }
 
-func (app *application) AddMember(ctx context.Context, req *pb.AddMemberReq) (*empty.Empty, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
-		return &empty.Empty{}, err
-	}
-
+func (app *application) AddMembers(ctx context.Context, req *pb.AddMembersReq) (*empty.Empty, error) {
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, err
 	}
 
-	err = app.members.Add(ctx, nil, userId, groupId)
+	var userIds []uuid.UUID
+	for _, e := range req.GetUserIds() {
+		userId, err := uuid.FromBytes(e)
+		if err != nil {
+			return &empty.Empty{}, err
+		}
+		userIds = append(userIds, userId)
+	}
+
+	tx, err := models.DB.Begin(ctx)
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	err = app.members.Add(ctx, tx, groupId, userIds)
 	return &empty.Empty{}, err
 }
 

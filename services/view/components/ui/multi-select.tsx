@@ -119,9 +119,7 @@ const MultiSelect = ({
                       src={option.img}
                       alt={`${option.label}'s pfp`}
                     />
-                    <AvatarFallback>
-                      {option.label[0].toUpperCase()}
-                    </AvatarFallback>
+                    <AvatarFallback>{option.label[0]}</AvatarFallback>
                   </Avatar>
                   {option.label}
                 </CommandItem>

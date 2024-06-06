@@ -5,14 +5,11 @@ import { Suspense } from "react";
 import ContactListSkeleton from "@/components/skeletons/contact-list";
 import { getContacts, getUserInfo } from "@/lib/stores/server-store";
 import Streaming from "@/components/streaming";
-import ReconnectButton from "@/components/reconnect-button";
 import NewUsernameDialog from "@/components/new-username-dialog";
 import NoSSR from "@/components/no-ssr";
-import { Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import StoreProvider from "@/lib/stores/client-store";
 import SettingsButton from "@/components/settings-button";
+import HomeButton from "@/components/home-button";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   // start prefetching and caching data asynchronously before rendering children components
@@ -26,17 +23,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <NewUsernameDialog isNewUser={true} />
           <Streaming />
         </NoSSR>
-        <aside className="flex-none w-80 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
+        <aside className="flex-none w-96 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
           <Suspense fallback={<ContactListSkeleton />}>
             <ContactListServer />
           </Suspense>
-          <ReconnectButton />
           <div className="flex justify-around">
-            <Link href="/">
-              <Button size="icon" variant="secondary">
-                <Home />
-              </Button>
-            </Link>
+            <HomeButton />
             <AddContactButton />
             <SettingsButton />
             <SignOutButton />

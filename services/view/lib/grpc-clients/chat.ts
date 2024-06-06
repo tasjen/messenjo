@@ -5,14 +5,14 @@ import { ProtoGrpcType as ChatProtoGrpcType } from "@/lib/chat_proto/chatService
 import { newDeadline } from "@/lib/utils";
 import type { ChatClient } from "@/lib/chat_proto/Chat";
 import { AddFriendReq } from "@/lib/chat_proto/AddFriendReq";
-import { SetUsernameReq } from "@/lib/chat_proto/SetUsernameReq";
 import { GetUserByUsernameReq } from "@/lib/chat_proto/GetUserByUsernameReq";
 import { GetUserByIdReq } from "@/lib/chat_proto/GetUserByIdReq";
 import { GetContactsReq } from "@/lib/chat_proto/GetContactsReq";
 import { GetMessagesReq } from "@/lib/chat_proto/GetMessagesReq";
 import { CreateGroupReq } from "@/lib/chat_proto/CreateGroupReq";
-import { AddMemberReq } from "@/lib/chat_proto/AddMemberReq";
+import { AddMembersReq } from "@/lib/chat_proto/AddMembersReq";
 import { SendMessageReq } from "@/lib/chat_proto/SendMessageReq";
+import { UpdateUserReq } from "../chat_proto/UpdateUserReq";
 
 const packageDefinition = loadSync(
   path.join(process.cwd(), "/lib/chat_proto/chat.proto"),
@@ -77,11 +77,11 @@ async function createGroup(
   });
 }
 
-async function setUsername(
-  req: SetUsernameReq
-): Promise<Parameters<Parameters<ChatClient["SetUsername"]>[1]>[1]> {
+async function updateUser(
+  req: UpdateUserReq
+): Promise<Parameters<Parameters<ChatClient["UpdateUser"]>[1]>[1]> {
   return new Promise((resolve, reject) => {
-    chatClient.SetUsername(req, { deadline: newDeadline(5) }, (err, res) =>
+    chatClient.UpdateUser(req, { deadline: newDeadline(5) }, (err, res) =>
       err ? reject(err) : resolve(res)
     );
   });
@@ -97,11 +97,11 @@ async function addFriend(
   });
 }
 
-async function addMember(
-  req: AddMemberReq
-): Promise<Parameters<Parameters<ChatClient["AddMember"]>[1]>[1]> {
+async function addMembers(
+  req: AddMembersReq
+): Promise<Parameters<Parameters<ChatClient["AddMembers"]>[1]>[1]> {
   return new Promise((resolve, reject) => {
-    chatClient.AddMember(req, { deadline: newDeadline(5) }, (err, res) =>
+    chatClient.AddMembers(req, { deadline: newDeadline(5) }, (err, res) =>
       err ? reject(err) : resolve(res)
     );
   });
@@ -122,10 +122,10 @@ const promisifiedChatClient = {
   getUserById,
   getContacts,
   getMessages,
+  updateUser,
   createGroup,
-  setUsername,
   addFriend,
-  addMember,
+  addMembers,
   sendMessage,
 };
 

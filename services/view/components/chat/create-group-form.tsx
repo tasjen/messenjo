@@ -57,16 +57,15 @@ export default function CreateGroupForm() {
 
   const options = store.contacts
     .filter((contact): contact is FriendContact => contact.type === "friend")
-    .sort((a, b) => (a.name > b.name ? 1 : -1))
+    .sort((a, b) => a.name.localeCompare(b.name))
     .map((contact) => ({
       img: contact.pfp,
       value: contact.userId,
       label: contact.name,
     }));
-  console.log(options);
 
   return (
-    <form className="flex flex-col space-y-2" action={handleSubmit}>
+    <form className="flex flex-col space-y-8" action={handleSubmit}>
       <Label>
         <div className="mb-2 font-bold">Group name</div>
         <Input
@@ -86,7 +85,7 @@ export default function CreateGroupForm() {
           <Avatar className="self-center h-20 w-20">
             <AvatarImage src={pfp} alt="pfp preview" />
             <AvatarFallback className={clsx(groupName !== "" && "text-3xl")}>
-              {groupName ? groupName[0].toUpperCase() : "preview"}
+              {groupName ? groupName[0] : "preview"}
             </AvatarFallback>
           </Avatar>
           <Input

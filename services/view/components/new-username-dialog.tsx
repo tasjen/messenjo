@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/stores/client-store";
-import { setUsername } from "@/lib/actions";
+import { updateUser } from "@/lib/actions";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   isNewUser: boolean;
@@ -22,13 +23,24 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
   const [isOpen, setIsOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(formData: FormData) {
-    const formState = await setUsername(formData);
-    if (formState.error) {
-      return setErrorMessage(formState.error);
+  async function handleSubmit(formData: FormData): Promise<void> {
+    try {
+      formData.set("pfp", store.user.pfp);
+      await updateUser(formData);
+      const username = formData.get("username") as string;
+      store.setUsername(username);
+      toast(`Your username has been changed to ${username}`, {
+        action: {
+          label: "Close",
+          onClick: () => {},
+        },
+      });
+      setIsOpen(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setErrorMessage(err.message);
+      }
     }
-    store.setUsername(formData.get("username") as string);
-    return setIsOpen(false);
   }
 
   return (

@@ -10,7 +10,7 @@ type SubtypeConstructor<Constructor extends new (...args: any) => any, Subtype> 
 export interface ProtoGrpcType {
   AddFriendReq: MessageTypeDefinition
   AddFriendRes: MessageTypeDefinition
-  AddMemberReq: MessageTypeDefinition
+  AddMembersReq: MessageTypeDefinition
   Chat: SubtypeConstructor<typeof grpc.Client, _ChatClient> & { service: _ChatDefinition }
   Contact: MessageTypeDefinition
   CreateGroupReq: MessageTypeDefinition
@@ -24,9 +24,8 @@ export interface ProtoGrpcType {
   Message: MessageTypeDefinition
   SendMessageReq: MessageTypeDefinition
   SendMessageRes: MessageTypeDefinition
-  SetGroupPfpReq: MessageTypeDefinition
-  SetUserPfpReq: MessageTypeDefinition
-  SetUsernameReq: MessageTypeDefinition
+  UpdateGroupReq: MessageTypeDefinition
+  UpdateUserReq: MessageTypeDefinition
   User: MessageTypeDefinition
   google: {
     protobuf: {
