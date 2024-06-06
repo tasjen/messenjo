@@ -157,7 +157,7 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
-func (app *application) VerifyToken(ctx context.Context, req *auth_pb.AuthRequest) (*auth_pb.AuthResponse, error) {
+func (app *application) VerifyToken(ctx context.Context, req *auth_pb.VerifyTokenReq) (*auth_pb.VerifyTokenRes, error) {
 	token, err := jwt.ParseWithClaims(
 		req.GetToken(),
 		&jwtClaims{},
@@ -169,20 +169,20 @@ func (app *application) VerifyToken(ctx context.Context, req *auth_pb.AuthReques
 		})
 	if err != nil {
 		log.Println(err)
-		return &auth_pb.AuthResponse{}, err
+		return &auth_pb.VerifyTokenRes{}, err
 	}
 
 	if !token.Valid {
-		return &auth_pb.AuthResponse{}, errors.New("invalid token")
+		return &auth_pb.VerifyTokenRes{}, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*jwtClaims)
 	if !ok {
 		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
-		return &auth_pb.AuthResponse{}, errors.New("internal server error")
+		return &auth_pb.VerifyTokenRes{}, errors.New("internal server error")
 	}
 
 	userId := uuid.MustParse(claims.UserId)
 
-	return &auth_pb.AuthResponse{UserId: userId[:]}, nil
+	return &auth_pb.VerifyTokenRes{UserId: userId[:]}, nil
 }

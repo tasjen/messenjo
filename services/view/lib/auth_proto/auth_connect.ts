@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AuthRequest, AuthResponse } from "./auth_pb";
+import { VerifyTokenReq, VerifyTokenRes } from "./auth_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -17,8 +17,8 @@ export const Auth = {
      */
     verifyToken: {
       name: "VerifyToken",
-      I: AuthRequest,
-      O: AuthResponse,
+      I: VerifyTokenReq,
+      O: VerifyTokenRes,
       kind: MethodKind.Unary,
     },
   },

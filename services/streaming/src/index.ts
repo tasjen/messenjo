@@ -1,8 +1,9 @@
 import { App } from "uWebSockets.js";
 import { createClient } from "redis";
-import { getGroupIds, verifyUser } from "./grpc-client";
+import { getGroupIds, verifyToken } from "./grpc-client";
 import { UserManager } from "./user-manager";
 import { z } from "zod";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import cookie from "cookie";
 
 let t0 = Date.now();
@@ -27,7 +28,7 @@ app.ws<UserData>("/", {
   maxPayloadLength: 512,
   maxLifetime: Infinity,
 
-  upgrade: async (res, req, context) => {
+  upgrade: async (res, req, ctx) => {
     let isAborted = false;
     res.onAborted(() => (isAborted = true));
     const secWebSocketKey = req.getHeader("sec-websocket-key");
@@ -40,7 +41,12 @@ app.ws<UserData>("/", {
     }
 
     try {
-      const userId = await verifyUser(cookies.auth_jwt);
+      const verifyTokenRes = await verifyToken({ token: cookies.auth_jwt });
+      if (!verifyTokenRes?.userId) {
+        throw new Error("no `res.userId` returned from verifyToken");
+      }
+
+      const userId = uuidStringify(verifyTokenRes.userId);
       if (isAborted) {
         console.log("client disconnected before upgrading");
         return;
@@ -54,7 +60,7 @@ app.ws<UserData>("/", {
           secWebSocketKey,
           secWebSocketProtocol,
           secWebSocketExtensions,
-          context
+          ctx
         );
       });
     } catch (err) {
@@ -66,12 +72,18 @@ app.ws<UserData>("/", {
     const { userId } = ws.getUserData();
     console.log("user", userId, "connected");
 
-    const groupIds = await getGroupIds(userId);
-    for (const id of groupIds) {
-      // console.log(`userId: ${userId} is subscribing groupId: ${id}`);
-      ws.subscribe(id);
+    try {
+      const getGroupIdsRes = await getGroupIds({ userId: uuidParse(userId) });
+      if (!getGroupIdsRes?.groupIds) {
+        throw new Error("no `res.userId` returned from verifyToken");
+      }
+      for (const groupId of getGroupIdsRes.groupIds) {
+        ws.subscribe(groupId);
+      }
+      userManager.addUser(userId, ws);
+    } catch (err) {
+      console.error(err);
     }
-    userManager.addUser(userId, ws);
     userManager.printUsers();
   },
 

@@ -1,10 +1,10 @@
 // Original file: auth_proto/auth.proto
 
 
-export interface AuthRequest {
+export interface VerifyTokenReq {
   'token'?: (string);
 }
 
-export interface AuthRequest__Output {
+export interface VerifyTokenReq__Output {
   'token'?: (string);
 }

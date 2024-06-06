@@ -2,6 +2,9 @@ import { WebSocket } from "uWebSockets.js";
 import { UserData } from ".";
 
 export class UserManager {
+  // The `users` attribute is a Map where the keys are user IDs (stringified uuids)
+  // and the values are arrays of WebSocket connections so that a single user can have
+  // multiple WebSocket connections (multiple devices).
   private readonly users: Map<string, WebSocket<UserData>[]>;
   constructor() {
     this.users = new Map();
@@ -18,7 +21,6 @@ export class UserManager {
     } else {
       this.users.set(userId, [ws]);
     }
-    ws.subscribe;
   }
 
   removeUser(userId: string, ws: WebSocket<UserData>): void {

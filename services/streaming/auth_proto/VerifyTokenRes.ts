@@ -1,10 +1,10 @@
 // Original file: auth_proto/auth.proto
 
 
-export interface AuthResponse {
+export interface VerifyTokenRes {
   'userId'?: (Buffer | Uint8Array | string);
 }
 
-export interface AuthResponse__Output {
+export interface VerifyTokenRes__Output {
   'userId'?: (Uint8Array);
 }

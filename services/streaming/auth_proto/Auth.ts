@@ -2,26 +2,26 @@
 
 import type * as grpc from '@grpc/grpc-js'
 import type { MethodDefinition } from '@grpc/proto-loader'
-import type { AuthRequest as _AuthRequest, AuthRequest__Output as _AuthRequest__Output } from './AuthRequest';
-import type { AuthResponse as _AuthResponse, AuthResponse__Output as _AuthResponse__Output } from './AuthResponse';
+import type { VerifyTokenReq as _VerifyTokenReq, VerifyTokenReq__Output as _VerifyTokenReq__Output } from './VerifyTokenReq';
+import type { VerifyTokenRes as _VerifyTokenRes, VerifyTokenRes__Output as _VerifyTokenRes__Output } from './VerifyTokenRes';
 
 export interface AuthClient extends grpc.Client {
-  VerifyToken(argument: _AuthRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  VerifyToken(argument: _AuthRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  VerifyToken(argument: _AuthRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  VerifyToken(argument: _AuthRequest, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  verifyToken(argument: _AuthRequest, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  verifyToken(argument: _AuthRequest, metadata: grpc.Metadata, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  verifyToken(argument: _AuthRequest, options: grpc.CallOptions, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
-  verifyToken(argument: _AuthRequest, callback: grpc.requestCallback<_AuthResponse__Output>): grpc.ClientUnaryCall;
+  VerifyToken(argument: _VerifyTokenReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  VerifyToken(argument: _VerifyTokenReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  VerifyToken(argument: _VerifyTokenReq, options: grpc.CallOptions, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  VerifyToken(argument: _VerifyTokenReq, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  verifyToken(argument: _VerifyTokenReq, metadata: grpc.Metadata, options: grpc.CallOptions, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  verifyToken(argument: _VerifyTokenReq, metadata: grpc.Metadata, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  verifyToken(argument: _VerifyTokenReq, options: grpc.CallOptions, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
+  verifyToken(argument: _VerifyTokenReq, callback: grpc.requestCallback<_VerifyTokenRes__Output>): grpc.ClientUnaryCall;
   
 }
 
 export interface AuthHandlers extends grpc.UntypedServiceImplementation {
-  VerifyToken: grpc.handleUnaryCall<_AuthRequest__Output, _AuthResponse>;
+  VerifyToken: grpc.handleUnaryCall<_VerifyTokenReq__Output, _VerifyTokenRes>;
   
 }
 
 export interface AuthDefinition extends grpc.ServiceDefinition {
-  VerifyToken: MethodDefinition<_AuthRequest, _AuthResponse, _AuthRequest__Output, _AuthResponse__Output>
+  VerifyToken: MethodDefinition<_VerifyTokenReq, _VerifyTokenRes, _VerifyTokenReq__Output, _VerifyTokenRes__Output>
 }

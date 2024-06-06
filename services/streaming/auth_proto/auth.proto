@@ -3,13 +3,13 @@ syntax = "proto3";
 option go_package = "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto";
 
 service Auth {
-  rpc VerifyToken (AuthRequest) returns (AuthResponse) {}
+  rpc VerifyToken (VerifyTokenReq) returns (VerifyTokenRes) {}
 }
 
-message AuthRequest {
+message VerifyTokenReq {
   string token = 1;
 }
 
-message AuthResponse {
+message VerifyTokenRes {
   bytes user_id = 1;
 }

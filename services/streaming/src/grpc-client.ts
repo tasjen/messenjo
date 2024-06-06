@@ -1,10 +1,13 @@
 import path from "path";
 import { credentials, loadPackageDefinition } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
-import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { ProtoGrpcType as AuthProtoGrpcType } from "../auth_proto/authService";
+import type { AuthClient } from "../auth_proto/Auth";
 import { ProtoGrpcType as ChatProtoGrpcType } from "../chat_proto/chatService";
 import { newDeadline } from "./utils";
+import { VerifyTokenReq } from "../auth_proto/VerifyTokenReq";
+import { GetGroupIdsReq } from "../chat_proto/GetGroupIdsReq";
+import { ChatClient } from "../chat_proto/Chat";
 
 const packageDefinition = loadSync(
   [
@@ -24,39 +27,22 @@ const { Chat: ChatClient } = loadPackageDefinition(
 const authClient = new AuthClient("auth:3001", credentials.createInsecure());
 const chatClient = new ChatClient("chat:3000", credentials.createInsecure());
 
-export async function verifyUser(token: string): Promise<string> {
-  return await new Promise((resolve, reject) => {
-    authClient.VerifyToken(
-      { token },
-      { deadline: newDeadline(5) },
-      (err?, res?) => {
-        if (err) {
-          return reject(err);
-        }
-        if (!res?.userId) {
-          return reject(new Error("no response from auth service"));
-        }
-        resolve(uuidStringify(res.userId));
-      }
+export async function verifyToken(
+  req: VerifyTokenReq
+): Promise<Parameters<Parameters<AuthClient["VerifyToken"]>[1]>[1]> {
+  return new Promise((resolve, reject) => {
+    authClient.VerifyToken(req, { deadline: newDeadline(5) }, (err, res) =>
+      err ? reject(err) : resolve(res)
     );
   });
 }
 
-export async function getGroupIds(userId: string): Promise<string[]> {
-  console.log("getting groupIdddddddddddddddddd");
+export async function getGroupIds(
+  req: GetGroupIdsReq
+): Promise<Parameters<Parameters<ChatClient["GetGroupIds"]>[1]>[1]> {
   return await new Promise((resolve, reject) => {
-    chatClient.GetGroupIds(
-      { userId: uuidParse(userId) },
-      { deadline: newDeadline(5) },
-      (err?, res?) => {
-        if (err) {
-          return reject(err);
-        }
-        if (!res?.groupIds) {
-          return resolve([]);
-        }
-        resolve(res.groupIds.map((e) => uuidStringify(e)));
-      }
+    chatClient.GetGroupIds(req, { deadline: newDeadline(5) }, (err, res) =>
+      err ? reject(err) : resolve(res)
     );
   });
 }
