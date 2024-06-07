@@ -70,7 +70,6 @@ export async function fetchContacts(): Promise<Contact[]> {
         lastMessage: e.lastMessage
           ? {
               id: e.lastMessage.id,
-              fromUsername: "",
               content: e.lastMessage.content,
               sentAt: toDateMs({
                 seconds: e.lastMessage.sentAt?.seconds?.toNumber() ?? 0,

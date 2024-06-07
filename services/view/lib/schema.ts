@@ -25,7 +25,7 @@ export const FriendContact = z.object({
   userId: z.string(),
   name: z.string(),
   pfp: z.string(),
-  lastMessage: Message.omit({ fromPfp: true }).optional(),
+  lastMessage: Message.omit({ fromPfp: true, fromUsername: true }).optional(),
 });
 
 export const GroupContact = FriendContact.omit({
