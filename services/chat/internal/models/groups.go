@@ -9,6 +9,7 @@ import (
 
 type IGroupModel interface {
 	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, groupName, pfp string) error
+	Update(ctx context.Context, groupId uuid.UUID, groupName, pfp string) error
 }
 
 type GroupModel struct{}
@@ -24,7 +25,18 @@ type Group struct {
 }
 
 func (m *GroupModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, groupName, pfp string) error {
-	stmt := `INSERT INTO groups (id, name, pfp) VALUES ($1, $2, $3);`
+	stmt := `
+		INSERT INTO groups (id, name, pfp)
+		VALUES ($1, $2, $3);`
 	_, err := tx.Exec(ctx, stmt, groupId, groupName, pfp)
+	return err
+}
+
+func (m *GroupModel) Update(ctx context.Context, groupId uuid.UUID, groupName, pfp string) error {
+	stmt := `
+		UPDATE "groups"
+		SET name = $2, pfp = $3
+		WHERE id = $1;`
+	_, err := DB.Exec(ctx, stmt, groupId, groupName, pfp)
 	return err
 }

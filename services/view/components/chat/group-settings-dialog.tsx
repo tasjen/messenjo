@@ -14,6 +14,9 @@ import clsx from "clsx";
 import { Button } from "../ui/button";
 import { useStore } from "@/lib/stores/client-store";
 import { useParams } from "next/navigation";
+import { updateGroup } from "@/lib/actions";
+import { GroupContact } from "@/lib/schema";
+import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
@@ -25,17 +28,44 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
   const params = useParams<{ groupId: string }>();
   const currentSettings = store.contacts.find(
     (contact) => contact.groupId === params.groupId
-  )!;
-  const [groupName, setGroupName] = useState(currentSettings.name);
-  const [pfp, setPfp] = useState(currentSettings.pfp);
+  ) as GroupContact;
+  const [groupName, setGroupName] = useState(currentSettings?.name);
+  const [pfp, setPfp] = useState(currentSettings?.pfp);
   const [errMessage, setErrMessage] = useState("");
 
-  async function handleSubmit(): Promise<void> {
-    setIsOpen(false);
+  if (!currentSettings) {
+    return <></>;
+  }
+
+  async function handleSubmit(formData: FormData): Promise<void> {
+    try {
+      formData.set("group-id", params.groupId);
+      await updateGroup(formData);
+      const updatedGroup: GroupContact = {
+        ...currentSettings,
+        name: formData.get("group-name") as string,
+        pfp: formData.get("pfp") as string,
+      };
+      store.setGroup(updatedGroup);
+      toast("The group is successfully updated");
+      setIsOpen(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setErrMessage(err.message);
+      }
+    }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(change) => {
+        setIsOpen(change);
+        setGroupName(currentSettings.name);
+        setPfp(currentSettings.pfp);
+        setErrMessage("");
+      }}
+    >
       <DialogContent className="">
         <DialogHeader>
           <DialogTitle>Group settings</DialogTitle>
@@ -75,7 +105,9 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
               />
             </div>
           </Label>
-          <Button className="self-end">Save changes</Button>
+          <Button className="self-end" type="submit">
+            Save changes
+          </Button>
           <div className="text-red-500 text-xs">{errMessage}</div>
         </form>
       </DialogContent>

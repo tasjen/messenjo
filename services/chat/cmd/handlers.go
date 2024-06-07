@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
 	empty "google.golang.org/protobuf/types/known/emptypb"
@@ -205,9 +204,22 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 
 	userId := uuid.New()
 	err := app.users.Add(ctx, userId, username, req.GetPfp())
-	var pgErr *pgconn.PgError
-	if err != nil && !(errors.As(err, &pgErr) && pgErr.Code == "23505") {
-		return &pb.CreateUserRes{}, err
+	if err != nil {
+		// Returns an error if the cause of error isn't from duplicated username
+		var dupUsernameError *models.DupUsernameError
+		if !errors.As(err, &dupUsernameError) {
+			return &pb.CreateUserRes{}, err
+		}
+
+		// Else, return the user id of the username instead.
+		// This ensure that if a user is successfully created in ChatDB but somehow failed in AuthDB,
+		// there won't be an error from the next attempt to create the same user
+		// since users will be created in both ChatDB and AuthDB respectively.
+		user, err := app.users.GetByUsername(ctx, username)
+		if err != nil {
+			return &pb.CreateUserRes{}, err
+		}
+		userId = user.Id
 	}
 
 	return &pb.CreateUserRes{UserId: userId[:]}, nil
@@ -218,14 +230,15 @@ func (app *application) UpdateUser(ctx context.Context, req *pb.UpdateUserReq) (
 	if err != nil {
 		return &empty.Empty{}, err
 	}
-	pfp := req.GetPfp()
-	if l := len(pfp); l < 1 || l > 1024 {
-		return &empty.Empty{}, errors.New("pfpUrl name must be at least 1 and not exceed 1024 characters")
-	}
 
 	username := req.GetUsername()
-	if l := len(username); l < 1 || l > 32 {
-		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 32 characters")
+	if l := len(username); l < 1 || l > 16 {
+		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 16 characters")
+	}
+
+	pfp := req.GetPfp()
+	if l := len(pfp); l > 1024 {
+		return &empty.Empty{}, errors.New("pfpUrl name must not exceed 1024 characters")
 	}
 
 	err = app.users.Update(ctx, userId, username, pfp)
@@ -242,8 +255,8 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		return &pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
 	pfp := req.GetPfp()
-	if l := len(groupName); l < 1 || l > 1024 {
-		return &pb.CreateGroupRes{}, errors.New("profile picture's url must be at least 1 and not exceed 1024 characters")
+	if l := len(groupName); l > 1024 {
+		return &pb.CreateGroupRes{}, errors.New("profile picture's url not exceed 1024 characters")
 	}
 
 	tx, err := models.DB.Begin(ctx)
@@ -274,6 +287,24 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 
 	err = tx.Commit(ctx)
 	return &pb.CreateGroupRes{GroupId: groupId[:]}, err
+}
+
+func (app *application) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq) (*empty.Empty, error) {
+	groupId, err := uuid.FromBytes(req.GetGroupId())
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+	groupName := req.GetName()
+	if l := len(groupName); l < 1 || l > 16 {
+		return &empty.Empty{}, errors.New("group name must be at least 1 and not exceed 16 characters")
+	}
+	pfp := req.GetPfp()
+	if l := len(pfp); l > 1024 {
+		return &empty.Empty{}, errors.New("profile picture's url must not exceed 1024 characters")
+	}
+
+	err = app.groups.Update(ctx, groupId, groupName, pfp)
+	return &empty.Empty{}, err
 }
 
 func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.AddFriendRes, error) {

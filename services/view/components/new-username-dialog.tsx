@@ -28,7 +28,7 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
       formData.set("pfp", store.user.pfp);
       await updateUser(formData);
       const username = formData.get("username") as string;
-      store.setUsername(username);
+      store.setUser({ ...store.user, username });
       toast(`Your username has been changed to ${username}`, {
         action: {
           label: "Close",

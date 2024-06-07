@@ -19,7 +19,7 @@ export default function ContactListClient(props: Props) {
   const [term, setTerm] = useState("");
 
   useEffect(() => {
-    store.loadUser(props.user);
+    store.setUser(props.user);
     store.loadContacts(props.contacts);
   }, []);
 

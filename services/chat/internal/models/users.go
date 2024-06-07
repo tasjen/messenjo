@@ -33,6 +33,10 @@ type User struct {
 func (m *UserModel) Add(ctx context.Context, userId uuid.UUID, username, pfp string) error {
 	stmt := `INSERT INTO users (id, username, pfp) VALUES ($1, $2, $3);`
 	_, err := DB.Exec(ctx, stmt, userId, username, pfp)
+	var pgErr *pgconn.PgError
+	if err != nil && errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		return &DupUsernameError{Username: username}
+	}
 	return err
 }
 

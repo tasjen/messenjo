@@ -13,6 +13,7 @@ import { CreateGroupReq } from "@/lib/chat_proto/CreateGroupReq";
 import { AddMembersReq } from "@/lib/chat_proto/AddMembersReq";
 import { SendMessageReq } from "@/lib/chat_proto/SendMessageReq";
 import { UpdateUserReq } from "../chat_proto/UpdateUserReq";
+import { UpdateGroupReq } from "../chat_proto/UpdateGroupReq";
 
 const packageDefinition = loadSync(
   path.join(process.cwd(), "/lib/chat_proto/chat.proto"),
@@ -87,6 +88,16 @@ async function updateUser(
   });
 }
 
+async function updateGroup(
+  req: UpdateGroupReq
+): Promise<Parameters<Parameters<ChatClient["UpdateGroup"]>[1]>[1]> {
+  return new Promise((resolve, reject) => {
+    chatClient.UpdateGroup(req, { deadline: newDeadline(5) }, (err, res) =>
+      err ? reject(err) : resolve(res)
+    );
+  });
+}
+
 async function addFriend(
   req: AddFriendReq
 ): Promise<Parameters<Parameters<ChatClient["AddFriend"]>[1]>[1]> {
@@ -123,6 +134,7 @@ const promisifiedChatClient = {
   getContacts,
   getMessages,
   updateUser,
+  updateGroup,
   createGroup,
   addFriend,
   addMembers,

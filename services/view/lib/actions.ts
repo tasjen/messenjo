@@ -41,6 +41,41 @@ export async function updateUser(formData: FormData): Promise<void> {
   }
 }
 
+export async function updateGroup(formData: FormData): Promise<void> {
+  const parsedForm = z
+    .object({
+      groupId: z.string(),
+      groupName: z.string(),
+      pfp: z.string(),
+    })
+    .safeParse({
+      groupId: formData.get("group-id"),
+      groupName: formData.get("group-name"),
+      pfp: formData.get("pfp"),
+    });
+
+  if (!parsedForm.success) {
+    throw new Error("failed to parse formData");
+  }
+
+  const { groupId, groupName, pfp } = parsedForm.data;
+
+  try {
+    await chatClient.updateGroup({
+      groupId: uuidParse(groupId),
+      name: groupName,
+      pfp,
+    });
+  } catch (err) {
+    if (isServiceError(err)) {
+      throw new Error(err.details);
+    } else if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error("unknown error");
+  }
+}
+
 export async function addFriend(toUserId: string): Promise<string> {
   const res = await chatClient.addFriend({
     fromUserId: uuidParse(getUserId()),

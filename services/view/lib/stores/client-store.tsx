@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, ReactNode, useReducer } from "react";
-import { User, Message, Contact, ChatRoom } from "@/lib/schema";
-import { toast } from "sonner";
+import { User, Message, Contact, ChatRoom, GroupContact } from "@/lib/schema";
 
 type State = {
   user: User;
@@ -13,8 +12,12 @@ type State = {
 
 type Action =
   | {
-      type: "LOAD_USER";
+      type: "SET_USER";
       payload: User;
+    }
+  | {
+      type: "SET_GROUP";
+      payload: GroupContact;
     }
   | {
       type: "LOAD_CONTACTS";
@@ -26,10 +29,6 @@ type Action =
         groupId: string;
         messages: Message[];
       };
-    }
-  | {
-      type: "SET_USERNAME";
-      payload: string;
     }
   | {
       type: "ADD_CONTACT";
@@ -57,22 +56,21 @@ const initState: State = {
 function storeReducer(state: State, action: Action): State {
   const { type, payload } = action;
   switch (type) {
-    case "LOAD_USER":
+    case "SET_USER":
       return { ...state, user: payload };
+    case "SET_GROUP":
+      return {
+        ...state,
+        contacts: state.contacts.map((contact) =>
+          contact.groupId !== payload.groupId ? contact : payload
+        ),
+      };
     case "LOAD_CONTACTS":
       return { ...state, contacts: payload };
     case "LOAD_MESSAGES":
       return {
         ...state,
         chatRooms: [...state.chatRooms, payload],
-      };
-    case "SET_USERNAME":
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          username: payload,
-        },
       };
     case "ADD_MESSAGE":
       return {
@@ -106,10 +104,10 @@ type TStore = {
   user: User;
   contacts: Contact[];
   chatRooms: ChatRoom[];
-  loadUser: (user: User) => void;
+  setUser: (user: User) => void;
+  setGroup: (group: GroupContact) => void;
   loadContacts: (c: Contact[]) => void;
   loadMessages: (groupId: string, message: Message[]) => void;
-  setUsername: (username: string) => void;
   addMessage: (groupId: string, message: Message) => void;
   addContact: (contact: Contact) => void;
   isWsDisconnected: boolean;
@@ -122,8 +120,12 @@ const StoreContext = createContext<TStore | null>(null);
 export default function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initState);
 
-  function loadUser(user: User): void {
-    dispatch({ type: "LOAD_USER", payload: user });
+  function setUser(user: User): void {
+    dispatch({ type: "SET_USER", payload: user });
+  }
+
+  function setGroup(group: GroupContact): void {
+    dispatch({ type: "SET_GROUP", payload: group });
   }
 
   function loadContacts(contacts: Contact[]): void {
@@ -132,10 +134,6 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
 
   function loadMessages(groupId: string, messages: Message[]): void {
     dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
-  }
-
-  function setUsername(username: string): void {
-    dispatch({ type: "SET_USERNAME", payload: username });
   }
 
   function addMessage(groupId: string, message: Message): void {
@@ -158,10 +156,10 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     <StoreContext.Provider
       value={{
         ...state,
-        loadUser,
+        setUser,
+        setGroup,
         loadContacts,
         loadMessages,
-        setUsername,
         addMessage,
         addContact,
         connectWs,
