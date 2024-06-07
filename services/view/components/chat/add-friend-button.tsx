@@ -34,7 +34,7 @@ export default function AddFriendButton({ user }: Props) {
 
   return (
     <form action={handleSubmit}>
-      <Button>Add</Button>
+      <Button type="submit">Add</Button>
     </form>
   );
 }

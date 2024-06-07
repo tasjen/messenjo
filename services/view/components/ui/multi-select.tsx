@@ -75,11 +75,11 @@ const MultiSelect = ({
                           handleUnselect(value);
                         }
                       }}
-                      onMouseDown={(e) => {
+                      onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        handleUnselect(value);
                       }}
-                      onClick={(e) => handleUnselect(value)}
                     >
                       <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                     </span>

@@ -21,17 +21,14 @@ export default function CreateGroupForm() {
   const [errMessage, setErrMessage] = useState("");
   const router = useRouter();
 
-  async function handleSubmit(formData: FormData): Promise<void> {
-    for (const userId of selected) {
-      formData.append("user-ids", userId);
-    }
+  async function handleSubmit(): Promise<void> {
     try {
-      const groupId = await createGroup(formData);
+      const groupId = await createGroup(groupName, pfp, selected);
       const createdGroup: GroupContact = {
         type: "group",
         groupId,
-        name: formData.get("group-name") as string,
-        pfp: formData.get("pfp") as string,
+        name: groupName,
+        pfp,
         memberCount: selected.length + 1,
       };
       store.addContact(createdGroup);
@@ -69,8 +66,6 @@ export default function CreateGroupForm() {
       <Label>
         <div className="mb-2 font-bold">Group name</div>
         <Input
-          id="group-name"
-          name="group-name"
           autoComplete="off"
           value={groupName}
           onChange={({ target }) => setGroupName(target.value)}
@@ -89,8 +84,6 @@ export default function CreateGroupForm() {
             </AvatarFallback>
           </Avatar>
           <Input
-            id="pfp"
-            name="pfp"
             placeholder="Image URL"
             autoComplete="off"
             value={pfp}

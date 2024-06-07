@@ -22,12 +22,11 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
   const store = useStore();
   const [isOpen, setIsOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [username, setUsername] = useState(store.user.username);
 
-  async function handleSubmit(formData: FormData): Promise<void> {
+  async function handleSubmit(): Promise<void> {
     try {
-      formData.set("pfp", store.user.pfp);
-      await updateUser(formData);
-      const username = formData.get("username") as string;
+      await updateUser(username, store.user.pfp);
       store.setUser({ ...store.user, username });
       toast(`Your username has been changed to ${username}`, {
         action: {
@@ -58,8 +57,8 @@ export default function NewUsernameDialog({ isNewUser }: Props) {
           className="grid grid-cols-4 items-center gap-4"
         >
           <Input
-            id="username"
-            name="username"
+            value={username}
+            onChange={({ target: { value } }) => setUsername(value)}
             placeholder="username"
             className="col-span-3"
             autoComplete="off"

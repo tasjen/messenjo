@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
@@ -7,22 +7,22 @@ import { sendMessage } from "@/lib/actions";
 import { useStore } from "@/lib/stores/client-store";
 import ChatFormSkeleton from "@/components/skeletons/chat-form";
 import { SendHorizonal } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ChatForm() {
   const { groupId } = useParams<{ groupId: string }>();
   const store = useStore();
   const contentInput = useRef<HTMLInputElement>(null);
   const sendButton = useRef<HTMLButtonElement>(null);
+  const [content, setContent] = useState("");
 
   if (!store.user || !store.contacts || store.isWsDisconnected) {
     return <ChatFormSkeleton />;
   }
 
-  async function handleSubmit(formData: FormData) {
-    const content = formData.get("content") as string;
+  async function handleSubmit(): Promise<void> {
     if (content === "") {
-      contentInput.current?.focus();
-      return;
+      return contentInput.current?.focus();
     }
 
     contentInput.current!.disabled = true;
@@ -30,7 +30,7 @@ export default function ChatForm() {
 
     try {
       const sentAt = new Date();
-      const messageId = await sendMessage.bind(null, groupId, sentAt)(formData);
+      const messageId = await sendMessage(groupId, content, sentAt);
       store.addMessage(groupId, {
         id: messageId,
         fromUsername: store.user.username,
@@ -38,14 +38,13 @@ export default function ChatForm() {
         content,
         sentAt: sentAt.getTime(),
       });
+      setContent("");
+      contentInput.current!.disabled = false;
+      sendButton.current!.disabled = false;
+      contentInput.current?.focus();
     } catch (err) {
-      console.log("failed to send message");
-      console.error(err);
+      toast(`failed to send message: '${content}'`);
     }
-    contentInput.current!.value = "";
-    contentInput.current!.disabled = false;
-    sendButton.current!.disabled = false;
-    contentInput.current?.focus();
   }
 
   return (
@@ -53,7 +52,8 @@ export default function ChatForm() {
       <div className="flex gap-4">
         <Input
           type="text"
-          name="content"
+          value={content}
+          onChange={({ target: { value } }) => setContent(value)}
           ref={contentInput}
           autoComplete="off"
           autoFocus

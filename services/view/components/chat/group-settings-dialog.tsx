@@ -33,18 +33,19 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
   const [pfp, setPfp] = useState(currentSettings?.pfp);
   const [errMessage, setErrMessage] = useState("");
 
-  if (!currentSettings) {
-    return <></>;
+  if (currentSettings && currentSettings.type !== "group") {
+    throw new Error(
+      "Unexpected client error: found contact.type is not `group`"
+    );
   }
 
-  async function handleSubmit(formData: FormData): Promise<void> {
+  async function handleSubmit(): Promise<void> {
     try {
-      formData.set("group-id", params.groupId);
-      await updateGroup(formData);
+      await updateGroup(params.groupId, groupName, pfp);
       const updatedGroup: GroupContact = {
         ...currentSettings,
-        name: formData.get("group-name") as string,
-        pfp: formData.get("pfp") as string,
+        name: groupName,
+        pfp,
       };
       store.setGroup(updatedGroup);
       toast("The group is successfully updated");
@@ -74,11 +75,9 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
           <Label>
             <div className="mb-2 font-bold">Group name</div>
             <Input
-              id="group-name"
-              name="group-name"
               autoComplete="off"
               value={groupName}
-              onChange={({ target }) => setGroupName(target.value)}
+              onChange={({ target: { value } }) => setGroupName(value)}
             />
           </Label>
           <Label>
@@ -96,12 +95,10 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
                 </AvatarFallback>
               </Avatar>
               <Input
-                id="pfp"
-                name="pfp"
                 placeholder="Image URL"
                 autoComplete="off"
                 value={pfp}
-                onChange={({ target }) => setPfp(target.value)}
+                onChange={({ target: { value } }) => setPfp(value)}
               />
             </div>
           </Label>

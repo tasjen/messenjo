@@ -28,15 +28,17 @@ export const FriendContact = z.object({
   lastMessage: Message.omit({ fromPfp: true, fromUsername: true }).optional(),
 });
 
-export const GroupContact = FriendContact.omit({
-  userId: true,
-  type: true,
-}).and(
-  z.object({
+export const GroupContact = z
+  .object({
     type: z.literal("group"),
     memberCount: z.number(),
   })
-);
+  .and(
+    FriendContact.omit({
+      userId: true,
+      type: true,
+    })
+  );
 
 export const Contact = z.union([FriendContact, GroupContact]);
 
