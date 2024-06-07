@@ -1,4 +1,6 @@
 BEGIN;
-  ALTER TABLE users DROP pfp;
-  ALTER TABLE groups DROP pfp;
+
+ALTER TABLE users DROP pfp;
+ALTER TABLE groups DROP pfp;
+
 COMMIT;
