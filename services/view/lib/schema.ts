@@ -8,13 +8,13 @@ export function isServiceError(err: unknown): err is ServiceError {
 export const User = z.object({
   id: z.string(),
   username: z.string(),
-  pfp: z.coerce.string(),
+  pfp: z.string(),
 });
 
 export const Message = z.object({
   id: z.number(),
   fromUsername: z.string(),
-  fromPfp: z.coerce.string(),
+  fromPfp: z.string(),
   content: z.string(),
   sentAt: z.number(),
 });
@@ -24,23 +24,21 @@ export const FriendContact = z.object({
   groupId: z.string(),
   userId: z.string(),
   name: z.string(),
-  pfp: z.coerce.string(),
-  lastMessage: Message.optional(),
+  pfp: z.string(),
+  lastMessage: Message.omit({ fromPfp: true }).optional(),
 });
 
-export const GroupContact = z.object({
-  type: z.literal("group"),
-  groupId: z.string(),
-  name: z.string(),
-  pfp: z.coerce.string(),
-  memberCount: z.number(),
-  lastMessage: Message.optional(),
-});
+export const GroupContact = FriendContact.omit({
+  userId: true,
+  type: true,
+}).and(
+  z.object({
+    type: z.literal("group"),
+    memberCount: z.number(),
+  })
+);
 
-export const Contact = z.discriminatedUnion("type", [
-  FriendContact,
-  GroupContact,
-]);
+export const Contact = z.union([FriendContact, GroupContact]);
 
 export const ChatRoom = z.object({
   groupId: z.string(),

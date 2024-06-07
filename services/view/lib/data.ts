@@ -17,7 +17,11 @@ export async function fetchUserInfo(): Promise<User> {
   try {
     const userId = getUserId();
     const res = await chatClient.getUserById({ userId: uuidParse(userId) });
-    return User.parse({ ...res, id: userId });
+    return User.parse({
+      id: userId,
+      username: res?.username,
+      pfp: res?.pfp ?? "",
+    });
   } catch (err) {
     if (err instanceof Error) {
       console.error("fetchUserData error: ", err.message);
@@ -60,6 +64,7 @@ export async function fetchContacts(): Promise<Contact[]> {
     return res.contacts.map((e) =>
       Contact.parse({
         ...e,
+        pfp: e.pfp || "",
         groupId: e.groupId && uuidStringify(e.groupId),
         userId: e.userId && uuidStringify(e.userId),
         lastMessage: e.lastMessage
@@ -99,6 +104,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
     return res.messages.map((e) =>
       Message.parse({
         ...e,
+        fromPfp: e.fromPfp ?? "",
         sentAt: toDateMs({
           seconds: e.sentAt?.seconds?.toNumber() ?? 0,
           nanos: e.sentAt?.nanos ?? 0,
