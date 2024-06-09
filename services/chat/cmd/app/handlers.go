@@ -286,7 +286,23 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 	}
 
 	err = tx.Commit(ctx)
-	return &pb.CreateGroupRes{GroupId: groupId[:]}, err
+	if err != nil {
+		return &pb.CreateGroupRes{}, err
+	}
+
+	var userIdsString []string
+	for _, e := range userIds {
+		userIdsString = append(userIdsString, e.String())
+	}
+
+	action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
+	actionJson, err := json.Marshal(action)
+	if err != nil {
+		app.errorLog.Println(err)
+	} else {
+		app.pubClient.Publish(ctx, "main", actionJson)
+	}
+	return &pb.CreateGroupRes{GroupId: groupId[:]}, nil
 }
 
 func (app *application) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq) (*empty.Empty, error) {
@@ -344,7 +360,29 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 	}
 
 	err = tx.Commit(ctx)
-	return &pb.AddFriendRes{GroupId: groupId[:]}, err
+	if err != nil {
+		return &pb.AddFriendRes{}, err
+	}
+
+	fromUser, err := app.users.GetById(ctx, fromUserId)
+	if err != nil {
+		return &pb.AddFriendRes{}, err
+	}
+
+	action := NewAddFriendContactAction(
+		toUserId.String(),
+		groupId.String(),
+		fromUserId.String(),
+		fromUser.Username,
+		fromUser.Pfp,
+	)
+	actionJson, err := json.Marshal(action)
+	if err != nil {
+		app.errorLog.Println(err)
+	} else {
+		app.pubClient.Publish(ctx, "main", actionJson)
+	}
+	return &pb.AddFriendRes{GroupId: groupId[:]}, nil
 }
 
 func (app *application) AddMembers(ctx context.Context, req *pb.AddMembersReq) (*empty.Empty, error) {
@@ -395,7 +433,7 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 		return &pb.SendMessageRes{}, err
 	}
 
-	sendMessageAction := NewSendMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
+	sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 	sendMessageActionJson, err := json.Marshal(sendMessageAction)
 	if err != nil {
 		app.errorLog.Println(err)

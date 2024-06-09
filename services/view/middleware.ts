@@ -10,9 +10,7 @@ export async function middleware(req: NextRequest) {
         throw new Error("no token");
       }
 
-      const t0 = performance.now();
       const { userId } = await authClient.verifyToken({ token });
-      console.log(req.nextUrl.pathname, performance.now() - t0);
       const headers = new Headers(req.headers);
       headers.set("userId", uuidStringify(userId));
       if (req.cookies.get("new_user")?.value === "") {

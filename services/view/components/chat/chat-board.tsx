@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useEffect } from "react";
-import { ChevronLeft, Settings } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Message } from "@/lib/schema";
@@ -9,7 +9,6 @@ import { useStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
-import clsx from "clsx";
 
 type Props = {
   messages: Message[];
@@ -24,9 +23,8 @@ export default function ChatBoard(props: Props) {
   }, []);
 
   const contact = store.contacts.find((e) => e.groupId === groupId);
-  const room = store.chatRooms.find((e) => e.groupId === groupId);
 
-  if (!store.user || !contact || !room) {
+  if (!store.user || !contact) {
     return <ChatBoardSkeleton />;
   }
 
@@ -40,7 +38,7 @@ export default function ChatBoard(props: Props) {
         </Link>
       </div>
       <ul className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2">
-        {room.messages.map((message) => (
+        {contact.messages.map((message) => (
           <MessageItem key={message.id} contact={contact} message={message} />
         ))}
       </ul>

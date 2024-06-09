@@ -1,12 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { createContext, useContext, ReactNode, useReducer } from "react";
-import { User, Message, Contact, ChatRoom, GroupContact } from "@/lib/schema";
+import { User, Message, Contact, GroupContact, Action } from "@/lib/schema";
 
 type State = {
   user: User;
   contacts: Contact[];
-  chatRooms: ChatRoom[];
   isWsDisconnected: boolean;
 };
 
@@ -49,7 +49,6 @@ type Action =
 const initState: State = {
   user: {} as User,
   contacts: [],
-  chatRooms: [],
   isWsDisconnected: false,
 };
 
@@ -70,31 +69,34 @@ function storeReducer(state: State, action: Action): State {
     case "LOAD_MESSAGES":
       return {
         ...state,
-        chatRooms: [...state.chatRooms, payload],
+        contacts: state.contacts.map((contact) =>
+          contact.groupId !== payload.groupId || contact.messagesLoaded
+            ? contact
+            : { ...contact, messages: payload.messages, messagesLoaded: true }
+        ),
       };
     case "ADD_MESSAGE":
       return {
         ...state,
-        chatRooms: state.chatRooms.map((room) =>
-          room.groupId !== payload.groupId ||
-          room.messages.find((m) => m.id === payload.message.id)
-            ? room
+        contacts: state.contacts.map((contacts) =>
+          contacts.groupId !== payload.groupId ||
+          contacts.messages.find((m) => m.id === payload.message.id)
+            ? contacts
             : {
-                ...room,
-                messages: [payload.message, ...room.messages],
-              }
-        ),
-        contacts: state.contacts.map((contact) =>
-          contact.groupId !== payload.groupId
-            ? contact
-            : {
-                ...contact,
-                lastMessage: payload.message,
+                ...contacts,
+                messages: [payload.message, ...contacts.messages],
               }
         ),
       };
     case "ADD_CONTACT":
-      return { ...state, contacts: [...state.contacts, payload] };
+      return {
+        ...state,
+        contacts: state.contacts.find(
+          (contact) => contact.groupId === payload.groupId
+        )
+          ? state.contacts
+          : [...state.contacts, payload],
+      };
     case "SET_IS_DISCONNECTED":
       return { ...state, isWsDisconnected: payload };
   }
@@ -103,7 +105,6 @@ function storeReducer(state: State, action: Action): State {
 type TStore = {
   user: User;
   contacts: Contact[];
-  chatRooms: ChatRoom[];
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
   loadContacts: (c: Contact[]) => void;
@@ -129,6 +130,9 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   function loadContacts(contacts: Contact[]): void {
+    if (state.contacts.length !== 0) {
+      return;
+    }
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 

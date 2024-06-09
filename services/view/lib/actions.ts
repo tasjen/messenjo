@@ -52,10 +52,11 @@ export async function createGroup(
   userIds: string[]
 ): Promise<string> {
   try {
+    userIds.unshift(getUserId());
     const res = await chatClient.createGroup({
       groupName: name,
       pfp,
-      userIds: userIds.concat(getUserId()).map((id) => uuidParse(id)),
+      userIds: userIds.map((id) => uuidParse(id)),
     });
     if (!res?.groupId) {
       throw new Error("internal server error: `createGroup`");
@@ -90,9 +91,9 @@ export async function sendMessage(
 
 function formattedError(err: unknown): Error {
   if (isServiceError(err)) {
-    throw new Error(err.details);
+    return new Error(err.details);
   } else if (err instanceof Error) {
-    throw err;
+    return err;
   }
-  throw new Error("unknown server error");
+  return new Error("unknown server error");
 }

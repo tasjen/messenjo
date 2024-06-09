@@ -13,8 +13,8 @@ export const User = z.object({
 
 export const Message = z.object({
   id: z.number(),
-  fromUsername: z.string(),
-  fromPfp: z.string(),
+  fromUsername: z.string().default(""),
+  fromPfp: z.string().default(""),
   content: z.string(),
   sentAt: z.number(),
 });
@@ -24,8 +24,9 @@ export const FriendContact = z.object({
   groupId: z.string(),
   userId: z.string(),
   name: z.string(),
-  pfp: z.string(),
-  lastMessage: Message.omit({ fromPfp: true, fromUsername: true }).optional(),
+  pfp: z.string().default(""),
+  messages: z.array(Message).default([]),
+  messagesLoaded: z.boolean().default(false),
 });
 
 export const GroupContact = z
@@ -42,22 +43,19 @@ export const GroupContact = z
 
 export const Contact = z.union([FriendContact, GroupContact]);
 
-export const ChatRoom = z.object({
-  groupId: z.string(),
-  messages: z.array(Message),
-});
-
 const AddMessageAction = z.object({
   type: z.literal("ADD_MESSAGE"),
   payload: z.object({
-    groupId: z.string(),
+    toGroupId: z.string(),
     message: Message,
   }),
 });
 
 const AddContactAction = z.object({
   type: z.literal("ADD_CONTACT"),
-  payload: Contact,
+  payload: z.object({
+    contact: Contact,
+  }),
 });
 
 export const Action = z.discriminatedUnion("type", [
@@ -70,5 +68,3 @@ export type Message = z.infer<typeof Message>;
 export type FriendContact = z.infer<typeof FriendContact>;
 export type GroupContact = z.infer<typeof GroupContact>;
 export type Contact = z.infer<typeof Contact>;
-export type ChatRoom = z.infer<typeof ChatRoom>;
-export type Action = z.infer<typeof Action>;

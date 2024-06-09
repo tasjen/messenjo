@@ -14,6 +14,10 @@ export class UserManager {
     console.log(this.users);
   }
 
+  getUser(userId: string): WebSocket<UserData>[] | null {
+    return this.users.get(userId) ?? null;
+  }
+
   addUser(userId: string, ws: WebSocket<UserData>): void {
     const conns = this.users.get(userId);
     if (conns) {
@@ -31,16 +35,6 @@ export class UserManager {
     conns.splice(conns.indexOf(ws), 1);
     if (conns.length === 0) {
       this.users.delete(userId);
-    }
-  }
-
-  addContact(groupId: string, userId: string): void {
-    const conns = this.users.get(userId);
-    if (!conns) {
-      return;
-    }
-    for (const c of conns) {
-      c.subscribe(groupId);
     }
   }
 }

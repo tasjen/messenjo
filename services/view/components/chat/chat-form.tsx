@@ -10,7 +10,7 @@ import { SendHorizonal } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ChatForm() {
-  const { groupId } = useParams<{ groupId: string }>();
+  const params = useParams<{ groupId: string }>();
   const store = useStore();
   const contentInput = useRef<HTMLInputElement>(null);
   const sendButton = useRef<HTMLButtonElement>(null);
@@ -30,8 +30,8 @@ export default function ChatForm() {
 
     try {
       const sentAt = new Date();
-      const messageId = await sendMessage(groupId, content, sentAt);
-      store.addMessage(groupId, {
+      const messageId = await sendMessage(params.groupId, content, sentAt);
+      store.addMessage(params.groupId, {
         id: messageId,
         fromUsername: store.user.username,
         fromPfp: store.user.pfp,

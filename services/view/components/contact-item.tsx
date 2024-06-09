@@ -55,12 +55,12 @@ export default function ContactItem({ contact }: Props) {
               </div>
               <NoSSR>
                 <div className="ml-auto text-xs self-center">
-                  {formattedTime(contact.lastMessage?.sentAt)}
+                  {formattedTime(contact.messages[0]?.sentAt)}
                 </div>
               </NoSSR>
             </div>
             <div className="flex-initial text-sm text-ellipsis overflow-hidden whitespace-nowrap text-ring max-w-48">
-              {contact.lastMessage?.content}
+              {contact.messages[0]?.content}
             </div>
           </div>
         </div>

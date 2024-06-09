@@ -46,7 +46,7 @@ export default function MessageItem({ contact, message }: Props) {
               alt={`${message.fromUsername}'s pfp`}
             />
             <AvatarFallback>
-              {message.fromUsername[0].toUpperCase()}
+              {message.fromUsername[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
         )}

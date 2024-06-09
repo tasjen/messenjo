@@ -6,10 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function toDateMs(timestamp: {
-  seconds: number;
-  nanos: number;
+  seconds?: number;
+  nanos?: number;
 }): number {
-  return timestamp.seconds * 1e3 + timestamp.nanos / 1e6;
+  return (timestamp.seconds ?? 0) * 1e3 + (timestamp.nanos ?? 0) / 1e6;
 }
 
 export function newDeadline(durationInSec: number): number {

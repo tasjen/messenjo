@@ -2,9 +2,9 @@ import { App } from "uWebSockets.js";
 import { createClient } from "redis";
 import { getGroupIds, verifyToken } from "./grpc-client";
 import { UserManager } from "./user-manager";
-import { z } from "zod";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import cookie from "cookie";
+import { Action } from "./schema";
 
 let t0 = Date.now();
 
@@ -77,8 +77,10 @@ app.ws<UserData>("/", {
       if (!getGroupIdsRes?.groupIds) {
         throw new Error("no `res.userId` returned from verifyToken");
       }
+
+      ws.subscribe(userId);
       for (const groupId of getGroupIdsRes.groupIds) {
-        ws.subscribe(groupId);
+        ws.subscribe(uuidStringify(groupId));
       }
       userManager.addUser(userId, ws);
     } catch (err) {
@@ -107,52 +109,35 @@ app.listen(Number(PORT), async (listenSocket) => {
 
   const subClient = createClient({ url: REDIS_URI });
   await subClient.connect();
-  console.log(`Connected to redis server on port: ${REDIS_URI?.slice(-4)}`);
+  console.log(
+    `Connected to redis server on port: ${REDIS_URI.split(":").slice(-1)[0]}`
+  );
 
-  await subClient.subscribe("main", (actionString) => {
-    const actionJson = JSON.parse(actionString);
-    const { success, data } = Action.safeParse(actionJson);
+  await subClient.subscribe("main", (actionJson) => {
+    const actionObject = JSON.parse(actionJson);
+    console.log(actionObject);
+    const { success, data } = Action.safeParse(actionObject);
+    console.log(success);
     if (!success) return;
     const { type, payload } = data;
     switch (type) {
       case "ADD_MESSAGE":
-        console.log(payload);
-        app.publish(payload.groupId, actionString);
+        console.log(
+          `successfully send ADD_MESSAGE to users subscribing groupId ${payload.toGroupId}`
+        );
+        app.publish(payload.toGroupId, actionJson);
         break;
       case "ADD_CONTACT":
-        userManager.addContact(payload.groupId, payload.userId);
+        for (const userId of payload.toUserIds) {
+          const conns = userManager.getUser(userId) ?? [];
+          for (const conn of conns) {
+            conn.subscribe(payload.contact.groupId);
+          }
+          console.log(`publish to userId: ${userId}`);
+          app.publish(userId, actionJson);
+        }
         break;
     }
   });
   console.log(`Subscribing to pub/sub channel: "main"`);
 });
-
-const SendMessageAction = z.object({
-  type: z.literal("ADD_MESSAGE"),
-  payload: z.object({
-    groupId: z.string(),
-    message: z.object({
-      id: z.number(),
-      fromUsername: z.string(),
-      fromPfp: z.coerce.string(),
-      content: z.string(),
-      sentAt: z.number(),
-    }),
-  }),
-});
-
-const AddRoomAction = z.object({
-  type: z.literal("ADD_CONTACT"),
-  payload: z.object({
-    type: z.union([z.literal("friend"), z.literal("group")]),
-    groupId: z.string(),
-    name: z.string(),
-    userId: z.string(),
-  }),
-});
-
-const Action = z.discriminatedUnion("type", [SendMessageAction, AddRoomAction]);
-
-type SendMessageAction = z.infer<typeof SendMessageAction>;
-type AddRoomAction = z.infer<typeof AddRoomAction>;
-type Action = z.infer<typeof Action>;

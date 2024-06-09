@@ -8,7 +8,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
-import type { FriendContact, GroupContact } from "@/lib/schema";
+import { FriendContact, GroupContact } from "@/lib/schema";
 import { createGroup } from "@/lib/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -24,16 +24,16 @@ export default function CreateGroupForm() {
   async function handleSubmit(): Promise<void> {
     try {
       const groupId = await createGroup(groupName, pfp, selected);
-      const createdGroup: GroupContact = {
+      const createdGroup = GroupContact.parse({
         type: "group",
         groupId,
         name: groupName,
         pfp,
         memberCount: selected.length + 1,
-      };
+      });
       store.addContact(createdGroup);
       toast(
-        `Group ${createdGroup.name} (${createdGroup.memberCount}) successfully created`,
+        `Group ${createdGroup.name} (${createdGroup.memberCount}) has been created`,
         {
           action: {
             label: "Chat",

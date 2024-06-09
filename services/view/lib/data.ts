@@ -12,6 +12,10 @@ export function getUserId(): string {
   return userId;
 }
 
+export function isNewUser(): boolean {
+  return headers().get("new_user") === "";
+}
+
 export async function fetchUserInfo(): Promise<User> {
   noStore();
   try {
@@ -20,7 +24,7 @@ export async function fetchUserInfo(): Promise<User> {
     return User.parse({
       id: userId,
       username: res?.username,
-      pfp: res?.pfp ?? "",
+      pfp: res?.pfp,
     });
   } catch (err) {
     if (err instanceof Error) {
@@ -64,19 +68,20 @@ export async function fetchContacts(): Promise<Contact[]> {
     return res.contacts.map((e) =>
       Contact.parse({
         ...e,
-        pfp: e.pfp || "",
         groupId: e.groupId && uuidStringify(e.groupId),
         userId: e.userId && uuidStringify(e.userId),
-        lastMessage: e.lastMessage
-          ? {
-              id: e.lastMessage.id,
-              content: e.lastMessage.content,
-              sentAt: toDateMs({
-                seconds: e.lastMessage.sentAt?.seconds?.toNumber() ?? 0,
-                nanos: e.lastMessage.sentAt?.nanos ?? 0,
-              }),
-            }
-          : undefined,
+        messages: e.lastMessage
+          ? [
+              {
+                id: e.lastMessage.id,
+                content: e.lastMessage.content,
+                sentAt: toDateMs({
+                  seconds: e.lastMessage.sentAt?.seconds?.toNumber(),
+                  nanos: e.lastMessage.sentAt?.nanos,
+                }),
+              },
+            ]
+          : [],
       })
     );
   } catch (err) {
@@ -91,7 +96,7 @@ export async function fetchContacts(): Promise<Contact[]> {
 
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  // await new Promise((resolve) => setTimeout(resolve, 500));
   try {
     const res = await chatClient.getMessages({
       userId: uuidParse(getUserId()),
@@ -103,10 +108,9 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
     return res.messages.map((e) =>
       Message.parse({
         ...e,
-        fromPfp: e.fromPfp ?? "",
         sentAt: toDateMs({
-          seconds: e.sentAt?.seconds?.toNumber() ?? 0,
-          nanos: e.sentAt?.nanos ?? 0,
+          seconds: e.sentAt?.seconds?.toNumber(),
+          nanos: e.sentAt?.nanos,
         }),
       })
     );

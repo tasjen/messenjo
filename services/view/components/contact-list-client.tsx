@@ -35,11 +35,13 @@ export default function ContactListClient(props: Props) {
   const contacts = (store.contacts.length ? store : props).contacts
     .filter((e) => e.name.toLowerCase().includes(term.toLowerCase()))
     .sort((a, b) => {
-      if (a.lastMessage && b.lastMessage) {
-        return b.lastMessage.sentAt - a.lastMessage.sentAt;
-      } else if (a.lastMessage) {
+      const lastMessageA = a.messages[0];
+      const lastMessageB = b.messages[0];
+      if (lastMessageA && lastMessageB) {
+        return lastMessageB.sentAt - lastMessageA.sentAt;
+      } else if (lastMessageA) {
         return -1;
-      } else if (b.lastMessage) {
+      } else if (lastMessageB) {
         return 1;
       } else {
         return a.name.localeCompare(b.name);
