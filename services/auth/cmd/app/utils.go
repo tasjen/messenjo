@@ -60,3 +60,13 @@ func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 
 	return nil
 }
+
+func setNewUserCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "new_user",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   IsProd,
+		SameSite: http.SameSiteDefaultMode,
+	})
+}

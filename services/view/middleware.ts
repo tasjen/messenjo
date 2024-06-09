@@ -15,8 +15,13 @@ export async function middleware(req: NextRequest) {
       console.log(req.nextUrl.pathname, performance.now() - t0);
       const headers = new Headers(req.headers);
       headers.set("userId", uuidStringify(userId));
+      if (req.cookies.get("new_user")?.value === "") {
+        headers.set("new_user", "");
+      }
 
-      return NextResponse.next({ request: { headers } });
+      const res = NextResponse.next({ request: { headers } });
+      res.cookies.delete("new_user");
+      return res;
     } catch (err) {
       console.log(err);
       return NextResponse.redirect(new URL("/login", req.url));

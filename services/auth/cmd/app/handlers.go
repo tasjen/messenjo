@@ -129,6 +129,8 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			http.Redirect(w, r, "/error", http.StatusFound)
 			return
 		}
+
+		setNewUserCookie(w)
 	}
 
 	// Sign jwt to cookies with userId
