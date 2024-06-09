@@ -1,4 +1,3 @@
-tls
 saved
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
@@ -30,6 +29,9 @@ yarn-error.log*
 
 # local env files
 .env*
+
+#key file
+*.pem
 
 # vercel
 .vercel

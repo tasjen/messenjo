@@ -1,9 +1,9 @@
 services:
   view:
-    container_name: message-app-view-dev
+    container_name: message-app-view-prod
     build:
       context: ./services/view
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     volumes:
       - ./services/view:/app
       - /app/node_modules
@@ -12,10 +12,10 @@ services:
       - grpc-gateway
 
   streaming:
-    container_name: message-app-streaming-dev
+    container_name: message-app-streaming-prod
     build:
       context: ./services/streaming
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     volumes:
       - ./services/streaming:/app
       - /app/node_modules
@@ -25,21 +25,23 @@ services:
       - messagech
 
   auth:
-    container_name: message-app-auth-dev
+    # image: message-app-auth-dev
+    container_name: message-app-auth-prod
     build:
       context: ./services/auth
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     volumes:
       - ./services/auth:/app
     env_file:
       - ./services/auth/.env.dev
 
   chat:
-    container_name: message-app-chat-dev
+    # image: message-app-chat-dev
+    container_name: message-app-chat-prod
     user: ${MY_UID}:${MY_GID} # to make the host be able to modify or delete files created in the container
     build:
       context: ./services/chat
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     volumes:
       - ./services/chat:/app
     env_file:

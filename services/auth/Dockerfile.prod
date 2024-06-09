@@ -1,0 +1,13 @@
+FROM golang:1.22 AS build
+
+WORKDIR /app
+
+COPY . .
+RUN go mod download
+RUN go build -o /bin/app ./cmd/app
+
+FROM debian:bookworm-slim
+
+COPY --from=build /bin/app /bin
+
+CMD [ "/bin/app" ]

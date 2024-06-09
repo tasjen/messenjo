@@ -13,7 +13,7 @@ RUN chmod -R 777 /.cache
 RUN go mod download
 RUN go mod verify
 
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/air-verse/air@latest
 COPY --from=migration /usr/local/bin/migrate /usr/local/bin/migrate
 
 CMD ["air"]
