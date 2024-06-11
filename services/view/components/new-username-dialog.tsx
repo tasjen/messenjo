@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/stores/client-store";
-import { updateUser } from "@/lib/actions";
+import * as actions from "@/lib/actions";
 import { useState } from "react";
 import { toast } from "sonner";
 import NoSSR from "./no-ssr";
@@ -23,7 +23,7 @@ export default function NewUsernameDialog() {
 
   async function handleSubmit(): Promise<void> {
     try {
-      await updateUser(username, store.user.pfp);
+      await actions.updateUser(username, store.user.pfp);
       store.setUser({ ...store.user, username });
       toast(`Your username has been changed to ${username}`, {
         action: {

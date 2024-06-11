@@ -38,7 +38,8 @@ const (
 	Chat_UpdateGroup_FullMethodName       = "/Chat/UpdateGroup"
 	Chat_AddFriend_FullMethodName         = "/Chat/AddFriend"
 	Chat_AddMembers_FullMethodName        = "/Chat/AddMembers"
-	Chat_SendMessage_FullMethodName       = "/Chat/SendMessage"
+	Chat_AddMessage_FullMethodName        = "/Chat/AddMessage"
+	Chat_ResetUnreadCount_FullMethodName  = "/Chat/ResetUnreadCount"
 	Chat_GetGroupIds_FullMethodName       = "/Chat/GetGroupIds"
 )
 
@@ -58,7 +59,8 @@ type ChatClient interface {
 	UpdateGroup(ctx context.Context, in *UpdateGroupReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*AddFriendRes, error)
 	AddMembers(ctx context.Context, in *AddMembersReq, opts ...grpc.CallOption) (*empty.Empty, error)
-	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error)
+	AddMessage(ctx context.Context, in *AddMessageReq, opts ...grpc.CallOption) (*AddMessageRes, error)
+	ResetUnreadCount(ctx context.Context, in *ResetUnreadCountReq, opts ...grpc.CallOption) (*empty.Empty, error)
 	// for Streaming
 	GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts ...grpc.CallOption) (*GetGroupIdsRes, error)
 }
@@ -161,9 +163,18 @@ func (c *chatClient) AddMembers(ctx context.Context, in *AddMembersReq, opts ...
 	return out, nil
 }
 
-func (c *chatClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageRes, error) {
-	out := new(SendMessageRes)
-	err := c.cc.Invoke(ctx, Chat_SendMessage_FullMethodName, in, out, opts...)
+func (c *chatClient) AddMessage(ctx context.Context, in *AddMessageReq, opts ...grpc.CallOption) (*AddMessageRes, error) {
+	out := new(AddMessageRes)
+	err := c.cc.Invoke(ctx, Chat_AddMessage_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatClient) ResetUnreadCount(ctx context.Context, in *ResetUnreadCountReq, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, Chat_ResetUnreadCount_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +206,8 @@ type ChatServer interface {
 	UpdateGroup(context.Context, *UpdateGroupReq) (*empty.Empty, error)
 	AddFriend(context.Context, *AddFriendReq) (*AddFriendRes, error)
 	AddMembers(context.Context, *AddMembersReq) (*empty.Empty, error)
-	SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error)
+	AddMessage(context.Context, *AddMessageReq) (*AddMessageRes, error)
+	ResetUnreadCount(context.Context, *ResetUnreadCountReq) (*empty.Empty, error)
 	// for Streaming
 	GetGroupIds(context.Context, *GetGroupIdsReq) (*GetGroupIdsRes, error)
 	mustEmbedUnimplementedChatServer()
@@ -235,8 +247,11 @@ func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*AddFr
 func (UnimplementedChatServer) AddMembers(context.Context, *AddMembersReq) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMembers not implemented")
 }
-func (UnimplementedChatServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+func (UnimplementedChatServer) AddMessage(context.Context, *AddMessageReq) (*AddMessageRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddMessage not implemented")
+}
+func (UnimplementedChatServer) ResetUnreadCount(context.Context, *ResetUnreadCountReq) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetUnreadCount not implemented")
 }
 func (UnimplementedChatServer) GetGroupIds(context.Context, *GetGroupIdsReq) (*GetGroupIdsRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGroupIds not implemented")
@@ -434,20 +449,38 @@ func _Chat_AddMembers_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendMessageReq)
+func _Chat_AddMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddMessageReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServer).SendMessage(ctx, in)
+		return srv.(ChatServer).AddMessage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Chat_SendMessage_FullMethodName,
+		FullMethod: Chat_AddMessage_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).SendMessage(ctx, req.(*SendMessageReq))
+		return srv.(ChatServer).AddMessage(ctx, req.(*AddMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Chat_ResetUnreadCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetUnreadCountReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).ResetUnreadCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_ResetUnreadCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).ResetUnreadCount(ctx, req.(*ResetUnreadCountReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -518,8 +551,12 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Chat_AddMembers_Handler,
 		},
 		{
-			MethodName: "SendMessage",
-			Handler:    _Chat_SendMessage_Handler,
+			MethodName: "AddMessage",
+			Handler:    _Chat_AddMessage_Handler,
+		},
+		{
+			MethodName: "ResetUnreadCount",
+			Handler:    _Chat_ResetUnreadCount_Handler,
 		},
 		{
 			MethodName: "GetGroupIds",

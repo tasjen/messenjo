@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
 import { FriendContact, GroupContact } from "@/lib/schema";
-import { createGroup } from "@/lib/actions";
+import * as actions from "@/lib/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ export default function CreateGroupForm() {
 
   async function handleSubmit(): Promise<void> {
     try {
-      const groupId = await createGroup(groupName, pfp, selected);
+      const groupId = await actions.createGroup(groupName, pfp, selected);
       const createdGroup = GroupContact.parse({
         type: "group",
         groupId,

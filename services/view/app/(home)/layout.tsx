@@ -10,7 +10,6 @@ import SettingsButton from "@/components/settings-button";
 import HomeButton from "@/components/home-button";
 import { isNewUser } from "@/lib/data";
 import Streaming from "@/components/streaming";
-import NoSSR from "@/components/no-ssr";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   // start prefetching and caching data asynchronously before rendering children components
@@ -20,8 +19,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <StoreProvider>
       <Streaming />
+      {isNewUser() && <NewUsernameDialog />}
       <div className="flex h-screen p-4 gap-4">
-        {isNewUser() && <NewUsernameDialog />}
         <aside className="flex-none w-96 flex flex-col justify-between p-4 rounded-2xl space-y-4 border">
           <Suspense fallback={<ContactListSkeleton />}>
             <ContactListServer />

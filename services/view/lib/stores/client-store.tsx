@@ -39,6 +39,13 @@ type Action =
       payload: {
         groupId: string;
         message: Message;
+        isReading: boolean;
+      };
+    }
+  | {
+      type: "RESET_UNREAD_COUNT";
+      payload: {
+        groupId: string;
       };
     }
   | {
@@ -70,6 +77,7 @@ function storeReducer(state: State, action: Action): State {
       return {
         ...state,
         contacts: state.contacts.map((contact) =>
+          // only load messages if not already
           contact.groupId !== payload.groupId || contact.messagesLoaded
             ? contact
             : { ...contact, messages: payload.messages, messagesLoaded: true }
@@ -78,14 +86,31 @@ function storeReducer(state: State, action: Action): State {
     case "ADD_MESSAGE":
       return {
         ...state,
-        contacts: state.contacts.map((contacts) =>
-          contacts.groupId !== payload.groupId ||
-          contacts.messages.find((m) => m.id === payload.message.id)
-            ? contacts
+        contacts: state.contacts.map((contact) =>
+          contact.groupId !== payload.groupId ||
+          contact.messages.find(
+            (m) =>
+              // only add a message if the message is not already added
+              // by checking username and sentAt field since one user cannot (?)
+              // send more than one messages with the same sentAt field
+              m.fromUsername === payload.message.fromUsername &&
+              m.sentAt === payload.message.sentAt
+          )
+            ? contact
             : {
-                ...contacts,
-                messages: [payload.message, ...contacts.messages],
+                ...contact,
+                messages: [payload.message, ...contact.messages],
+                unreadCount: payload.isReading ? 0 : contact.unreadCount + 1,
               }
+        ),
+      };
+    case "RESET_UNREAD_COUNT":
+      return {
+        ...state,
+        contacts: state.contacts.map((contact) =>
+          contact.groupId !== payload.groupId
+            ? contact
+            : { ...contact, unreadCount: 0 }
         ),
       };
     case "ADD_CONTACT":
@@ -109,7 +134,8 @@ type TStore = {
   setGroup: (group: GroupContact) => void;
   loadContacts: (c: Contact[]) => void;
   loadMessages: (groupId: string, message: Message[]) => void;
-  addMessage: (groupId: string, message: Message) => void;
+  addMessage: (groupId: string, message: Message, isReading: boolean) => void;
+  resetUnreadCount: (groupId: string) => void;
   addContact: (contact: Contact) => void;
   isWsDisconnected: boolean;
   connectWs: () => void;
@@ -140,8 +166,16 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
   }
 
-  function addMessage(groupId: string, message: Message): void {
-    dispatch({ type: "ADD_MESSAGE", payload: { groupId, message } });
+  function addMessage(
+    groupId: string,
+    message: Message,
+    isReading: boolean
+  ): void {
+    dispatch({ type: "ADD_MESSAGE", payload: { groupId, message, isReading } });
+  }
+
+  function resetUnreadCount(groupId: string): void {
+    dispatch({ type: "RESET_UNREAD_COUNT", payload: { groupId } });
   }
 
   function addContact(contact: Contact): void {
@@ -165,6 +199,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
         loadContacts,
         loadMessages,
         addMessage,
+        resetUnreadCount,
         addContact,
         connectWs,
         disConnectWs,
@@ -175,7 +210,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function useStore(): TStore {
+export function useStore(): TStore {
   const store = useContext(StoreContext);
   if (!store) {
     throw new Error("invalid usage: no Store provider");
@@ -183,5 +218,3 @@ function useStore(): TStore {
 
   return store;
 }
-
-export { useStore };

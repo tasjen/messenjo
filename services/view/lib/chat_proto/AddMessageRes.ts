@@ -1,10 +1,10 @@
 // Original file: lib/chat_proto/chat.proto
 
 
-export interface SendMessageRes {
+export interface AddMessageRes {
   'messageId'?: (number);
 }
 
-export interface SendMessageRes__Output {
+export interface AddMessageRes__Output {
   'messageId'?: (number);
 }

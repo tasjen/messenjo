@@ -46,61 +46,55 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		return &pb.GetContactsRes{Contacts: []*pb.Contact{}}, err
 	}
 	stmt := `
-	SELECT
-		DISTINCT
-		CASE
-			WHEN groups.name = '' THEN  'friend'
-			ELSE 'group'
-		END AS "type",
-		groups.id AS group_id,
-		CASE
-			WHEN groups.name = '' THEN users.id
-			ELSE NULL
-		END AS user_id,
-		COALESCE(
-			NULLIF(groups.name, ''),
-			users.username
-		) AS name,
-		CASE
-			WHEN groups.name = '' THEN users.pfp
-			ELSE groups.pfp
-		END AS pfp,
-		CASE
-			WHEN groups.name = '' THEN NULL
-			ELSE m2.count
-		END AS member_count,
-		messages.id AS last_message_id,
-		messages.content AS last_content,
-		messages.sent_at AS last_sent_at
-	FROM
-		"groups"
-		JOIN members AS m1
-		ON groups.id = m1.group_id
-		JOIN (
-			SELECT COUNT(user_id), group_id
-			FROM members
-			GROUP BY group_id
-		) AS m2
-		ON m1.group_id = m2.group_id
-		JOIN users
-		ON m1.user_id = users.id
-		LEFT JOIN messages
-		ON groups.id = messages.group_id
-	WHERE
-		groups.id IN (
-			SELECT group_id
+		WITH latest_messages AS (
+			SELECT DISTINCT ON (group_id) *
+			FROM messages
+			ORDER BY group_id, sent_at DESC
+		),
+		my_contacts AS (
+			SELECT *
 			FROM members
 			WHERE user_id = $1
 		)
-		AND users.id != $1
-		AND (
-			messages.id IN (
-					SELECT MAX("id")
-					FROM messages
-					GROUP BY group_id
-			)
-			OR messages.id IS NULL
-		);`
+		SELECT
+			DISTINCT
+			CASE
+				WHEN groups.name = '' THEN  'friend'
+				ELSE 'group'
+			END AS "type",
+			groups.id AS group_id,
+			CASE
+				WHEN groups.name = '' THEN users.id
+				ELSE NULL
+			END AS user_id,
+			COALESCE(
+				NULLIF(groups.name, ''),
+				users.username
+			) AS name,
+			CASE
+				WHEN groups.name = '' THEN users.pfp
+				ELSE groups.pfp
+			END AS pfp,
+			CASE
+				WHEN groups.name = '' THEN NULL
+				ELSE (SELECT COUNT(*) FROM members WHERE members.group_id = groups.id)
+			END AS member_count,
+			my_contacts.unread_count AS unread_count,
+			latest_messages.id AS last_message_id,
+			latest_messages.content AS last_content,
+			latest_messages.sent_at AS last_sent_at
+		FROM
+			members
+			JOIN "groups"
+			ON members.group_id = groups.id
+			JOIN my_contacts
+			ON members.group_id = my_contacts.group_id
+			JOIN users
+			ON members.user_id = users.id
+			LEFT JOIN latest_messages
+			ON groups.id = latest_messages.group_id
+		WHERE
+			users.id != $1;`
 	rows, err := models.DB.Query(ctx, stmt, userId)
 	switch {
 	case err == pgx.ErrNoRows:
@@ -115,7 +109,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
 		var memberCount sql.NullInt32
-		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &lastMessageId, &lastContent, &lastSentAt)
+		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &c.UnreadCount, &lastMessageId, &lastContent, &lastSentAt)
 		c.MemberCount = memberCount.Int32
 		if lastMessageId.Valid {
 			c.LastMessage = &pb.Message{
@@ -407,32 +401,51 @@ func (app *application) AddMembers(ctx context.Context, req *pb.AddMembersReq) (
 	defer tx.Rollback(ctx)
 
 	err = app.members.Add(ctx, tx, groupId, userIds)
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
+	err = tx.Commit(ctx)
 	return &empty.Empty{}, err
 }
 
-func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq) (*pb.SendMessageRes, error) {
+func (app *application) AddMessage(ctx context.Context, req *pb.AddMessageReq) (*pb.AddMessageRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.SendMessageRes{}, err
+		return &pb.AddMessageRes{}, err
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &pb.SendMessageRes{}, err
+		return &pb.AddMessageRes{}, err
 	}
 
 	content := req.GetContent()
 	if l := len(content); l < 1 || l > 300 {
-		return &pb.SendMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
+		return &pb.AddMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
 	}
+
+	tx, err := models.DB.Begin(ctx)
+	if err != nil {
+		return &pb.AddMessageRes{}, err
+	}
+	defer tx.Rollback(ctx)
 
 	sentAt := req.GetSentAt().AsTime()
-
-	id, fromUsername, fromPfp, err := app.messages.Add(ctx, userId, groupId, content, sentAt)
+	id, fromUsername, fromPfp, err := app.messages.Add(ctx, tx, userId, groupId, content, sentAt)
 	if err != nil {
-		return &pb.SendMessageRes{}, err
+		return &pb.AddMessageRes{}, err
 	}
 
+	err = app.members.IncUnreadCount(ctx, tx, groupId, userId)
+	if err != nil {
+		return &pb.AddMessageRes{}, err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return &pb.AddMessageRes{}, err
+	}
 	sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 	sendMessageActionJson, err := json.Marshal(sendMessageAction)
 	if err != nil {
@@ -440,5 +453,20 @@ func (app *application) SendMessage(ctx context.Context, req *pb.SendMessageReq)
 	} else {
 		app.pubClient.Publish(ctx, "main", sendMessageActionJson)
 	}
-	return &pb.SendMessageRes{MessageId: id}, nil
+	return &pb.AddMessageRes{MessageId: id}, nil
+}
+
+func (app *application) ResetUnreadCount(ctx context.Context, req *pb.ResetUnreadCountReq) (*empty.Empty, error) {
+	groupId, err := uuid.FromBytes(req.GetGroupId())
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
+	userId, err := uuid.FromBytes(req.GetUserId())
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
+	err = app.members.ResetUnreadCount(ctx, groupId, userId)
+	return &empty.Empty{}, err
 }

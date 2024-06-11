@@ -6,8 +6,9 @@ import { FriendContact, User } from "@/lib/schema";
 import { useStore } from "@/lib/stores/client-store";
 import Link from "next/link";
 import { UserCheck } from "lucide-react";
-import AddFriendButton from "./add-friend-button";
 import { useSearchParams } from "next/navigation";
+import * as actions from "@/lib/actions";
+import { toast } from "sonner";
 
 type Props = {
   user: User;
@@ -26,6 +27,25 @@ export default function FriendSearchResultClient({ user }: Props) {
     (contact) => (contact as FriendContact).userId === user.id
   );
 
+  async function handleAddFriend() {
+    try {
+      const groupId = await actions.addFriend(user.id);
+      store.addContact(
+        FriendContact.parse({
+          type: "friend",
+          groupId,
+          pfp: user.pfp,
+          name: user.username,
+          userId: user.id,
+        })
+      );
+    } catch (err) {
+      if (err instanceof Error) {
+        toast(err.message);
+      }
+    }
+  }
+
   return (
     <div className="mt-4 flex flex-col items-center">
       <Avatar className="self-center h-36 w-36 mb-4">
@@ -40,7 +60,7 @@ export default function FriendSearchResultClient({ user }: Props) {
           <Button>Chat</Button>
         </Link>
       ) : (
-        <AddFriendButton user={user} />
+        <Button onClick={handleAddFriend}>Add</Button>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import chatClient from "@/lib/grpc-clients/chat";
+import * as chatClient from "@/lib/grpc-clients/chat";
 import { redirect } from "next/navigation";
 import { toDateMs } from "@/lib/utils";
 import { unstable_noStore as noStore } from "next/cache";

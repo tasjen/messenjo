@@ -7,9 +7,12 @@ import { z } from "zod";
 import { Action } from "@/lib/schema";
 import { useStore } from "@/lib/stores/client-store";
 import { toast } from "sonner";
+import { useParams } from "next/navigation";
+import * as actions from "@/lib/actions";
 
 export default function Streaming() {
   const store = useStore();
+  const params = useParams<{ groupId: string }>();
 
   const wsUrl = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -28,9 +31,7 @@ export default function Streaming() {
   });
 
   useEffect(() => {
-    console.log(lastMessage?.data);
     const actionJson = z.string().safeParse(lastMessage?.data);
-    console.log(actionJson);
     if (!actionJson.success) {
       return;
     }
@@ -43,7 +44,15 @@ export default function Streaming() {
     const { type, payload } = action.data;
     switch (type) {
       case "ADD_MESSAGE":
-        return store.addMessage(payload.toGroupId, payload.message);
+        const isReading = payload.toGroupId === params.groupId;
+        // if the message is not from the user and the user is reading the chat board
+        // then make a resetUnreadCount api call
+        if (isReading && payload.message.fromUsername !== store.user.username) {
+          actions
+            .resetUnreadCount(payload.toGroupId)
+            .catch((err) => toast(err.message));
+        }
+        return store.addMessage(payload.toGroupId, payload.message, isReading);
       case "ADD_CONTACT":
         store.addContact(payload.contact);
         switch (payload.contact.type) {

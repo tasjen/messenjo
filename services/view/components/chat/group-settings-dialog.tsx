@@ -14,7 +14,7 @@ import clsx from "clsx";
 import { Button } from "../ui/button";
 import { useStore } from "@/lib/stores/client-store";
 import { useParams } from "next/navigation";
-import { updateGroup } from "@/lib/actions";
+import * as actions from "@/lib/actions";
 import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";
 
@@ -41,14 +41,14 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
 
   async function handleSubmit(): Promise<void> {
     try {
-      await updateGroup(params.groupId, groupName, pfp);
+      await actions.updateGroup(params.groupId, groupName, pfp);
       const updatedGroup: GroupContact = {
         ...currentSettings,
         name: groupName,
         pfp,
       };
       store.setGroup(updatedGroup);
-      toast("The group is successfully updated");
+      toast("The group has been updated");
       setIsOpen(false);
     } catch (err) {
       if (err instanceof Error) {

@@ -26,6 +26,7 @@ export const FriendContact = z.object({
   name: z.string(),
   pfp: z.string().default(""),
   messages: z.array(Message).default([]),
+  unreadCount: z.number().default(0),
   messagesLoaded: z.boolean().default(false),
 });
 

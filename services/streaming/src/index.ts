@@ -6,8 +6,6 @@ import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import cookie from "cookie";
 import { Action } from "./schema";
 
-let t0 = Date.now();
-
 export type UserData = {
   userId: string;
   username: string;
@@ -70,8 +68,6 @@ app.ws<UserData>("/", {
 
   open: async (ws) => {
     const { userId } = ws.getUserData();
-    console.log("user", userId, "connected");
-
     try {
       const getGroupIdsRes = await getGroupIds({ userId: uuidParse(userId) });
       if (!getGroupIdsRes?.groupIds) {
@@ -93,10 +89,6 @@ app.ws<UserData>("/", {
     const { userId } = ws.getUserData();
     userManager.removeUser(userId, ws);
     console.log(`userId: ${userId} disconnected`);
-
-    const t1 = Date.now();
-    console.log("time: ", (t1 - t0) / 1000);
-    t0 = t1;
   },
 });
 
@@ -115,9 +107,7 @@ app.listen(Number(PORT), async (listenSocket) => {
 
   await subClient.subscribe("main", (actionJson) => {
     const actionObject = JSON.parse(actionJson);
-    console.log(actionObject);
     const { success, data } = Action.safeParse(actionObject);
-    console.log(success);
     if (!success) return;
     const { type, payload } = data;
     switch (type) {
@@ -133,7 +123,6 @@ app.listen(Number(PORT), async (listenSocket) => {
           for (const conn of conns) {
             conn.subscribe(payload.contact.groupId);
           }
-          console.log(`publish to userId: ${userId}`);
           app.publish(userId, actionJson);
         }
         break;

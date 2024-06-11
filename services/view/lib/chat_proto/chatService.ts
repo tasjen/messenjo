@@ -11,6 +11,8 @@ export interface ProtoGrpcType {
   AddFriendReq: MessageTypeDefinition
   AddFriendRes: MessageTypeDefinition
   AddMembersReq: MessageTypeDefinition
+  AddMessageReq: MessageTypeDefinition
+  AddMessageRes: MessageTypeDefinition
   Chat: SubtypeConstructor<typeof grpc.Client, _ChatClient> & { service: _ChatDefinition }
   Contact: MessageTypeDefinition
   CreateGroupReq: MessageTypeDefinition
@@ -22,8 +24,7 @@ export interface ProtoGrpcType {
   GetUserByIdReq: MessageTypeDefinition
   GetUserByUsernameReq: MessageTypeDefinition
   Message: MessageTypeDefinition
-  SendMessageReq: MessageTypeDefinition
-  SendMessageRes: MessageTypeDefinition
+  ResetUnreadCountReq: MessageTypeDefinition
   UpdateGroupReq: MessageTypeDefinition
   UpdateUserReq: MessageTypeDefinition
   User: MessageTypeDefinition

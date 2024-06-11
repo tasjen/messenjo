@@ -1,6 +1,6 @@
 "use server";
 
-import chatClient from "@/lib/grpc-clients/chat";
+import * as chatClient from "@/lib/grpc-clients/chat";
 import { getUserId } from "@/lib/data";
 import { z } from "zod";
 import { isServiceError } from "@/lib/schema";
@@ -67,23 +67,34 @@ export async function createGroup(
   }
 }
 
-export async function sendMessage(
+export async function addMessage(
   groupId: string,
   content: string,
-  sentAt: Date
+  sentAt: number
 ): Promise<number> {
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
-    const res = await chatClient.sendMessage({
+    const res = await chatClient.addMessage({
       userId: uuidParse(getUserId()),
       groupId: uuidParse(groupId),
       content,
       sentAt: {
-        seconds: Math.floor(sentAt.getTime() / 1e3),
-        nanos: sentAt.getMilliseconds() * 1e6,
+        seconds: Math.floor(sentAt / 1e3),
+        nanos: new Date(sentAt).getMilliseconds() * 1e6,
       },
     });
     return z.number().parse(res?.messageId);
+  } catch (err) {
+    throw formattedError(err);
+  }
+}
+
+export async function resetUnreadCount(groupId: string): Promise<void> {
+  try {
+    await chatClient.resetUnreadCount({
+      groupId: uuidParse(groupId),
+      userId: uuidParse(getUserId()),
+    });
   } catch (err) {
     throw formattedError(err);
   }
