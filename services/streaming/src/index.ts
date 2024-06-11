@@ -136,8 +136,8 @@ async function subToMessageCh() {
     } else {
       console.error(err);
     }
-    console.log(`retrying in ${delay * 3} seconds`);
     delay *= 3;
+    console.log(`retrying in ${delay} seconds`);
     await subToMessageCh();
   }
 }
