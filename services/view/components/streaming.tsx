@@ -9,6 +9,7 @@ import { useStore } from "@/lib/stores/client-store";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import * as actions from "@/lib/actions";
+import { useDebouncedCallback } from "use-debounce";
 
 export default function Streaming() {
   const store = useStore();
@@ -21,6 +22,14 @@ export default function Streaming() {
     }
     return "";
   }, []);
+
+  const debouncedResetUnreadCount = useDebouncedCallback(
+    (groupId: string) => {
+      actions.resetUnreadCount(groupId).catch((err) => toast(err.message));
+    },
+    2000,
+    { leading: true }
+  );
 
   const { lastMessage } = useWebSocket(wsUrl, {
     heartbeat: false,
@@ -48,9 +57,7 @@ export default function Streaming() {
         // if the message is not from the user and the user is reading the chat board
         // then make a resetUnreadCount api call
         if (isReading && payload.message.fromUsername !== store.user.username) {
-          actions
-            .resetUnreadCount(payload.toGroupId)
-            .catch((err) => toast(err.message));
+          debouncedResetUnreadCount(params.groupId);
         }
         return store.addMessage(payload.toGroupId, payload.message, isReading);
       case "ADD_CONTACT":
