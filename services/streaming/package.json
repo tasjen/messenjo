@@ -6,7 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch ./src/index.ts",
     "dev-local": "tsx watch --env-file=.env.dev ./src/index.ts",
-    "pub": "tsx ./redis-pub.ts"
+    "pub": "tsx ./redis-pub.ts",
+    "build": "tsc && node esbuild-script.mjs"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
+    "esbuild": "^0.21.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "localtunnel": "^2.0.2",

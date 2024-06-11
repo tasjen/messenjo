@@ -4,7 +4,6 @@ import { loadSync } from "@grpc/proto-loader";
 import { ProtoGrpcType as AuthProtoGrpcType } from "../auth_proto/authService";
 import type { AuthClient } from "../auth_proto/Auth";
 import { ProtoGrpcType as ChatProtoGrpcType } from "../chat_proto/chatService";
-import { newDeadline } from "./utils";
 import { VerifyTokenReq } from "../auth_proto/VerifyTokenReq";
 import { GetGroupIdsReq } from "../chat_proto/GetGroupIdsReq";
 import { ChatClient } from "../chat_proto/Chat";
@@ -26,6 +25,11 @@ const { Chat: ChatClient } = loadPackageDefinition(
 
 const authClient = new AuthClient("auth:3001", credentials.createInsecure());
 const chatClient = new ChatClient("chat:3000", credentials.createInsecure());
+
+function newDeadline(durationInSec: number): number {
+  const deadline = new Date();
+  return deadline.setSeconds(deadline.getSeconds() + durationInSec);
+}
 
 export async function verifyToken(
   req: VerifyTokenReq

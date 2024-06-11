@@ -4,10 +4,6 @@ services:
     build:
       context: ./services/view
       dockerfile: Dockerfile.prod
-    volumes:
-      - ./services/view:/app
-      - /app/node_modules
-      - /app/.next
     depends_on:
       - grpc-gateway
 
@@ -16,9 +12,6 @@ services:
     build:
       context: ./services/streaming
       dockerfile: Dockerfile.prod
-    volumes:
-      - ./services/streaming:/app
-      - /app/node_modules
     env_file:
       - ./services/streaming/.env.dev
     depends_on:
@@ -30,8 +23,6 @@ services:
     build:
       context: ./services/auth
       dockerfile: Dockerfile.prod
-    volumes:
-      - ./services/auth:/app
     env_file:
       - ./services/auth/.env.dev
 
@@ -42,8 +33,6 @@ services:
     build:
       context: ./services/chat
       dockerfile: Dockerfile.prod
-    volumes:
-      - ./services/chat:/app
     env_file:
       - ./services/chat/.env.dev
     depends_on:
@@ -51,25 +40,23 @@ services:
 
   chatdb:
     image: postgres:16-alpine
-    container_name: message-app-chatdb-dev
+    container_name: message-app-chatdb-prod
     environment:
       POSTGRES_DB: postgres
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
-    volumes:
-      - ./services/chatdb/data/dev:/var/lib/postgresql/data
+      POSTGRES_USER: prod
+      POSTGRES_PASSWORD: prod
     ports:
       - 5432:5432
 
   messagech:
     image: ghcr.io/microsoft/garnet
-    container_name: message-app-messagech-dev
+    container_name: message-app-messagech-prod
 
   reverse-proxy:
     image: nginx:stable-alpine
-    container_name: message-app-reverse-proxy-dev
+    container_name: message-app-reverse-proxy-prod
     volumes:
-      - ./services/reverse-proxy/nginx.conf.dev:/etc/nginx/nginx.conf:ro
+      - ./services/reverse-proxy/nginx.conf.prod:/etc/nginx/nginx.conf:ro
     ports:
       - 3000:80
     depends_on:
@@ -78,7 +65,7 @@ services:
 
   grpc-gateway:
     image: envoyproxy/envoy:distroless-v1.30-latest
-    container_name: message-app-grpc-gateway-dev
+    container_name: message-app-grpc-gateway-prod
     volumes:
       - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
     depends_on:
@@ -86,10 +73,10 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: message-app-pgadmin-dev
+    container_name: message-app-pgadmin-prod
     environment:
-      PGADMIN_DEFAULT_EMAIL: dev@dev.com
-      PGADMIN_DEFAULT_PASSWORD: dev
+      PGADMIN_DEFAULT_EMAIL: prod@prod.com
+      PGADMIN_DEFAULT_PASSWORD: prod
     logging:
       driver: none
     ports:

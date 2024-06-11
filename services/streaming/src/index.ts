@@ -8,13 +8,14 @@ import { Action } from "./schema";
 
 export type UserData = {
   userId: string;
-  username: string;
 };
 
 const { PORT, REDIS_URI } = process.env;
 if (!PORT || !REDIS_URI) {
   throw new Error("Missing PORT or REDIS_URI env variables.");
 }
+
+let delay = 1; //second
 
 const app = App();
 const userManager = new UserManager();
@@ -46,7 +47,7 @@ app.ws<UserData>("/", {
 
       const userId = uuidStringify(verifyTokenRes.userId);
       if (isAborted) {
-        console.log("client disconnected before upgrading");
+        console.log(`client disconnected before upgrading, userId: ${userId}`);
         return;
       }
 
@@ -92,41 +93,53 @@ app.ws<UserData>("/", {
   },
 });
 
-app.listen(Number(PORT), async (listenSocket) => {
+app.listen(Number(PORT), (listenSocket) => {
   if (listenSocket) {
     console.log(`Listening to port: ${PORT}`);
   } else {
     return console.log(`Failed to listen to port: ${PORT}`);
   }
-
-  const subClient = createClient({ url: REDIS_URI });
-  await subClient.connect();
-  console.log(
-    `Connected to redis server on port: ${REDIS_URI.split(":").slice(-1)[0]}`
-  );
-
-  await subClient.subscribe("main", (actionJson) => {
-    const actionObject = JSON.parse(actionJson);
-    const { success, data } = Action.safeParse(actionObject);
-    if (!success) return;
-    const { type, payload } = data;
-    switch (type) {
-      case "ADD_MESSAGE":
-        console.log(
-          `successfully send ADD_MESSAGE to users subscribing groupId ${payload.toGroupId}`
-        );
-        app.publish(payload.toGroupId, actionJson);
-        break;
-      case "ADD_CONTACT":
-        for (const userId of payload.toUserIds) {
-          const conns = userManager.getUser(userId) ?? [];
-          for (const conn of conns) {
-            conn.subscribe(payload.contact.groupId);
-          }
-          app.publish(userId, actionJson);
-        }
-        break;
-    }
-  });
-  console.log(`Subscribing to pub/sub channel: "main"`);
 });
+
+async function subToMessageCh() {
+  await new Promise((resolve) => setTimeout(resolve, delay * 1e3));
+  try {
+    const subClient = createClient({ url: REDIS_URI });
+    await subClient.connect();
+    console.log(
+      `Connected to redis server on port: ${REDIS_URI?.split(":").slice(-1)[0]}`
+    );
+    await subClient.subscribe("main", (actionJson) => {
+      const actionObject = JSON.parse(actionJson);
+      const { success, data } = Action.safeParse(actionObject);
+      if (!success) return;
+      const { type, payload } = data;
+      switch (type) {
+        case "ADD_MESSAGE":
+          app.publish(payload.toGroupId, actionJson);
+          break;
+        case "ADD_CONTACT":
+          for (const userId of payload.toUserIds) {
+            const conns = userManager.getUser(userId) ?? [];
+            for (const conn of conns) {
+              conn.subscribe(payload.contact.groupId);
+            }
+            app.publish(userId, actionJson);
+          }
+          break;
+      }
+    });
+    console.log(`Subscribing to pub/sub channel: "main"`);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log(`failed to subscribe to channel "main": ${err.message}`);
+    } else {
+      console.error(err);
+    }
+    console.log(`retrying in ${delay * 3} seconds`);
+    delay *= 3;
+    await subToMessageCh();
+  }
+}
+
+subToMessageCh();

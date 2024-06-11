@@ -1,5 +1,1 @@
-.env*
 tmp
-Dockerfile
-Dockerfile.dev
-.gitignore

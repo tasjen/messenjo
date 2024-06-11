@@ -1,8 +1,22 @@
-FROM node:20-alpine
+FROM node:20-alpine AS base
+
+
+FROM base AS builder
 WORKDIR /app
-
 COPY . .
-
 RUN npm ci
+RUN npm run build
 
-CMD ["npm", "run", "dev"]
+
+FROM base AS runner
+WORKDIR /app
+# Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 view
+USER view
+COPY --from=builder /app/public ./public
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=view:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=view:nodejs /app/.next/static ./.next/static
+CMD ["node", "server.js"]

@@ -15,8 +15,9 @@ node_modules
 /services/view/.next/
 /services/view/out/
 
-# production
+# build files
 build/
+tsc_out/
 
 # misc
 /services/view/.DS_Store
