@@ -47,13 +47,10 @@ func (m *MemberModel) IncUnreadCount(ctx context.Context, tx pgx.Tx, groupId, us
 }
 
 func (m *MemberModel) ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error {
-	println(111)
 	stmt := `
 		UPDATE members
 		SET unread_count = 0
 		WHERE group_id = $1 AND user_id = $2;`
 	_, err := DB.Exec(ctx, stmt, groupId, userId)
-	println(groupId.String())
-	println(userId.String())
 	return err
 }

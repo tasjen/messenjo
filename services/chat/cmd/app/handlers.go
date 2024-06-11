@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -284,18 +285,22 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		return &pb.CreateGroupRes{}, err
 	}
 
-	var userIdsString []string
-	for _, e := range userIds {
-		userIdsString = append(userIdsString, e.String())
-	}
+	go func() {
+		var userIdsString []string
+		for _, e := range userIds {
+			userIdsString = append(userIdsString, e.String())
+		}
+		action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
+		actionJson, err := json.Marshal(action)
+		if err != nil {
+			app.errorLog.Println(err)
+		} else {
+			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			app.pubClient.Publish(newCtx, "main", actionJson)
+		}
+	}()
 
-	action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
-	actionJson, err := json.Marshal(action)
-	if err != nil {
-		app.errorLog.Println(err)
-	} else {
-		app.pubClient.Publish(ctx, "main", actionJson)
-	}
 	return &pb.CreateGroupRes{GroupId: groupId[:]}, nil
 }
 
@@ -358,24 +363,29 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 		return &pb.AddFriendRes{}, err
 	}
 
-	fromUser, err := app.users.GetById(ctx, fromUserId)
-	if err != nil {
-		return &pb.AddFriendRes{}, err
-	}
+	go func() {
+		newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		fromUser, err := app.users.GetById(newCtx, fromUserId)
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+		action := NewAddFriendContactAction(
+			toUserId.String(),
+			groupId.String(),
+			fromUserId.String(),
+			fromUser.Username,
+			fromUser.Pfp,
+		)
+		actionJson, err := json.Marshal(action)
+		if err != nil {
+			app.errorLog.Println(err)
+		} else {
+			app.pubClient.Publish(newCtx, "main", actionJson)
+		}
+	}()
 
-	action := NewAddFriendContactAction(
-		toUserId.String(),
-		groupId.String(),
-		fromUserId.String(),
-		fromUser.Username,
-		fromUser.Pfp,
-	)
-	actionJson, err := json.Marshal(action)
-	if err != nil {
-		app.errorLog.Println(err)
-	} else {
-		app.pubClient.Publish(ctx, "main", actionJson)
-	}
 	return &pb.AddFriendRes{GroupId: groupId[:]}, nil
 }
 
@@ -446,13 +456,19 @@ func (app *application) AddMessage(ctx context.Context, req *pb.AddMessageReq) (
 	if err != nil {
 		return &pb.AddMessageRes{}, err
 	}
-	sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
-	sendMessageActionJson, err := json.Marshal(sendMessageAction)
-	if err != nil {
-		app.errorLog.Println(err)
-	} else {
-		app.pubClient.Publish(ctx, "main", sendMessageActionJson)
-	}
+
+	go func() {
+		sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
+		sendMessageActionJson, err := json.Marshal(sendMessageAction)
+		if err != nil {
+			app.errorLog.Println(err)
+		} else {
+			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			app.pubClient.Publish(newCtx, "main", sendMessageActionJson)
+		}
+	}()
+
 	return &pb.AddMessageRes{MessageId: id}, nil
 }
 
