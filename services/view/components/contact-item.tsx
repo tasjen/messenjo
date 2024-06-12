@@ -48,44 +48,43 @@ export default function ContactItem({ contact }: Props) {
   }
 
   return (
-    <li
+    <Link
       onClick={resetUnreadCount}
-      className={clsx("p-2 rounded-lg", {
+      href={`/chat/${contact.groupId}`}
+      className={clsx("flex gap-2 p-2 rounded-lg", {
         "bg-[#dddddd] dark:bg-[#333333]":
           pathname === `/chat/${contact.groupId}`,
       })}
     >
-      <Link href={`/chat/${contact.groupId}`} className="flex gap-2">
-        <Avatar className="self-center">
-          <AvatarImage src={contact.pfp} alt={`${contact.name}'s pfp`} />
-          <AvatarFallback>{contact.name[0]}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 flex flex-col">
-          <div className="flex">
-            <div className="font-bold text-ellipsis max-w-44 overflow-hidden">
-              {contact.name}
-            </div>
-            <div className="ml-2">
-              {contact.type === "group" && `(${contact.memberCount})`}
-            </div>
-            <NoSSR>
-              <div className="ml-auto text-xs self-center">
-                {formattedTime(contact.messages[0]?.sentAt)}
-              </div>
-            </NoSSR>
+      <Avatar className="self-center">
+        <AvatarImage src={contact.pfp} alt={`${contact.name}'s pfp`} />
+        <AvatarFallback>{contact.name[0]}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 flex flex-col">
+        <div className="flex">
+          <div className="font-bold text-ellipsis max-w-44 overflow-hidden">
+            {contact.name}
           </div>
-          <div className="flex">
-            <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap text-ring max-w-48 mr-auto">
-              {contact.messages[0]?.content}
-            </div>
-            {contact.unreadCount !== 0 && (
-              <Badge className="py-[0.25px] px-[6px] text-xs font-medium">
-                {contact.unreadCount}
-              </Badge>
-            )}
+          <div className="ml-2">
+            {contact.type === "group" && `(${contact.memberCount})`}
           </div>
+          <NoSSR>
+            <div className="ml-auto text-xs self-center">
+              {formattedTime(contact.messages[0]?.sentAt)}
+            </div>
+          </NoSSR>
         </div>
-      </Link>
-    </li>
+        <div className="flex">
+          <div className="text-sm text-ellipsis overflow-hidden whitespace-nowrap text-ring max-w-48 mr-auto">
+            {contact.messages[0]?.content}
+          </div>
+          {contact.unreadCount !== 0 && (
+            <Badge className="py-[0.25px] px-[6px] text-xs font-medium">
+              {contact.unreadCount}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 }

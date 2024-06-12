@@ -29,7 +29,7 @@ export default function MessageItem({ contact, message }: Props) {
   }
 
   return (
-    <li className="mr-1">
+    <li>
       {contact.type === "group" && !isFromMe && (
         <div className="text-xs mb-1 font-medium">{message.fromUsername}</div>
       )}

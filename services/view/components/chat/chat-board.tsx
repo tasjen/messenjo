@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { useStore } from "@/lib/stores/client-store";
 import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
+import { ScrollArea } from "../ui/scroll-area";
 
 type Props = {
   messages: Message[];
@@ -17,9 +18,11 @@ type Props = {
 export default function ChatBoard(props: Props) {
   const { groupId } = useParams<{ groupId: string }>();
   const store = useStore();
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     store.loadMessages(groupId, props.messages);
+    listRef.current?.scrollIntoView(false);
   }, []);
 
   const contact = store.contacts.find((e) => e.groupId === groupId);
@@ -37,11 +40,16 @@ export default function ChatBoard(props: Props) {
           <ChevronLeft className="h-6 w-6" />
         </Link>
       </div>
-      <ul className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2">
-        {contact.messages.map((message) => (
-          <MessageItem key={message.id} contact={contact} message={message} />
-        ))}
-      </ul>
+      <ScrollArea className="-mr-3 pr-3">
+        <ul
+          ref={listRef}
+          className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2"
+        >
+          {contact.messages.map((message) => (
+            <MessageItem key={message.id} contact={contact} message={message} />
+          ))}
+        </ul>
+      </ScrollArea>
     </>
   );
 }

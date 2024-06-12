@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import ContactItem from "./contact-item";
 import { Button } from "./ui/button";
+import { ScrollArea } from "./ui/scroll-area";
 
 type Props = {
   user: User;
@@ -59,15 +60,15 @@ export default function ContactListClient(props: Props) {
           className="h-7 pl-8 rounded-full"
         />
       </div>
-      <ul className="flex flex-col h-full overflow-auto">
+      <ScrollArea className="flex flex-col h-full pr-4 -mr-2">
         {!contacts.length ? (
-          <div className="self-center">No contacts found</div>
+          <div className="mt-4 text-center">No contacts found</div>
         ) : (
           contacts.map((contact) => (
             <ContactItem key={contact.groupId} contact={contact} />
           ))
         )}
-      </ul>
+      </ScrollArea>
     </>
   );
 }
