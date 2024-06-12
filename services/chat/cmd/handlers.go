@@ -190,11 +190,11 @@ func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq)
 }
 
 // this method is only for Auth service when creating new users
-// where username is providerName concat with providerId
+// with default usernames being providerName joined by providerId
 func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserRes, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &pb.CreateUserRes{}, errors.New("user name must be at least 1 and not exceed 32 characters")
+		return &pb.CreateUserRes{}, errors.New("username must be at least 1 and not exceed 32 characters")
 	}
 
 	userId := uuid.New()
@@ -228,7 +228,7 @@ func (app *application) UpdateUser(ctx context.Context, req *pb.UpdateUserReq) (
 
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 16 {
-		return &empty.Empty{}, errors.New("user name must be at least 1 and not exceed 16 characters")
+		return &empty.Empty{}, errors.New("username must be at least 1 and not exceed 16 characters")
 	}
 
 	pfp := req.GetPfp()
