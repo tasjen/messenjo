@@ -2,7 +2,7 @@ shell_chat=docker exec -it message-app-chat-dev /bin/sh -c
 migration_command_path=/app/internal/database/migrations/migrate.sh
 
 dev:
-	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up
+	@HOST=localhost:3000 MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up
 
 prod:
 	@HOST=$$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $$TOKEN" http://169.254.169.254/latest/meta-data/public-hostname) \

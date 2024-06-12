@@ -1,6 +1,8 @@
 services:
   view:
     container_name: message-app-view-dev
+    environment:
+      - HOST=${HOST}
     build:
       context: ./services/view
       dockerfile: Dockerfile.dev
@@ -8,8 +10,6 @@ services:
       - ./services/view:/app
       - /app/node_modules
       - /app/.next
-    env_file:
-      - ./services/view/.env.dev
     depends_on:
       - grpc-gateway
 
