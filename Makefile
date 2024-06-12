@@ -1,13 +1,17 @@
 shell_chat=docker exec -it message-app-chat-dev /bin/sh -c
 migration_command_path=/app/internal/database/migrations/migrate.sh
 
-run_prod:
-	@docker compose -f docker-compose.prod.yml up pgadmin -d
-	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.prod.yml up auth view chat reverse-proxy grpc-gateway streaming messagech
+dev:
+	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up
 
-run_dev:
-	@docker compose -f docker-compose.dev.yml up pgadmin chatdb -d
-	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up auth view chat reverse-proxy grpc-gateway streaming messagech
+prod:
+	@docker compose -f docker-compose.prod.yml up
+
+down:
+	@docker compose -f docker-compose.dev.yml down
+
+stop:
+	@docker compose -f docker-compose.dev.yml stop
 
 migration_create:
 	@$(shell_chat) "migrate create -ext=.sql -dir=./internal/database/migrations $(NAME)"

@@ -81,6 +81,7 @@ services:
     container_name: message-app-grpc-gateway-dev
     volumes:
       - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
+    attach: false
     depends_on:
       - auth
 
@@ -90,7 +91,6 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev
-    logging:
-      driver: none
+    attach: false
     ports:
       - 5050:80
