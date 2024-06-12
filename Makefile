@@ -5,13 +5,16 @@ dev:
 	@MY_UID=$$(id -u) MY_GID=$$(id -g) docker compose -f docker-compose.dev.yml up
 
 prod:
-	@docker compose -f docker-compose.prod.yml up
+	@HOST=$$(TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` && curl -H "X-aws-ec2-metadata-token: $$TOKEN" http://169.254.169.254/latest/meta-data/public-hostname) \
+	docker compose -f docker-compose.prod.yml up
 
 down:
 	@docker compose -f docker-compose.dev.yml down
+	@docker compose -f docker-compose.prod.yml down
 
 stop:
 	@docker compose -f docker-compose.dev.yml stop
+	@docker compose -f docker-compose.prod.yml stop
 
 migration_create:
 	@$(shell_chat) "migrate create -ext=.sql -dir=./internal/database/migrations $(NAME)"

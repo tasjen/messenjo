@@ -1,11 +1,11 @@
 services:
   view:
     container_name: message-app-view-prod
+    environment:
+      - HOST=${HOST}
     build:
       context: ./services/view
       dockerfile: Dockerfile.prod
-    env_file:
-      - ./services/view/.env.prod
     depends_on:
       - grpc-gateway
 
@@ -22,6 +22,8 @@ services:
   auth:
     # image: message-app-auth-dev
     container_name: message-app-auth-prod
+    environment:
+      - HOST=${HOST}
     build:
       context: ./services/auth
       dockerfile: Dockerfile.prod
