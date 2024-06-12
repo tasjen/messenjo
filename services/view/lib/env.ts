@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  JWT_SECRET: z.string().min(1),
   HOST: z.string().min(1),
 });
 

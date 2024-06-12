@@ -8,6 +8,8 @@ services:
       - ./services/view:/app
       - /app/node_modules
       - /app/.next
+    env_file:
+      - ./services/view/.env.dev
     depends_on:
       - grpc-gateway
 

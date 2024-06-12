@@ -1,7 +1,6 @@
 // Original file: null
 
-// import type { Long } from '@grpc/proto-loader';
-import Long from "long";
+import type { Long } from '@grpc/proto-loader';
 
 export interface Timestamp {
   'seconds'?: (number | string | Long);

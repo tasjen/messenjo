@@ -4,6 +4,8 @@ services:
     build:
       context: ./services/view
       dockerfile: Dockerfile.prod
+    env_file:
+      - ./services/view/.env.prod
     depends_on:
       - grpc-gateway
 
@@ -13,7 +15,7 @@ services:
       context: ./services/streaming
       dockerfile: Dockerfile.prod
     env_file:
-      - ./services/streaming/.env.dev
+      - ./services/streaming/.env.prod
     depends_on:
       - messagech
 
@@ -24,32 +26,19 @@ services:
       context: ./services/auth
       dockerfile: Dockerfile.prod
     env_file:
-      - ./services/auth/.env.dev
+      - ./services/auth/.env.prod
 
   chat:
     # image: message-app-chat-dev
     container_name: message-app-chat-prod
-    user: ${MY_UID}:${MY_GID} # to make the host be able to modify or delete files created in the container
     build:
       context: ./services/chat
       dockerfile: Dockerfile.prod
     env_file:
-      - ./services/chat/.env.dev
-    depends_on:
-      - chatdb
-
-  chatdb:
-    image: postgres:16-alpine
-    container_name: message-app-chatdb-prod
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: prod
-      POSTGRES_PASSWORD: prod
-    ports:
-      - 5432:5432
+      - ./services/chat/.env.prod
 
   messagech:
-    image: ghcr.io/microsoft/garnet
+    image: ghcr.io/microsoft/garnet-alpine
     container_name: message-app-messagech-prod
 
   reverse-proxy:
@@ -58,7 +47,8 @@ services:
     volumes:
       - ./services/reverse-proxy/nginx.conf.prod:/etc/nginx/nginx.conf:ro
     ports:
-      - 3000:80
+      - 80:80
+      - 443:443
     depends_on:
       - auth
       - view

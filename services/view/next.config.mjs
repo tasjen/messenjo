@@ -3,7 +3,7 @@ const nextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      allowedOrigins: [process.env.HOST],
+      allowedOrigins: [process.env.HOST ?? ""],
     },
     staleTimes: {
       dynamic: 1800, // 30 min

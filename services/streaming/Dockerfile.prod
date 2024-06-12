@@ -1,18 +1,33 @@
-FROM node:20-alpine AS base
-
-FROM base AS builder
+FROM node:20 AS builder
 WORKDIR /app
 COPY . .
 RUN npm ci
 RUN npm run build
 
-FROM base
-WORKDIR /app
-# required if using node-alpine as base image because uWebSocket.js uses glibc
-RUN apk add gcompat
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 streaming
-USER streaming
-COPY --from=builder --chown=streaming:nodejs /app/build /app
 
-CMD ["node", "/app/index.js"]
+FROM gcr.io/distroless/nodejs20-debian12
+WORKDIR /app
+COPY --from=builder /app/build .
+CMD ["./index.js"]
+
+
+# alpine version
+
+# FROM node:20-alpine AS base
+
+# FROM base AS builder
+# WORKDIR /app
+# COPY . .
+# RUN npm ci
+# RUN npm run build
+
+# FROM base
+# WORKDIR /app
+# # required if using node-alpine as base image because uWebSocket.js uses glibc
+# RUN apk add gcompat
+# RUN addgroup --system --gid 1001 nodejs
+# RUN adduser --system --uid 1001 streaming
+# USER streaming
+# COPY --from=builder --chown=streaming:nodejs /app/build /app
+
+# CMD ["node", "/app/index.js"]

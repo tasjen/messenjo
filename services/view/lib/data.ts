@@ -76,7 +76,7 @@ export async function fetchContacts(): Promise<Contact[]> {
                 id: e.lastMessage.id,
                 content: e.lastMessage.content,
                 sentAt: toDateMs({
-                  seconds: e.lastMessage.sentAt?.seconds?.toNumber(),
+                  seconds: e.lastMessage.sentAt?.seconds,
                   nanos: e.lastMessage.sentAt?.nanos,
                 }),
               },
@@ -109,7 +109,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
       Message.parse({
         ...e,
         sentAt: toDateMs({
-          seconds: e.sentAt?.seconds?.toNumber(),
+          seconds: e.sentAt?.seconds,
           nanos: e.sentAt?.nanos,
         }),
       })
