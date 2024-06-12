@@ -22,10 +22,13 @@ export default function ChatBoard(props: Props) {
 
   useEffect(() => {
     store.loadMessages(groupId, props.messages);
-    listRef.current?.scrollIntoView(false);
   }, []);
 
   const contact = store.contacts.find((e) => e.groupId === groupId);
+
+  useEffect(() => {
+    listRef.current?.scrollIntoView(false);
+  }, [contact]);
 
   if (!store.user || !contact) {
     return <ChatBoardSkeleton />;
@@ -40,7 +43,7 @@ export default function ChatBoard(props: Props) {
           <ChevronLeft className="h-6 w-6" />
         </Link>
       </div>
-      <ScrollArea className="-mr-3 pr-3">
+      <ScrollArea className="h-full pr-3 -mr-3">
         <ul
           ref={listRef}
           className="flex flex-col-reverse gap-2 overflow-auto mb-auto border-t pt-2"

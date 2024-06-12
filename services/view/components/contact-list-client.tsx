@@ -60,7 +60,7 @@ export default function ContactListClient(props: Props) {
           className="h-7 pl-8 rounded-full"
         />
       </div>
-      <ScrollArea className="flex flex-col h-full pr-4 -mr-2">
+      <ScrollArea className="h-full pr-4 -mr-2">
         {!contacts.length ? (
           <div className="mt-4 text-center">No contacts found</div>
         ) : (
