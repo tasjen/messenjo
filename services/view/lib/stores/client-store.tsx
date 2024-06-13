@@ -87,12 +87,12 @@ function storeReducer(state: State, action: Action): State {
       return {
         ...state,
         contacts: state.contacts.map((contact) =>
+          // only add a message if the message is not already added
+          // by checking username and sentAt field since one user cannot (?)
+          // send more than one messages with the same sentAt field
           contact.groupId !== payload.groupId ||
           contact.messages.find(
             (m) =>
-              // only add a message if the message is not already added
-              // by checking username and sentAt field since one user cannot (?)
-              // send more than one messages with the same sentAt field
               m.fromUsername === payload.message.fromUsername &&
               m.sentAt === payload.message.sentAt
           )
