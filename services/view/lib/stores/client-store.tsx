@@ -100,7 +100,14 @@ function storeReducer(state: State, action: Action): State {
             ? contact
             : {
                 ...contact,
-                messages: [payload.message, ...contact.messages],
+                messages:
+                  payload.message.sentAt >= contact.messages[0].sentAt
+                    ? [payload.message, ...contact.messages]
+                    : [
+                        contact.messages[0],
+                        payload.message,
+                        ...contact.messages.slice(1),
+                      ],
                 unreadCount: payload.isReading ? 0 : contact.unreadCount + 1,
               }
         ),
