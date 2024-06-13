@@ -8,9 +8,6 @@ import type { Contact } from "@/lib/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoSSR from "@/components/no-ssr";
 import { Badge } from "./ui/badge";
-import { useStore } from "@/lib/stores/client-store";
-import * as actions from "@/lib/actions";
-import { toast } from "sonner";
 
 type Props = {
   contact: Contact;
@@ -18,7 +15,6 @@ type Props = {
 
 export default function ContactItem({ contact }: Props) {
   const pathname = usePathname();
-  const store = useStore();
 
   function formattedTime(lastSentAt?: number): string {
     const now = dayjs();
@@ -37,19 +33,8 @@ export default function ContactItem({ contact }: Props) {
     }
   }
 
-  // no async/await so that navigation is instant
-  function resetUnreadCount(): void {
-    if (contact.unreadCount !== 0) {
-      store.resetUnreadCount(contact.groupId);
-      actions
-        .resetUnreadCount(contact.groupId)
-        .catch(() => toast(`internal server error`));
-    }
-  }
-
   return (
     <Link
-      onClick={resetUnreadCount}
       href={`/chat/${contact.groupId}`}
       className={clsx("flex gap-2 p-2 rounded-lg", {
         "bg-[#dddddd] dark:bg-[#333333]":

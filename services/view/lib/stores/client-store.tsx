@@ -3,6 +3,7 @@
 
 import { createContext, useContext, ReactNode, useReducer } from "react";
 import { User, Message, Contact, GroupContact, Action } from "@/lib/schema";
+import { useParams } from "next/navigation";
 
 type State = {
   user: User;
@@ -134,7 +135,7 @@ type TStore = {
   setGroup: (group: GroupContact) => void;
   loadContacts: (c: Contact[]) => void;
   loadMessages: (groupId: string, message: Message[]) => void;
-  addMessage: (groupId: string, message: Message, isReading: boolean) => void;
+  addMessage: (groupId: string, message: Message) => void;
   resetUnreadCount: (groupId: string) => void;
   addContact: (contact: Contact) => void;
   isWsDisconnected: boolean;
@@ -146,6 +147,7 @@ const StoreContext = createContext<TStore | null>(null);
 
 export default function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initState);
+  const params = useParams<{ groupId: string }>();
 
   function setUser(user: User): void {
     dispatch({ type: "SET_USER", payload: user });
@@ -166,11 +168,8 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
   }
 
-  function addMessage(
-    groupId: string,
-    message: Message,
-    isReading: boolean
-  ): void {
+  function addMessage(groupId: string, message: Message): void {
+    const isReading = params.groupId === groupId;
     dispatch({ type: "ADD_MESSAGE", payload: { groupId, message, isReading } });
   }
 

@@ -10,6 +10,9 @@ import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
 import { ScrollArea } from "../ui/scroll-area";
+import { toast } from "sonner";
+import * as actions from "@/lib/actions";
+import { useDebouncedCallback } from "use-debounce";
 
 type Props = {
   messages: Message[];
@@ -20,14 +23,30 @@ export default function ChatBoard(props: Props) {
   const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
 
+  const debouncedResetUnreadCount = useDebouncedCallback(
+    (groupId: string) => {
+      actions.resetUnreadCount(groupId).catch((err) => toast(err.message));
+    },
+    2000,
+    { leading: true }
+  );
+
   useEffect(() => {
     store.loadMessages(groupId, props.messages);
+    store.resetUnreadCount(groupId);
   }, []);
 
   const contact = store.contacts.find((e) => e.groupId === groupId);
 
   useEffect(() => {
     listRef.current?.scrollIntoView(false);
+    if (
+      contact &&
+      contact.unreadCount !== 0 &&
+      contact.messages[0]?.fromUsername !== store.user.username
+    ) {
+      debouncedResetUnreadCount(groupId);
+    }
   }, [contact]);
 
   if (!store.user || !contact) {

@@ -20,27 +20,20 @@ export default function ChatForm() {
 
   function handleSubmit(): void {
     const content = contentInput.current?.value;
-    if (!content) {
-      return contentInput.current?.focus();
-    }
+    if (!content) return;
 
     const sentAt = new Date().getTime();
-    store.addMessage(
-      params.groupId,
-      {
-        id: Math.random(),
-        fromUsername: store.user.username,
-        fromPfp: store.user.pfp,
-        content,
-        sentAt,
-      },
-      true
-    );
+    store.addMessage(params.groupId, {
+      id: Math.random(),
+      fromUsername: store.user.username,
+      fromPfp: store.user.pfp,
+      content,
+      sentAt,
+    });
     actions
       .addMessage(params.groupId, content, sentAt)
       .catch(() => toast(`failed to send message: '${content}'`));
     contentInput.current.value = "";
-    contentInput.current?.focus();
   }
 
   return (
