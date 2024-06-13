@@ -110,7 +110,7 @@ function storeReducer(state: State, action: Action): State {
                           payload.message,
                           ...contact.messages.slice(1),
                         ],
-                unreadCount: payload.isReading ? 0 : contact.unreadCount + 1,
+                unreadCount: contact.unreadCount + 1,
               }
         ),
       };
@@ -142,10 +142,10 @@ type TStore = {
   contacts: Contact[];
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
-  loadContacts: (c: Contact[]) => void;
-  loadMessages: (groupId: string, message: Message[]) => void;
+  loadContacts: (contacts: Contact[]) => void;
+  loadMessages: (messages: Message[]) => void;
   addMessage: (groupId: string, message: Message) => void;
-  resetUnreadCount: (groupId: string) => void;
+  resetUnreadCount: () => void;
   addContact: (contact: Contact) => void;
   isWsDisconnected: boolean;
   connectWs: () => void;
@@ -173,8 +173,11 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
-  function loadMessages(groupId: string, messages: Message[]): void {
-    dispatch({ type: "LOAD_MESSAGES", payload: { groupId, messages } });
+  function loadMessages(messages: Message[]): void {
+    dispatch({
+      type: "LOAD_MESSAGES",
+      payload: { groupId: params.groupId, messages },
+    });
   }
 
   function addMessage(groupId: string, message: Message): void {
@@ -182,8 +185,11 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "ADD_MESSAGE", payload: { groupId, message, isReading } });
   }
 
-  function resetUnreadCount(groupId: string): void {
-    dispatch({ type: "RESET_UNREAD_COUNT", payload: { groupId } });
+  function resetUnreadCount(): void {
+    dispatch({
+      type: "RESET_UNREAD_COUNT",
+      payload: { groupId: params.groupId },
+    });
   }
 
   function addContact(contact: Contact): void {

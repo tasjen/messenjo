@@ -9,6 +9,7 @@ import { Search } from "lucide-react";
 import ContactItem from "./contact-item";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
+import { useParams } from "next/navigation";
 
 type Props = {
   user: User;
@@ -18,11 +19,18 @@ type Props = {
 export default function ContactListClient(props: Props) {
   const store = useStore();
   const [term, setTerm] = useState("");
+  const params = useParams<{ groupId: string }>();
 
   useEffect(() => {
     store.setUser(props.user);
     store.loadContacts(props.contacts);
   }, []);
+
+  useEffect(() => {
+    window.onbeforeunload = function () {
+      navigator.sendBeacon(`/api/resetUnreadCount?groupId=${params.groupId}`);
+    };
+  }, [params.groupId]);
 
   if (store.isWsDisconnected) {
     return (
@@ -64,9 +72,11 @@ export default function ContactListClient(props: Props) {
         {!contacts.length ? (
           <div className="mt-4 text-center">No contacts found</div>
         ) : (
-          contacts.map((contact) => (
-            <ContactItem key={contact.groupId} contact={contact} />
-          ))
+          <ul>
+            {contacts.map((contact) => (
+              <ContactItem key={contact.groupId} contact={contact} />
+            ))}
+          </ul>
         )}
       </ScrollArea>
     </>
