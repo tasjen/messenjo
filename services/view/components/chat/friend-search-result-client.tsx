@@ -48,14 +48,16 @@ export default function FriendSearchResultClient({ user }: Props) {
 
   return (
     <div className="mt-4 flex flex-col items-center">
-      <Avatar className="self-center h-36 w-36 mb-4">
+      <Avatar className="self-center h-48 w-48 mb-4">
         <AvatarImage src={user.pfp} alt={`${user.pfp}'s pfp`} />
         <AvatarFallback>{user.username[0]}</AvatarFallback>
       </Avatar>
-      <div className="flex text-xl mb-2 gap-2.5">
-        {user.username} {contact && <UserCheck />}
+      <div className="flex text-2xl mb-2 gap-4 items-center">
+        {user.username} {contact && <UserCheck className="w-6 h-6" />}
       </div>
-      {contact ? (
+      {user.id === store.user.id ? (
+        <div>You</div>
+      ) : contact ? (
         <Link href={`/chat/${contact.groupId}`}>
           <Button>Chat</Button>
         </Link>
