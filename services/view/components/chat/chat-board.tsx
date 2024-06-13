@@ -26,6 +26,7 @@ export default function ChatBoard(props: Props) {
   const debouncedResetUnreadCount = useDebouncedCallback(
     (groupId: string) => {
       actions.resetUnreadCount(groupId).catch((err) => toast(err.message));
+      console.log("%c reset unread count", "background: #222; color: #bada55");
     },
     2000,
     { leading: true }
@@ -40,11 +41,7 @@ export default function ChatBoard(props: Props) {
 
   useEffect(() => {
     listRef.current?.scrollIntoView(false);
-    if (
-      contact &&
-      contact.unreadCount !== 0 &&
-      contact.messages[0]?.fromUsername !== store.user.username
-    ) {
+    if (contact && contact.messages[0]?.fromUsername !== store.user.username) {
       debouncedResetUnreadCount(groupId);
     }
   }, [contact]);
