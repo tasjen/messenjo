@@ -40,7 +40,6 @@ type Action =
       payload: {
         groupId: string;
         message: Message;
-        isReading: boolean;
       };
     }
   | {
@@ -167,9 +166,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   function loadContacts(contacts: Contact[]): void {
-    if (state.contacts.length !== 0) {
-      return;
-    }
+    if (state.contacts.length !== 0) return;
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
@@ -181,8 +178,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   function addMessage(groupId: string, message: Message): void {
-    const isReading = params.groupId === groupId;
-    dispatch({ type: "ADD_MESSAGE", payload: { groupId, message, isReading } });
+    dispatch({ type: "ADD_MESSAGE", payload: { groupId, message } });
   }
 
   function resetUnreadCount(): void {

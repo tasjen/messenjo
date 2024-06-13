@@ -16,11 +16,11 @@ type Props = {
 };
 
 export default function ChatBoard(props: Props) {
-  const { groupId } = useParams<{ groupId: string }>();
+  const params = useParams<{ groupId: string }>();
   const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
 
-  const contact = store.contacts.find((e) => e.groupId === groupId);
+  const contact = store.contacts.find((e) => e.groupId === params.groupId);
 
   useEffect(() => {
     store.loadMessages(props.messages);
