@@ -58,11 +58,9 @@ services:
       POSTGRES_PASSWORD: dev
     volumes:
       - ./services/chatdb/data/dev:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
 
   messagech:
-    image: ghcr.io/microsoft/garnet
+    image: ghcr.io/microsoft/garnet-alpine
     container_name: message-app-messagech-dev
 
   reverse-proxy:
