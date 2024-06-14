@@ -1,5 +1,5 @@
 import { WebSocket } from "uWebSockets.js";
-import { UserData } from ".";
+import type { UserData } from ".";
 
 export class UserManager {
   // The `users` attribute is a Map where the keys are user IDs (stringified uuids)

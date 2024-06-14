@@ -34,12 +34,11 @@ app.ws<UserData>("/", {
     const secWebSocketProtocol = req.getHeader("sec-websocket-protocol");
     const secWebSocketExtensions = req.getHeader("sec-websocket-extensions");
     const cookies = cookie.parse(req.getHeader("cookie"));
-    if (!cookies.auth_jwt) {
-      console.log("no token");
-      return;
-    }
 
     try {
+      if (!cookies.auth_jwt) {
+        throw new Error("no token");
+      }
       const verifyTokenRes = await verifyToken({ token: cookies.auth_jwt });
       if (!verifyTokenRes?.userId) {
         throw new Error("no `res.userId` returned from verifyToken");
@@ -47,8 +46,9 @@ app.ws<UserData>("/", {
 
       const userId = uuidStringify(verifyTokenRes.userId);
       if (isAborted) {
-        console.log(`client disconnected before upgrading, userId: ${userId}`);
-        return;
+        throw new Error(
+          `client disconnected before upgrading, userId: ${userId}`
+        );
       }
 
       res.cork(() => {
@@ -63,7 +63,11 @@ app.ws<UserData>("/", {
         );
       });
     } catch (err) {
-      console.error(err);
+      if (err instanceof Error) {
+        console.log(`failed to upgrade: ${err.message}`);
+      } else {
+        console.log(`unknown error: ${err}`);
+      }
     }
   },
 
@@ -79,7 +83,11 @@ app.ws<UserData>("/", {
       }
       userManager.addUser(userId, ws);
     } catch (err) {
-      console.error(err);
+      if (err instanceof Error) {
+        console.log(`failed to open WebSockets: ${err.message}`);
+      } else {
+        console.log(`unknown error: ${err}`);
+      }
     }
     userManager.printUsers();
   },
@@ -110,7 +118,9 @@ async function subToMessageCh() {
     await subClient.subscribe("main", (actionJson) => {
       const actionObject = JSON.parse(actionJson);
       const { success, data } = Action.safeParse(actionObject);
-      if (!success) return;
+      if (!success) {
+        throw new Error(`failed to parse Action: ${actionJson}`);
+      }
       const { type, payload } = data;
       switch (type) {
         case "ADD_MESSAGE":
@@ -132,7 +142,7 @@ async function subToMessageCh() {
     if (err instanceof Error) {
       console.log(`failed to subscribe to channel "main": ${err.message}`);
     } else {
-      console.error(err);
+      console.log(`unknown error: ${err}`);
     }
     delay *= 3;
     console.log(`retrying in ${delay} seconds`);
