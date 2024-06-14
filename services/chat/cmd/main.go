@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net"
 	"os"
 	"time"
@@ -15,7 +16,7 @@ import (
 )
 
 type application struct {
-	errorLog  *log.Logger
+	logger    *slog.Logger
 	users     models.IUserModel
 	groups    models.IGroupModel
 	members   models.IMemberModel
@@ -25,8 +26,6 @@ type application struct {
 }
 
 func main() {
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -37,13 +36,14 @@ func main() {
 	defer pool.Close()
 	models.DB = pool
 
-	lis, err := net.Listen("tcp", ":3000")
+	addr := ":3000"
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	app := &application{
-		errorLog: errorLog,
+		logger:   slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 		users:    models.NewUserModel(),
 		groups:   models.NewGroupModel(),
 		members:  models.NewMemberModel(),
@@ -52,10 +52,10 @@ func main() {
 			Addr: "messagech:6379",
 		}),
 	}
-	s := grpc.NewServer(grpc.UnaryInterceptor(app.errHandler))
+	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
 
 	pb.RegisterChatServer(s, app)
-	log.Printf("gRPC service listening at %v", lis.Addr())
+	log.Printf("Server is running at %v", addr)
 	log.Fatalf("failed to serve: %v", s.Serve(lis))
 }
 

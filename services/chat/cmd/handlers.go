@@ -293,7 +293,7 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
 		actionJson, err := json.Marshal(action)
 		if err != nil {
-			app.errorLog.Println(err)
+			app.logger.Error(err.Error())
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
@@ -368,7 +368,7 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 		defer cancel()
 		fromUser, err := app.users.GetById(newCtx, fromUserId)
 		if err != nil {
-			app.errorLog.Println(err)
+			app.logger.Error(err.Error())
 			return
 		}
 		action := NewAddFriendContactAction(
@@ -380,7 +380,7 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 		)
 		actionJson, err := json.Marshal(action)
 		if err != nil {
-			app.errorLog.Println(err)
+			app.logger.Warn(err.Error())
 		} else {
 			app.pubClient.Publish(newCtx, "main", actionJson)
 		}
@@ -461,7 +461,7 @@ func (app *application) AddMessage(ctx context.Context, req *pb.AddMessageReq) (
 		sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 		sendMessageActionJson, err := json.Marshal(sendMessageAction)
 		if err != nil {
-			app.errorLog.Println(err)
+			app.logger.Error(err.Error())
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
