@@ -128,11 +128,13 @@ function storeReducer(state: State, action: Action): State {
     case "ADD_CONTACT":
       return {
         ...state,
-        contacts: state.contacts.find(
-          (contact) => contact.groupId === payload.groupId
-        )
-          ? state.contacts
-          : [...state.contacts, payload],
+        contacts:
+          state.contacts.find(
+            (contact) => contact.groupId === payload.groupId
+          ) ||
+          (payload.type === "friend" && payload.name === state.user.username)
+            ? state.contacts
+            : [...state.contacts, payload],
       };
     case "SET_IS_DISCONNECTED":
       return { ...state, isWsDisconnected: payload };

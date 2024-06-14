@@ -57,7 +57,7 @@ func NewAddFriendContactAction(toUserId, groupId, fromUserId, name, pfp string) 
 	return AddContactAction{
 		Type: "ADD_CONTACT",
 		Payload: AddContactPayload{
-			ToUserIds: []string{toUserId},
+			ToUserIds: []string{toUserId, fromUserId},
 			Contact: Contact{
 				Type:    "friend",
 				GroupId: groupId,
