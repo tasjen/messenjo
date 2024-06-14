@@ -71,12 +71,10 @@ app.ws<UserData>("/", {
     const { userId } = ws.getUserData();
     try {
       const getGroupIdsRes = await getGroupIds({ userId: uuidParse(userId) });
-      if (!getGroupIdsRes?.groupIds) {
-        throw new Error("no `res.userId` returned from verifyToken");
-      }
+      const groupIds = getGroupIdsRes?.groupIds ?? [];
 
       ws.subscribe(userId);
-      for (const groupId of getGroupIdsRes.groupIds) {
+      for (const groupId of groupIds) {
         ws.subscribe(uuidStringify(groupId));
       }
       userManager.addUser(userId, ws);
