@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -25,8 +24,8 @@ func (app *application) oauthLoginHandler(w http.ResponseWriter, r *http.Request
 	providerName := r.PathValue("provider")
 	provider, ok := app.providers[providerName]
 	if !ok {
-		log.Println("invalid provider")
-		http.Redirect(w, r, "/login", http.StatusFound)
+		clientError(w, http.StatusUnauthorized)
+		app.logger.Warn("invalid provider name")
 		return
 	}
 
@@ -43,8 +42,8 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	providerName := r.PathValue("provider")
 	provider, ok := app.providers[providerName]
 	if !ok {
-		log.Println("invalid provider")
-		http.Redirect(w, r, "/login", http.StatusFound)
+		clientError(w, http.StatusUnauthorized)
+		app.logger.Warn("invalid provider name")
 		return
 	}
 
@@ -52,32 +51,33 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
-			http.Redirect(w, r, "/login", http.StatusFound)
+			clientError(w, http.StatusUnauthorized)
+			app.logger.Warn("no oauthstate cookie found")
 		default:
-			log.Println(err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			serverError(w)
+			app.logger.Error(err.Error())
 		}
 		return
 	}
 
 	if r.URL.Query().Get("state") != oauthstate.Value {
-		log.Println(errors.New("callback state does not match oauthstate"))
-		http.Redirect(w, r, "/login", http.StatusFound)
+		clientError(w, http.StatusUnauthorized)
+		app.logger.Warn("callback state does not match oauthstate")
 		return
 	}
 
 	code := r.URL.Query().Get("code")
 	token, err := provider.Config().Exchange(r.Context(), code)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		clientError(w, http.StatusUnauthorized)
+		app.logger.Warn(fmt.Sprintf("failed to exchange code with access token : %v", err))
 		return
 	}
 
 	oauthAccountInfo, err := provider.FetchAccountInfo(token.AccessToken)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		serverError(w)
+		app.logger.Error(err.Error())
 		return
 	}
 
@@ -88,8 +88,10 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		providerName,
 	)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/error", http.StatusFound)
+		serverError(w)
+		app.logger.Error(
+			fmt.Sprintf("failed to get oauth account %v#%v from Auth DB: %v", providerName, oauthAccountInfo.Id, err),
+		)
 		return
 	}
 
@@ -103,16 +105,18 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 				Pfp:      oauthAccountInfo.Pfp,
 			})
 		if err != nil {
-			log.Println(err)
-			http.Redirect(w, r, "/error", http.StatusFound)
+			serverError(w)
+			app.logger.Error(
+				fmt.Sprintf("failed to create account %v#%v in Chat DB: %v", providerName, oauthAccountInfo.Id, err),
+			)
 			return
 		}
 
 		// extract the userId(uuid) returned from Chat service
 		userId, err := uuid.FromBytes(res.GetUserId())
 		if err != nil {
-			log.Println(err)
-			http.Redirect(w, r, "/error", http.StatusFound)
+			serverError(w)
+			app.logger.Error(err.Error())
 			return
 		}
 		userIdString := userId.String()
@@ -125,8 +129,10 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 			UserId:       userIdString,
 			CreatedAt:    time.Now().Format(time.DateTime),
 		}); err != nil {
-			log.Println(err)
-			http.Redirect(w, r, "/error", http.StatusFound)
+			serverError(w)
+			app.logger.Error(
+				fmt.Sprintf("failed to create account %v#%v in Auth DB: %v", providerName, oauthAccountInfo.Id, err),
+			)
 			return
 		}
 
@@ -141,8 +147,10 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if err := setJwtCookie(w, claims); err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/error", http.StatusFound)
+		serverError(w)
+		app.logger.Error(
+			fmt.Sprintf("failed to set jwt cookie %v : %v", claims, err),
+		)
 		return
 	}
 
@@ -170,7 +178,6 @@ func (app *application) VerifyToken(ctx context.Context, req *auth_pb.VerifyToke
 			return []byte(JWT_SECRET), nil
 		})
 	if err != nil {
-		log.Println(err)
 		return &auth_pb.VerifyTokenRes{}, err
 	}
 
@@ -180,8 +187,7 @@ func (app *application) VerifyToken(ctx context.Context, req *auth_pb.VerifyToke
 
 	claims, ok := token.Claims.(*jwtClaims)
 	if !ok {
-		log.Println(errors.New("failed asserting `token.Claims` to `*jwtClaims` type"))
-		return &auth_pb.VerifyTokenRes{}, errors.New("internal server error")
+		return &auth_pb.VerifyTokenRes{}, errors.New("failed asserting `token.Claims` to `*jwtClaims` type")
 	}
 
 	userId := uuid.MustParse(claims.UserId)

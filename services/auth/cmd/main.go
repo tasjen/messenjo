@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -21,11 +22,12 @@ import (
 )
 
 var (
-	IsProd     bool
-	JWT_SECRET string
+	IS_PROD    bool
+	JWT_SECRET = os.Getenv("JWT_SECRET")
 )
 
 type application struct {
+	logger     *slog.Logger
 	providers  map[string]oa2.Provider
 	accounts   models.IAccountModel
 	chatClient chat_pb.ChatClient
@@ -33,13 +35,10 @@ type application struct {
 }
 
 func main() {
-	JWT_SECRET = os.Getenv("JWT_SECRET")
-
 	var err error
-	if IsProd, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
+	if IS_PROD, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
 		log.Fatal(err)
 	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -61,6 +60,7 @@ func main() {
 	}
 
 	app := &application{
+		logger: slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 		providers: map[string]oa2.Provider{
 			"github": oa2.NewGithubProvider(),
 			"google": oa2.NewGoogleProvider(),
@@ -84,23 +84,26 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         ":3000",
-		Handler:      app.routes(),
+		Handler:      app.recoverHttpServer(app.routes()),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Printf("server listening at :3000")
+	log.Printf("HTTP server is running at %v", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }
 
 func (app *application) startGrpcService() {
-	lis, err := net.Listen("tcp", ":3001")
+	addr := ":3001"
+	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := grpc.NewServer()
+
+	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
+
 	auth_pb.RegisterAuthServer(s, app)
-	log.Printf("gRPC service listening at %v", lis.Addr())
+	log.Printf("gRPC server is running at %v", addr)
 	log.Fatalf("failed to serve: %v", s.Serve(lis))
 }

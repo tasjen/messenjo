@@ -24,7 +24,7 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 		Value:    oauthState,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   IsProd,
+		Secure:   IS_PROD,
 		SameSite: http.SameSiteDefaultMode,
 		MaxAge:   int((time.Minute * 2).Seconds()),
 	})
@@ -53,7 +53,7 @@ func setJwtCookie(w http.ResponseWriter, claims *jwtClaims) error {
 		Value:    jwtString,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   IsProd,
+		Secure:   IS_PROD,
 		SameSite: http.SameSiteDefaultMode,
 		MaxAge:   int(claims.Exp - time.Now().Unix()),
 	})
@@ -66,7 +66,15 @@ func setNewUserCookie(w http.ResponseWriter) {
 		Name:     "new_user",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   IsProd,
+		Secure:   IS_PROD,
 		SameSite: http.SameSiteDefaultMode,
 	})
+}
+
+func clientError(w http.ResponseWriter, status int) {
+	http.Error(w, http.StatusText(status), status)
+}
+
+func serverError(w http.ResponseWriter) {
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
