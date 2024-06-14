@@ -8,10 +8,6 @@ import type { Contact } from "@/lib/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoSSR from "@/components/no-ssr";
 import { Badge } from "./ui/badge";
-import { useStore } from "@/lib/stores/client-store";
-import * as actions from "@/lib/actions";
-import { toast } from "sonner";
-import { useCallback } from "react";
 
 type Props = {
   contact: Contact;
@@ -19,8 +15,7 @@ type Props = {
 
 export default function ContactItem({ contact }: Props) {
   const pathname = usePathname();
-  const params = useParams<{ groupId: string }>();
-  const store = useStore();
+  const params = useParams<{ groupId?: string }>();
 
   function formattedTime(lastSentAt?: number): string {
     const now = dayjs();
@@ -39,28 +34,8 @@ export default function ContactItem({ contact }: Props) {
     }
   }
 
-  // Invoking this will reset the unread counts(both in the client and server)
-  // of the current chat room before navigating to another chat room
-  // via the Link component below. For example, if a user navigate
-  // from chat room 'A' to 'B', the unreadCount of chat room 'A'
-  // will be reset. Not 'B'. The unreadCount of the last chat room
-  // that the user is in before closing the page will be handled
-  // by onbeforeunload event in ContactListClient.
-  const resetUnreadCount = useCallback(() => {
-    const currentContact = store.contacts.find(
-      (c) => c.groupId === params.groupId
-    );
-    if (currentContact && currentContact.unreadCount !== 0) {
-      actions
-        .resetUnreadCount(params.groupId)
-        .catch((err) => toast(err.message));
-      store.resetUnreadCount();
-    }
-  }, [store, params.groupId]);
-
   return (
-    // Don't set this onClick to Link as ChatBoards will somehow get revalidated
-    <li onClick={resetUnreadCount}>
+    <li>
       <Link
         href={`/chat/${contact.groupId}`}
         className={clsx("flex gap-2 p-2 rounded-lg", {
@@ -91,7 +66,7 @@ export default function ContactItem({ contact }: Props) {
               {contact.messages[0]?.content}
             </div>
             {contact.unreadCount !== 0 &&
-              contact.groupId !== params.groupId && (
+              params.groupId !== contact.groupId && (
                 <Badge className="py-[0.25px] px-[6px] text-xs font-medium">
                   {contact.unreadCount}
                 </Badge>

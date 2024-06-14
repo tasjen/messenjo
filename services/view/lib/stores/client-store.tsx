@@ -109,7 +109,10 @@ function storeReducer(state: State, action: Action): State {
                           payload.message,
                           ...contact.messages.slice(1),
                         ],
-                unreadCount: contact.unreadCount + 1,
+                unreadCount:
+                  payload.message.fromUsername === state.user.username
+                    ? 0
+                    : contact.unreadCount + 1,
               }
         ),
       };

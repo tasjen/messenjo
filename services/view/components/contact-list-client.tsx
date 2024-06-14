@@ -19,7 +19,7 @@ type Props = {
 export default function ContactListClient(props: Props) {
   const store = useStore();
   const [term, setTerm] = useState("");
-  const params = useParams<{ groupId: string }>();
+  const params = useParams<{ groupId?: string }>();
 
   useEffect(() => {
     store.setUser(props.user);
@@ -27,9 +27,11 @@ export default function ContactListClient(props: Props) {
   }, []);
 
   useEffect(() => {
-    window.onbeforeunload = function () {
-      navigator.sendBeacon(`/api/resetUnreadCount?groupId=${params.groupId}`);
-    };
+    if (params.groupId) {
+      window.onbeforeunload = function () {
+        navigator.sendBeacon(`/api/resetUnreadCount?groupId=${params.groupId}`);
+      };
+    }
   }, [params.groupId]);
 
   if (store.isWsDisconnected) {

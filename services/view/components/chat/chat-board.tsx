@@ -10,7 +10,8 @@ import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
 import { ScrollArea } from "../ui/scroll-area";
-
+import * as actions from "@/lib/actions";
+import { toast } from "sonner";
 type Props = {
   messages: Message[];
 };
@@ -24,6 +25,23 @@ export default function ChatBoard(props: Props) {
 
   useEffect(() => {
     store.loadMessages(props.messages);
+    return () => {
+      // This callback will be invoke on component mount/unmount.
+      // It resets the unread counts on both client and server of
+      // the current chat room once on enter and another on leave
+      // For example, if a user navigate from chat room 'A' to 'B'
+      // , the unreadCount on both client and server of chat room
+      // 'A' and 'B' will be reset if the unreadCount of each chat
+      // room is not zero. The unreadCount of the last chat room
+      // that the user has visited before closing the page will be
+      // reset by onbeforeunload event in ContactListClient.
+      if (contact && contact.unreadCount !== 0) {
+        actions
+          .resetUnreadCount(params.groupId)
+          .catch((err) => toast(err.message));
+        store.resetUnreadCount();
+      }
+    };
   }, []);
 
   useEffect(() => {
