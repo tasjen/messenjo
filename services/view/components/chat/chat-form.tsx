@@ -37,13 +37,19 @@ export default function ChatForm() {
   }
 
   return (
-    <form action={handleSubmit}>
-      <div className="flex gap-4">
-        <Input type="text" ref={contentInput} autoComplete="off" autoFocus />
-        <Button type="submit">
-          <SendHorizonal />
-        </Button>
-      </div>
-    </form>
+    <div className="flex gap-4">
+      <Input
+        type="text"
+        ref={contentInput}
+        onKeyDown={({ key }) => {
+          if (key === "Enter") handleSubmit();
+        }}
+        autoComplete="off"
+        autoFocus
+      />
+      <Button onClick={handleSubmit}>
+        <SendHorizonal />
+      </Button>
+    </div>
   );
 }
