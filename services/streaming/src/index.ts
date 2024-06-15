@@ -73,13 +73,21 @@ app.ws<UserData>("/", {
 
   open: async (ws) => {
     const { userId } = ws.getUserData();
+    let topics: string[];
     try {
-      const getGroupIdsRes = await getGroupIds({ userId: uuidParse(userId) });
-      const groupIds = getGroupIdsRes?.groupIds ?? [];
-
-      ws.subscribe(userId);
-      for (const groupId of groupIds) {
-        ws.subscribe(uuidStringify(groupId));
+      // if the user is already connecting from other devices
+      // then get topics from that connection
+      const conns = userManager.getUser(userId);
+      if (conns) {
+        topics = conns[0].getTopics();
+      } else {
+        const getGroupIdsRes = await getGroupIds({ userId: uuidParse(userId) });
+        topics = (getGroupIdsRes?.groupIds ?? [])
+          .map((e) => uuidStringify(e))
+          .concat(userId);
+      }
+      for (const topic of topics) {
+        ws.subscribe(topic);
       }
       userManager.addUser(userId, ws);
     } catch (err) {
