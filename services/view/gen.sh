@@ -1,6 +1,5 @@
-npx buf generate lib/auth_proto/auth.proto
-./node_modules/.bin/proto-loader-gen-types \
---bytes=Array \
---grpcLib=@grpc/grpc-js \
---outDir=lib/chat_proto/ \
-lib/chat_proto/chat.proto
+npx buf generate lib/auth_proto/auth.proto && \
+mv lib/gen/* lib/auth_proto/ &&
+npx buf generate lib/chat_proto/chat.proto && \
+mv lib/gen/* lib/chat_proto/ && \
+rmdir lib/gen

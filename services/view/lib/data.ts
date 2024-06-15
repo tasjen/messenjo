@@ -1,10 +1,10 @@
-import * as chatClient from "@/lib/grpc-clients/chat";
 import { redirect } from "next/navigation";
-import { toDateMs } from "@/lib/utils";
+import { toHandledError, toDateMs } from "@/lib/utils";
 import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { chatClient } from "./grpc-clients/chat";
 
 export function getUserId(): string {
   const userId = headers().get("userId");
@@ -20,18 +20,16 @@ export async function fetchUserInfo(): Promise<User> {
   noStore();
   try {
     const userId = getUserId();
-    const res = await chatClient.getUserById({ userId: uuidParse(userId) });
+    const user = await chatClient.getUserById(
+      { userId: uuidParse(userId) },
+      { timeoutMs: 5000 }
+    );
     return User.parse({
+      ...user,
       id: userId,
-      username: res?.username,
-      pfp: res?.pfp,
     });
   } catch (err) {
-    if (err instanceof Error) {
-      console.error("fetchUserData error: ", err.message);
-    } else {
-      console.error("fetchUserData unknown error");
-    }
+    toHandledError(err);
     redirect("/error");
   }
 }
@@ -42,15 +40,13 @@ export async function fetchUserByUsername(
   noStore();
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
-    const res = await chatClient.getByUsername({ username });
-    if (!res?.id) {
-      return null;
-    }
-    return User.parse({ ...res, id: uuidStringify(res.id) });
+    const user = await chatClient.getUserByUsername(
+      { username },
+      { timeoutMs: 5000 }
+    );
+    return User.parse({ ...user, id: uuidStringify(user.id) });
   } catch (err) {
-    if (err instanceof Error) {
-      console.error("fetchUserByUsername error: ", err.message);
-    }
+    toHandledError(err);
     redirect("/error");
   }
 }
@@ -59,37 +55,30 @@ export async function fetchContacts(): Promise<Contact[]> {
   noStore();
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
-    const res = await chatClient.getContacts({
-      userId: uuidParse(getUserId()),
-    });
-    if (!res?.contacts) {
-      return [];
-    }
-    return res.contacts.map((e) =>
+    const { contacts } = await chatClient.getContacts(
+      {
+        userId: uuidParse(getUserId()),
+      },
+      { timeoutMs: 5000 }
+    );
+    return contacts.map((e) =>
       Contact.parse({
         ...e,
         groupId: e.groupId && uuidStringify(e.groupId),
-        userId: e.userId && uuidStringify(e.userId),
+        userId: e.userId.length && uuidStringify(e.userId),
         messages: e.lastMessage
           ? [
               {
                 id: e.lastMessage.id,
                 content: e.lastMessage.content,
-                sentAt: toDateMs({
-                  seconds: e.lastMessage.sentAt?.seconds,
-                  nanos: e.lastMessage.sentAt?.nanos,
-                }),
+                sentAt: toDateMs(e.lastMessage.sentAt),
               },
             ]
           : [],
       })
     );
   } catch (err) {
-    if (err instanceof Error) {
-      console.error("fetchContacts error: ", err.message);
-    } else {
-      console.error("fetchContacts unknown error");
-    }
+    toHandledError(err);
     redirect("/error");
   }
 }
@@ -98,29 +87,21 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
   noStore();
   // await new Promise((resolve) => setTimeout(resolve, 500));
   try {
-    const res = await chatClient.getMessages({
-      userId: uuidParse(getUserId()),
-      groupId: uuidParse(groupId),
-    });
-    if (!res?.messages) {
-      return [];
-    }
-    return res.messages.map((e) =>
+    const { messages } = await chatClient.getMessages(
+      {
+        userId: uuidParse(getUserId()),
+        groupId: uuidParse(groupId),
+      },
+      { timeoutMs: 5000 }
+    );
+    return messages.map((e) =>
       Message.parse({
         ...e,
-        sentAt: toDateMs({
-          seconds: e.sentAt?.seconds,
-          nanos: e.sentAt?.nanos,
-        }),
+        sentAt: toDateMs(e.sentAt),
       })
     );
   } catch (err) {
-    if (err instanceof Error) {
-      console.error("fetchMessages error: ", err.message);
-      console.log(err);
-    } else {
-      console.error("fetchMessages unknown error");
-    }
+    toHandledError(err);
     redirect("/error");
   }
 }

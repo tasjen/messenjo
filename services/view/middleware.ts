@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stringify as uuidStringify } from "uuid";
-import authClient from "@/lib/grpc-clients/auth";
+import { authClient } from "@/lib/grpc-clients/auth";
+import { toHandledError } from "@/lib/utils";
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname !== "/login") {
@@ -24,7 +25,7 @@ export async function middleware(req: NextRequest) {
       res.cookies.delete("new_user");
       return res;
     } catch (err) {
-      console.log(err);
+      toHandledError(err);
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }

@@ -1,17 +1,17 @@
 "use server";
 
-import * as chatClient from "@/lib/grpc-clients/chat";
 import { getUserId } from "@/lib/data";
 import { z } from "zod";
-import { isServiceError } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { toHandledError } from "./utils";
+import { chatClient } from "./grpc-clients/chat";
 
 export async function updateUser(username: string, pfp: string): Promise<void> {
   try {
     const userId = uuidParse(getUserId());
     await chatClient.updateUser({ userId, username, pfp });
   } catch (err) {
-    throw formattedError(err);
+    throw toHandledError(err);
   }
 }
 
@@ -27,7 +27,7 @@ export async function updateGroup(
       pfp,
     });
   } catch (err) {
-    throw formattedError(err);
+    throw toHandledError(err);
   }
 }
 
@@ -42,7 +42,7 @@ export async function addFriend(toUserId: string): Promise<string> {
     }
     return uuidStringify(res.groupId);
   } catch (err) {
-    throw formattedError(err);
+    throw toHandledError(err);
   }
 }
 
@@ -58,12 +58,9 @@ export async function createGroup(
       pfp,
       userIds: userIds.map((id) => uuidParse(id)),
     });
-    if (!res?.groupId) {
-      throw new Error("internal server error: `createGroup`");
-    }
     return uuidStringify(res.groupId);
   } catch (err) {
-    throw formattedError(err);
+    throw toHandledError(err);
   }
 }
 
@@ -72,39 +69,19 @@ export async function addMessage(
   content: string,
   sentAt: number
 ): Promise<number> {
-  // await new Promise((resolve) => setTimeout(resolve, 1000));
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
   try {
     const res = await chatClient.addMessage({
       userId: uuidParse(getUserId()),
       groupId: uuidParse(groupId),
       content,
       sentAt: {
-        seconds: Math.floor(sentAt / 1e3),
+        seconds: BigInt(Math.floor(sentAt / 1e3)),
         nanos: new Date(sentAt).getMilliseconds() * 1e6,
       },
     });
     return z.number().parse(res?.messageId);
   } catch (err) {
-    throw formattedError(err);
+    throw toHandledError(err);
   }
-}
-
-export async function resetUnreadCount(groupId: string): Promise<void> {
-  try {
-    await chatClient.resetUnreadCount({
-      groupId: uuidParse(groupId),
-      userId: uuidParse(getUserId()),
-    });
-  } catch (err) {
-    throw formattedError(err);
-  }
-}
-
-function formattedError(err: unknown): Error {
-  if (isServiceError(err)) {
-    return new Error(err.details);
-  } else if (err instanceof Error) {
-    return err;
-  }
-  return new Error("unknown server error");
 }

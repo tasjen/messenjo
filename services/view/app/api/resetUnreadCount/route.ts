@@ -1,5 +1,6 @@
-import * as chatClient from "@/lib/grpc-clients/chat";
+import { chatClient } from "@/lib/grpc-clients/chat";
 import { parse as uuidParse } from "uuid";
+import { toHandledError } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -9,18 +10,15 @@ export async function POST(req: Request) {
     const groupId = new URL(req.url).searchParams.get("groupId");
     if (!groupId) throw new Error("no 'groupId' searchParam");
 
-    await chatClient.resetUnreadCount({
-      groupId: uuidParse(groupId),
-      userId: uuidParse(userId),
-    });
+    await chatClient.resetUnreadCount(
+      {
+        groupId: uuidParse(groupId),
+        userId: uuidParse(userId),
+      },
+      { timeoutMs: 5000 }
+    );
   } catch (err) {
-    if (err instanceof Error) {
-      console.log(
-        `failed to resetUnreadCount from route handler: ${err.toString()}`
-      );
-    } else {
-      console.log(`unknown error from route handler: ${err}`);
-    }
+    toHandledError(err);
   }
   return new Response();
 }

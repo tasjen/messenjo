@@ -1,9 +1,4 @@
-import { ServiceError } from "@grpc/grpc-js";
 import { z } from "zod";
-
-export function isServiceError(err: unknown): err is ServiceError {
-  return z.object({ details: z.string() }).safeParse(err).success;
-}
 
 export const User = z.object({
   id: z.string(),
