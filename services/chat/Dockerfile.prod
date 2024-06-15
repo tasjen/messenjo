@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 RUN go mod verify
-RUN go build -o ./server ./cmd
+RUN go build ./cmd/server
 
 
 FROM gcr.io/distroless/base-debian12
