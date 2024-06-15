@@ -104,11 +104,7 @@ function storeReducer(state: State, action: Action): State {
                     ? [payload.message]
                     : payload.message.sentAt >= contact.messages[0].sentAt
                       ? [payload.message, ...contact.messages]
-                      : [
-                          contact.messages[0],
-                          payload.message,
-                          ...contact.messages.slice(1),
-                        ],
+                      : contact.messages.toSpliced(1, 0, payload.message),
                 unreadCount:
                   payload.message.fromUsername === state.user.username
                     ? 0
