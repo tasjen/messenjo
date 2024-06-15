@@ -9,7 +9,7 @@ import { chatClient } from "./grpc-clients/chat";
 export async function updateUser(username: string, pfp: string): Promise<void> {
   try {
     const userId = uuidParse(getUserId());
-    await chatClient.updateUser({ userId, username, pfp });
+    await chatClient.updateUser({ userId, username, pfp }, { timeoutMs: 5000 });
   } catch (err) {
     throw toHandledError(err);
   }
@@ -21,11 +21,14 @@ export async function updateGroup(
   pfp: string
 ): Promise<void> {
   try {
-    await chatClient.updateGroup({
-      groupId: uuidParse(groupId),
-      name,
-      pfp,
-    });
+    await chatClient.updateGroup(
+      {
+        groupId: uuidParse(groupId),
+        name,
+        pfp,
+      },
+      { timeoutMs: 5000 }
+    );
   } catch (err) {
     throw toHandledError(err);
   }
@@ -33,14 +36,14 @@ export async function updateGroup(
 
 export async function addFriend(toUserId: string): Promise<string> {
   try {
-    const res = await chatClient.addFriend({
-      fromUserId: uuidParse(getUserId()),
-      toUserId: uuidParse(toUserId),
-    });
-    if (!res?.groupId) {
-      throw new Error("internal server error: `addFriend`");
-    }
-    return uuidStringify(res.groupId);
+    const { groupId } = await chatClient.addFriend(
+      {
+        fromUserId: uuidParse(getUserId()),
+        toUserId: uuidParse(toUserId),
+      },
+      { timeoutMs: 5000 }
+    );
+    return uuidStringify(groupId);
   } catch (err) {
     throw toHandledError(err);
   }
@@ -53,12 +56,15 @@ export async function createGroup(
 ): Promise<string> {
   try {
     userIds.unshift(getUserId());
-    const res = await chatClient.createGroup({
-      groupName: name,
-      pfp,
-      userIds: userIds.map((id) => uuidParse(id)),
-    });
-    return uuidStringify(res.groupId);
+    const { groupId } = await chatClient.createGroup(
+      {
+        groupName: name,
+        pfp,
+        userIds: userIds.map((id) => uuidParse(id)),
+      },
+      { timeoutMs: 5000 }
+    );
+    return uuidStringify(groupId);
   } catch (err) {
     throw toHandledError(err);
   }
@@ -71,16 +77,33 @@ export async function addMessage(
 ): Promise<number> {
   // await new Promise((resolve) => setTimeout(resolve, 3000));
   try {
-    const res = await chatClient.addMessage({
-      userId: uuidParse(getUserId()),
-      groupId: uuidParse(groupId),
-      content,
-      sentAt: {
-        seconds: BigInt(Math.floor(sentAt / 1e3)),
-        nanos: new Date(sentAt).getMilliseconds() * 1e6,
+    const { messageId } = await chatClient.addMessage(
+      {
+        userId: uuidParse(getUserId()),
+        groupId: uuidParse(groupId),
+        content,
+        sentAt: {
+          seconds: BigInt(Math.floor(sentAt / 1e3)),
+          nanos: new Date(sentAt).getMilliseconds() * 1e6,
+        },
       },
-    });
-    return z.number().parse(res?.messageId);
+      { timeoutMs: 5000 }
+    );
+    return z.number().parse(messageId);
+  } catch (err) {
+    throw toHandledError(err);
+  }
+}
+
+export async function resetUnreadCount(groupId: string): Promise<void> {
+  try {
+    await chatClient.resetUnreadCount(
+      {
+        groupId: uuidParse(groupId),
+        userId: uuidParse(getUserId()),
+      },
+      { timeoutMs: 5000 }
+    );
   } catch (err) {
     throw toHandledError(err);
   }
