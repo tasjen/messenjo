@@ -1,5 +1,8 @@
 import { WebSocket } from "uWebSockets.js";
-import type { UserData } from ".";
+
+export type UserData = {
+  userId: string;
+};
 
 export class UserManager {
   // The `users` attribute is a Map where the keys are user IDs (stringified uuids)
@@ -10,8 +13,10 @@ export class UserManager {
     this.users = new Map();
   }
 
-  printUsers() {
-    console.log(this.users);
+  getNumUsers(): number {
+    let i = 0;
+    this.users.forEach((conns) => (i += conns.length));
+    return i;
   }
 
   getUser(userId: string): WebSocket<UserData>[] | null {
@@ -20,18 +25,13 @@ export class UserManager {
 
   addUser(userId: string, ws: WebSocket<UserData>): void {
     const conns = this.users.get(userId);
-    if (conns) {
-      conns.push(ws);
-    } else {
-      this.users.set(userId, [ws]);
-    }
+    if (conns) conns.push(ws);
+    else this.users.set(userId, [ws]);
   }
 
   removeUser(userId: string, ws: WebSocket<UserData>): void {
     const conns = this.users.get(userId);
-    if (!conns) {
-      return;
-    }
+    if (!conns) return;
     conns.splice(conns.indexOf(ws), 1);
     if (conns.length === 0) {
       this.users.delete(userId);

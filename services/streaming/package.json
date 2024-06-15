@@ -6,14 +6,28 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch ./src/index.ts",
     "dev-local": "tsx watch --env-file=.env.dev ./src/index.ts",
-    "pub": "tsx ./redis-pub.ts",
     "build": "tsc && node esbuild-script.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "dependencies": {
+    "@bufbuild/protobuf": "^1.10.0",
+    "@connectrpc/connect": "^1.4.0",
+    "@connectrpc/connect-node": "^1.4.0",
+    "cookie": "^0.6.0",
+    "pino": "^9.2.0",
+    "redis": "^4.6.13",
+    "uuid": "^9.0.1",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0",
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
+    "@bufbuild/buf": "^1.33.0",
+    "@bufbuild/protoc-gen-es": "^1.10.0",
+    "@connectrpc/protoc-gen-connect-es": "^1.4.0",
+    "@types/cookie": "^0.6.0",
     "@types/node": "^20.12.8",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
@@ -21,19 +35,8 @@
     "esbuild": "^0.21.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
-    "localtunnel": "^2.0.2",
     "prettier": "^3.2.5",
-    "tsx": "^4.9.1",
+    "tsx": "^4.15.5",
     "typescript": "^5.4.5"
-  },
-  "dependencies": {
-    "@grpc/grpc-js": "^1.10.7",
-    "@grpc/proto-loader": "^0.7.13",
-    "@types/cookie": "^0.6.0",
-    "cookie": "^0.6.0",
-    "redis": "^4.6.13",
-    "uuid": "^9.0.1",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0",
-    "zod": "^3.23.8"
   }
 }

@@ -43,13 +43,3 @@ try {
   console.error("failed to remove files: " + err.toString());
   process.exit();
 }
-
-// copy .proto files into the build directory
-try {
-  await fs.mkdir("./build/auth_proto");
-  await fs.mkdir("./build/chat_proto");
-  await fs.copyFile("./auth_proto/auth.proto", "./build/auth_proto/auth.proto");
-  await fs.copyFile("./chat_proto/chat.proto", "./build/chat_proto/chat.proto");
-} catch (err) {
-  console.error("failed to copy files: " + err.toString());
-}

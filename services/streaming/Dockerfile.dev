@@ -1,10 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
-
 COPY . .
 RUN npm install
-
-# required as uWebSocket.js uses glibc
+# gcompat is required as uWebSocket.js uses glibc
 RUN apk add gcompat
-
 CMD ["npm", "run", "dev"]
