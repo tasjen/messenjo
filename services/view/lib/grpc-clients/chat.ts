@@ -1,4 +1,4 @@
-import { Chat } from "@/lib/chat_proto/chat_connect";
+import { Chat } from "@/lib/gen/chat/chat_connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
 import { createPromiseClient } from "@connectrpc/connect";
 

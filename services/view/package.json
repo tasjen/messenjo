@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
+    "build": "buf generate && next build",
     "start": "next start -p 3001",
     "lint": "next lint"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "^1.9.0",
+    "@bufbuild/protobuf": "^1.10.0",
     "@connectrpc/connect": "^1.4.0",
     "@connectrpc/connect-node": "^1.4.0",
     "@connectrpc/connect-web": "^1.4.0",
@@ -41,9 +41,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.31.0",
-    "@bufbuild/protoc-gen-es": "^1.9.0",
-    "@connectrpc/protoc-gen-connect-es": "^1.4.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
