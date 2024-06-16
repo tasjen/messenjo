@@ -1,33 +1,44 @@
-FROM node:20-bookworm AS builder
+# alpine version
+FROM node:20-alpine AS base
+
+FROM base AS builder
 WORKDIR /app
 COPY . .
 RUN npm ci
+RUN apk --no-cache add curl
+RUN BIN="/usr/local/bin" && \
+VERSION="1.33.0" && \
+curl -sSL \
+"https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
+-o "${BIN}/buf" && \
+chmod +x "${BIN}/buf"
 RUN npm run build
 
-
-FROM gcr.io/distroless/nodejs20-debian12
+# running Streaming server using distroless image as a runner will
+# randomly cause "Invalid access of closed uWS.WebSocket/SSLWebSocket" error
+# when users connect to WebSocket
+FROM base
 WORKDIR /app
 COPY --from=builder /app/build .
-CMD ["./index.js"]
+# # required if using node-alpine as base image because uWebSocket.js uses glibc
+RUN apk --no-cache add gcompat
+CMD ["node", "./index.js"]
 
 
-# alpine version
 
-# FROM node:20-alpine AS base
-
-# FROM base AS builder
+# FROM node:20-bookworm AS builder
 # WORKDIR /app
 # COPY . .
 # RUN npm ci
+# RUN BIN="/usr/local/bin" && \
+# VERSION="1.33.0" && \
+# curl -sSL \
+# "https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
+# -o "${BIN}/buf" && \
+# chmod +x "${BIN}/buf"
 # RUN npm run build
 
-# FROM base
+# FROM gcr.io/distroless/nodejs20-debian12
 # WORKDIR /app
-# # required if using node-alpine as base image because uWebSocket.js uses glibc
-# RUN apk add gcompat
-# RUN addgroup --system --gid 1001 nodejs
-# RUN adduser --system --uid 1001 streaming
-# USER streaming
-# COPY --from=builder --chown=streaming:nodejs /app/build /app
-
-# CMD ["node", "/app/index.js"]
+# COPY --from=builder /app/build .
+# CMD ["./index.js"]

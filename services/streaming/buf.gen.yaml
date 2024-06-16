@@ -1,8 +1,15 @@
-version: v1
+# `buf generate`
+
+version: v2
+managed:
+  enabled: true
 plugins:
-  - plugin: es
-    opt: target=ts
+  - remote: buf.build/bufbuild/es:v1.10.0 # version must match @bufbuild/protobuf in package.json
     out: gen
-  - plugin: connect-es
-    opt: target=ts
+    opt:
+      - target=ts
+  - remote: buf.build/connectrpc/es:v1.4.0 # version must match @connectrpc/connect in package.json
     out: gen
+    opt:
+      - target=ts
+      - import_extension=none

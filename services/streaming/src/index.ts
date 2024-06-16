@@ -1,10 +1,4 @@
-import {
-  App,
-  HttpRequest,
-  HttpResponse,
-  WebSocket,
-  us_socket_context_t,
-} from "uWebSockets.js";
+import { App } from "uWebSockets.js";
 import { createClient } from "redis";
 import { authClient, chatClient } from "./grpc-clients";
 import { type UserData, UserManager } from "./user-manager";
@@ -24,116 +18,107 @@ const app = App();
 const userManager = new UserManager();
 
 app.ws<UserData>("/", {
-  idleTimeout: Infinity,
+  idleTimeout: 0, // cannot be greater than 960s, set this in nginx.conf instead
   sendPingsAutomatically: false,
   maxBackpressure: 1024,
   maxPayloadLength: 512,
-  maxLifetime: Infinity,
+  maxLifetime: 0, // cannot be greater than 240m, set this in nginx.conf instead
 
-  upgrade,
-  open,
-  close,
+  upgrade: async (res, req, ctx) => {
+    let isAborted = false;
+    res.onAborted(() => (isAborted = true));
+    const secWebSocketKey = req.getHeader("sec-websocket-key");
+    const secWebSocketProtocol = req.getHeader("sec-websocket-protocol");
+    const secWebSocketExtensions = req.getHeader("sec-websocket-extensions");
+    const cookies = cookie.parse(req.getHeader("cookie"));
+
+    try {
+      if (!cookies.auth_jwt) {
+        throw new Error("no token");
+      }
+      const { userId } = await authClient.verifyToken(
+        {
+          token: cookies.auth_jwt,
+        },
+        { timeoutMs: 5000 }
+      );
+      if (!userId.length) {
+        throw new Error("no `res.userId` returned from verifyToken");
+      }
+      if (isAborted) {
+        throw new Error(
+          `client disconnected before upgrading, userId: ${uuidStringify(userId)}`
+        );
+      }
+
+      res.cork(() => {
+        res.upgrade(
+          {
+            userId: uuidStringify(userId),
+          },
+          secWebSocketKey,
+          secWebSocketProtocol,
+          secWebSocketExtensions,
+          ctx
+        );
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`failed to upgrade: ${err.message}`);
+      } else {
+        logger.error(`unknown error from 'upgrade': ${err}`);
+      }
+    }
+  },
+  open: async (ws) => {
+    const { userId } = ws.getUserData();
+    let topics: string[];
+    try {
+      // if the user is already connecting from other devices
+      // then get topics from that connection
+      const conns = userManager.getUser(userId);
+      if (conns) {
+        topics = conns[0].getTopics();
+      } else {
+        const { groupIds } = await chatClient.getGroupIds(
+          {
+            userId: uuidParse(userId),
+          },
+          { timeoutMs: 5000 }
+        );
+        topics = groupIds.map((e) => uuidStringify(e)).concat(userId);
+      }
+      for (const t of topics) {
+        ws.subscribe(t);
+      }
+      userManager.addUser(userId, ws);
+      logger.info(
+        `userId: ${userId} connected, total user online: ${userManager.getNumUsers()}`
+      );
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(`failed to open WebSockets: ${err.message}`);
+      } else {
+        logger.error(`unknown error from 'open': ${err}`);
+      }
+    }
+  },
+  close: (ws) => {
+    const { userId } = ws.getUserData();
+    userManager.removeUser(userId, ws);
+    logger.info(
+      `userId: ${userId} disconnected, total user online: ${userManager.getNumUsers()}`
+    );
+  },
 });
 app.listen(Number(PORT), (listenSocket) => {
   if (listenSocket) {
     console.log(`Listening to port: ${PORT}`);
+    subToMessageCh();
   } else {
     return console.log(`Failed to listen to port: ${PORT}`);
   }
 });
-
-async function upgrade(
-  res: HttpResponse,
-  req: HttpRequest,
-  ctx: us_socket_context_t
-) {
-  let isAborted = false;
-  res.onAborted(() => (isAborted = true));
-  const secWebSocketKey = req.getHeader("sec-websocket-key");
-  const secWebSocketProtocol = req.getHeader("sec-websocket-protocol");
-  const secWebSocketExtensions = req.getHeader("sec-websocket-extensions");
-  const cookies = cookie.parse(req.getHeader("cookie"));
-
-  try {
-    if (!cookies.auth_jwt) {
-      throw new Error("no token");
-    }
-    const { userId } = await authClient.verifyToken(
-      {
-        token: cookies.auth_jwt,
-      },
-      { timeoutMs: 5000 }
-    );
-    if (!userId.length) {
-      throw new Error("no `res.userId` returned from verifyToken");
-    }
-    if (isAborted) {
-      throw new Error(
-        `client disconnected before upgrading, userId: ${uuidStringify(userId)}`
-      );
-    }
-
-    res.cork(() => {
-      res.upgrade(
-        {
-          userId: uuidStringify(userId),
-        },
-        secWebSocketKey,
-        secWebSocketProtocol,
-        secWebSocketExtensions,
-        ctx
-      );
-    });
-  } catch (err) {
-    if (err instanceof Error) {
-      logger.error(`failed to upgrade: ${err.message}`);
-    } else {
-      logger.error(`unknown error from 'upgrade': ${err}`);
-    }
-  }
-}
-
-async function open(ws: WebSocket<UserData>) {
-  const { userId } = ws.getUserData();
-  let topics: string[];
-  try {
-    // if the user is already connecting from other devices
-    // then get topics from that connection
-    const conns = userManager.getUser(userId);
-    if (conns) {
-      topics = conns[0].getTopics();
-    } else {
-      const { groupIds } = await chatClient.getGroupIds(
-        {
-          userId: uuidParse(userId),
-        },
-        { timeoutMs: 5000 }
-      );
-      topics = groupIds.map((e) => uuidStringify(e)).concat(userId);
-    }
-    for (const t of topics) {
-      ws.subscribe(t);
-    }
-    userManager.addUser(userId, ws);
-    logger.info(
-      `userId: ${userId} connected, total user online: ${userManager.getNumUsers()}`
-    );
-  } catch (err) {
-    if (err instanceof Error) {
-      logger.error(`failed to open WebSockets: ${err.message}`);
-    } else {
-      logger.error(`unknown error from 'open': ${err}`);
-    }
-  }
-}
-
-function close(ws: WebSocket<UserData>) {
-  const { userId } = ws.getUserData();
-  userManager.removeUser(userId, ws);
-  logger.info(
-    `userId: ${userId} disconnected, total user online: ${userManager.getNumUsers()}`
-  );
-}
 
 async function subToMessageCh() {
   await new Promise((resolve) => setTimeout(resolve, subDelay * 1e3));
@@ -179,5 +164,3 @@ function onAction(actionJson: string) {
       break;
   }
 }
-
-subToMessageCh();

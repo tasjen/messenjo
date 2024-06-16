@@ -1,6 +1,6 @@
 import { createPromiseClient } from "@connectrpc/connect";
-import { Auth } from "../auth_proto/auth_connect";
-import { Chat } from "../chat_proto/chat_connect";
+import { Auth } from "../gen/auth/auth_connect";
+import { Chat } from "../gen/chat/chat_connect";
 import { createGrpcTransport } from "@connectrpc/connect-node";
 
 export const authClient = createPromiseClient(
