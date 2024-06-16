@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
+	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/gen/chat"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
 	empty "google.golang.org/protobuf/types/known/emptypb"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"

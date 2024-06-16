@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	auth_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto"
-	chat_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/chat_proto"
+	auth_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/gen/auth"
+	chat_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/gen/chat"
 	"github.com/tasjen/message-app-fullstack/services/auth/internal/models"
 	oa2 "github.com/tasjen/message-app-fullstack/services/auth/internal/oauth2"
 )

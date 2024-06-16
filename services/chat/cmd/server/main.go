@@ -10,7 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/chat_proto"
+	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/gen/chat"
 	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
 	"google.golang.org/grpc"
 )
