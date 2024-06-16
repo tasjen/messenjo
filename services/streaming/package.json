@@ -1,11 +1,11 @@
 {
   "name": "streaming",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch ./src/index.ts",
-    "dev-local": "tsx watch --env-file=.env.dev ./src/index.ts",
+    "dev": "tsx watch ./src/server.ts",
+    "dev-local": "tsx watch --env-file=.env.dev ./src/server.ts",
     "build": "buf generate && tsc && node esbuild-script.mjs"
   },
   "keywords": [],

@@ -22,7 +22,7 @@ WORKDIR /app
 COPY --from=builder /app/build .
 # # required if using node-alpine as base image because uWebSocket.js uses glibc
 RUN apk --no-cache add gcompat
-CMD ["node", "./index.js"]
+CMD ["node", "./server.js"]
 
 
 

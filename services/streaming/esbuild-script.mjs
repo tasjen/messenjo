@@ -4,7 +4,7 @@ import path from "path";
 
 try {
   await build({
-    entryPoints: ["./tsc_out/src/index.js"],
+    entryPoints: ["./tsc_out/src/server.js"],
     outdir: "./build",
     platform: "node",
     loader: {
