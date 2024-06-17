@@ -6,7 +6,7 @@ import { createGrpcTransport } from "@connectrpc/connect-node";
 export const authClient = createPromiseClient(
   Auth,
   createGrpcTransport({
-    baseUrl: "http://grpc-gateway:3000",
+    baseUrl: "http://envoy:3000",
     httpVersion: "2",
   })
 );

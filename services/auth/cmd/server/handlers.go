@@ -9,9 +9,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	auth_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/gen/auth"
-	chat_pb "github.com/tasjen/message-app-fullstack/services/auth/internal/gen/chat"
-	"github.com/tasjen/message-app-fullstack/services/auth/internal/models"
+	auth_pb "github.com/tasjen/messenjo/services/auth/internal/gen/auth"
+	chat_pb "github.com/tasjen/messenjo/services/auth/internal/gen/chat"
+	"github.com/tasjen/messenjo/services/auth/internal/models"
 )
 
 type jwtClaims struct {

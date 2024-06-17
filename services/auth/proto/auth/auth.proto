@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/tasjen/message-app-fullstack/services/auth/internal/auth_proto";
+option go_package = "github.com/tasjen/messenjo/services/auth/internal/gen/auth";
 
 service Auth {
   rpc VerifyToken (VerifyTokenReq) returns (VerifyTokenRes) {}

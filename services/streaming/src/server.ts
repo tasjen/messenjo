@@ -114,13 +114,13 @@ app.ws<UserData>("/", {
 app.listen(Number(PORT), (listenSocket) => {
   if (listenSocket) {
     console.log(`Listening to port: ${PORT}`);
-    subToMessageCh();
+    subToRedis();
   } else {
     return console.log(`Failed to listen to port: ${PORT}`);
   }
 });
 
-async function subToMessageCh() {
+async function subToRedis() {
   await new Promise((resolve) => setTimeout(resolve, subDelay * 1e3));
   try {
     const subClient = createClient({ url: REDIS_URI });
@@ -129,16 +129,16 @@ async function subToMessageCh() {
       `Connected to redis server on port: ${REDIS_URI?.split(":").slice(-1)[0]}`
     );
     await subClient.subscribe("main", onAction);
-    console.log(`Subscribing to pub/sub channel: "main"`);
+    console.log(`Subscribing to redis channel: "main"`);
   } catch (err) {
     if (err instanceof Error) {
       console.log(`failed to subscribe to channel "main": ${err.message}`);
     } else {
-      console.log(`unknown error from 'subToMessageCh': ${err}`);
+      console.log(`unknown error from 'subToredis': ${err}`);
     }
     subDelay *= 3;
     console.log(`retrying in ${subDelay} seconds`);
-    subToMessageCh();
+    subToRedis();
   }
 }
 

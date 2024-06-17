@@ -1,4 +1,4 @@
-shell_chat=docker exec -it message-app-chat-dev /bin/sh -c
+shell_chat=docker exec -it messenjo-chat-dev /bin/sh -c
 migration_command_path=/app/internal/database/migrations/migrate.sh
 
 dev:

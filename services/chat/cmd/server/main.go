@@ -10,8 +10,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	pb "github.com/tasjen/message-app-fullstack/services/chat/internal/gen/chat"
-	"github.com/tasjen/message-app-fullstack/services/chat/internal/models"
+	pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
+	"github.com/tasjen/messenjo/services/chat/internal/models"
 	"google.golang.org/grpc"
 )
 
@@ -49,7 +49,7 @@ func main() {
 		members:  models.NewMemberModel(),
 		messages: models.NewMessageModel(),
 		pubClient: redis.NewClient(&redis.Options{
-			Addr: "messagech:6379",
+			Addr: "redis:6379",
 		}),
 	}
 	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))

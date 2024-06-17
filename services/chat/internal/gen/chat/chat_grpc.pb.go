@@ -12,7 +12,7 @@
 // - protoc             (unknown)
 // source: chat/chat.proto
 
-package chat_proto
+package chat
 
 import (
 	context "context"

@@ -1,6 +1,7 @@
 services:
   view:
-    container_name: message-app-view-dev
+    image: messenjo-view:dev
+    container_name: messenjo-view-dev
     environment:
       - HOST=${HOST}
     build:
@@ -11,10 +12,11 @@ services:
       - /app/node_modules
       - /app/.next
     depends_on:
-      - grpc-gateway
+      - envoy
 
   streaming:
-    container_name: message-app-streaming-dev
+    image: messenjo-streaming:dev
+    container_name: messenjo-streaming-dev
     build:
       context: ./services/streaming
       dockerfile: Dockerfile.dev
@@ -24,10 +26,11 @@ services:
     env_file:
       - ./services/streaming/.env.dev
     depends_on:
-      - messagech
+      - redis
 
   auth:
-    container_name: message-app-auth-dev
+    image: messenjo-auth:dev
+    container_name: messenjo-auth-dev
     build:
       context: ./services/auth
       dockerfile: Dockerfile.dev
@@ -37,7 +40,8 @@ services:
       - ./services/auth/.env.dev
 
   chat:
-    container_name: message-app-chat-dev
+    image: messenjo-chat:dev
+    container_name: messenjo-chat-dev
     user: ${MY_UID}:${MY_GID} # to make the host be able to modify or delete files created in the container
     build:
       context: ./services/chat
@@ -51,7 +55,7 @@ services:
 
   chatdb:
     image: postgres:16-alpine
-    container_name: message-app-chatdb-dev
+    container_name: messenjo-chatdb-dev
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: dev
@@ -59,33 +63,35 @@ services:
     volumes:
       - ./services/chatdb/data/dev:/var/lib/postgresql/data
 
-  messagech:
+  redis:
     image: ghcr.io/microsoft/garnet-alpine
-    container_name: message-app-messagech-dev
+    container_name: messenjo-redis-dev
+    build:
+      context: ./services/redis
 
-  reverse-proxy:
+  nginx:
     image: nginx:stable-alpine
-    container_name: message-app-reverse-proxy-dev
+    container_name: messenjo-nginx-dev
     volumes:
-      - ./services/reverse-proxy/nginx.conf.dev:/etc/nginx/nginx.conf:ro
+      - ./services/nginx/nginx.conf.dev:/etc/nginx/nginx.conf:ro
     ports:
       - 3000:80
     depends_on:
       - auth
       - view
 
-  grpc-gateway:
+  envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
-    container_name: message-app-grpc-gateway-dev
+    container_name: messenjo-envoy-dev
     volumes:
-      - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
     attach: false
     depends_on:
       - auth
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: message-app-pgadmin-dev
+    container_name: messenjo-pgadmin-dev
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev

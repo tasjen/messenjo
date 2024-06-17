@@ -1,0 +1,36 @@
+todo:
+ - View: Refactor error handlings. Choose custom error messages in the grpc-client file (reject(...))
+          , then just log it when actions.ts or data.ts or whatever catch a ServiceError.
+          Or create custom errors and check err instanceof ...
+ - View & Streaming: Refactor gRPC client methods promisifier
+ - All: Use Taskfile instead of Makefile
+ - Streaming: Remove the Class
+
+ssh:
+ssh -i messenjo.pem ec2-user@54.255.204.69
+
+install docker:
+sudo yum update -y
+sudo yum install docker -y
+sudo systemctl start docker
+sudo usermod -a -G docker $(whoami)
+newgrp docker
+
+install docker-compose:
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} && \
+VERSION="2.27.1" && \
+mkdir -p $DOCKER_CONFIG/cli-plugins && \
+curl -SL "https://github.com/docker/compose/releases/download/v${VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+-o $DOCKER_CONFIG/cli-plugins/docker-compose && \
+docker compose version
+
+
+install make:
+sudo yum install make -y
+
+move code to ec2:
+zip -qr messenjo-prod.zip services Makefile docker-compose.prod.yml -x \
+"*node_modules*" "*tmp*" "*gen/*" && \
+scp -i messenjo.pem messenjo-prod.zip \
+ec2-user@54.255.204.69:/home/ec2-user/ &&
+rm messenjo-prod.zip

@@ -1,27 +1,29 @@
 services:
   view:
-    container_name: message-app-view-prod
+    image: messenjo-view:prod
+    container_name: messenjo-view-prod
     environment:
       - HOST=${HOST}
     build:
       context: ./services/view
       dockerfile: Dockerfile.prod
     depends_on:
-      - grpc-gateway
+      - envoy
 
   streaming:
-    container_name: message-app-streaming-prod
+    image: messenjo-streaming:prod
+    container_name: messenjo-streaming-prod
     build:
       context: ./services/streaming
       dockerfile: Dockerfile.prod
     env_file:
       - ./services/streaming/.env.prod
     depends_on:
-      - messagech
+      - redis
 
   auth:
-    # image: message-app-auth-dev
-    container_name: message-app-auth-prod
+    image: messenjo-auth:prod
+    container_name: messenjo-auth-prod
     environment:
       - HOST=${HOST}
     build:
@@ -31,23 +33,23 @@ services:
       - ./services/auth/.env.prod
 
   chat:
-    # image: message-app-chat-dev
-    container_name: message-app-chat-prod
+    image: messenjo-chat:prod
+    container_name: messenjo-chat-prod
     build:
       context: ./services/chat
       dockerfile: Dockerfile.prod
     env_file:
       - ./services/chat/.env.prod
 
-  messagech:
+  redis:
     image: ghcr.io/microsoft/garnet-alpine
-    container_name: message-app-messagech-prod
+    container_name: messenjo-redis-prod
 
-  reverse-proxy:
+  nginx:
     image: nginx:stable-alpine
-    container_name: message-app-reverse-proxy-prod
+    container_name: messenjo-nginx-prod
     volumes:
-      - ./services/reverse-proxy/nginx.conf.prod:/etc/nginx/nginx.conf:ro
+      - ./services/nginx/nginx.conf.prod:/etc/nginx/nginx.conf:ro
     ports:
       - 80:80
       - 443:443
@@ -55,18 +57,18 @@ services:
       - auth
       - view
 
-  grpc-gateway:
+  envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
-    container_name: message-app-grpc-gateway-prod
+    container_name: messenjo-envoy-prod
     volumes:
-      - ./services/grpc-gateway/envoy.yaml:/etc/envoy/envoy.yaml
+      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
     attach: false
     depends_on:
       - auth
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: message-app-pgadmin-prod
+    container_name: messenjo-pgadmin-prod
     environment:
       PGADMIN_DEFAULT_EMAIL: prod@prod.com
       PGADMIN_DEFAULT_PASSWORD: prod
