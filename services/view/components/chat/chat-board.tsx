@@ -24,11 +24,13 @@ export default function ChatBoard(props: Props) {
   const contact = store.contacts.find((e) => e.groupId === params.groupId);
 
   useEffect(() => {
-    // have to add some delay as some users experience a bug
-    // where `store.loadMessages` failed to add `props.messages`
-    // to the contact, resulting in ChatBoard only show one
-    // message (which is the lastMessage fetched from ContactList)
-    setTimeout(() => store.loadMessages(props.messages), 500);
+    // cannot loadMessages in a useEffect with empty dependency array
+    // as it randomly makes some users fail to render messages UI
+    // (render only one message which is the lastMessage)
+    store.loadMessages(props.messages);
+  }, [contact?.messagesLoaded]);
+
+  useEffect(() => {
     return () => {
       // This callback will be invoke on component mount/unmount.
       // It resets the unread counts on both client and server of
@@ -39,11 +41,11 @@ export default function ChatBoard(props: Props) {
       // chat room is not zero. The unreadCount of the last chat room
       // that the user has visited before closing the page will be
       // reset by onbeforeunload event in ContactListClient.
+      store.resetUnreadCount();
       if (contact && contact.unreadCount !== 0) {
         actions
           .resetUnreadCount(params.groupId)
           .catch((err) => toast(err.message));
-        store.resetUnreadCount();
       }
     };
   }, []);
