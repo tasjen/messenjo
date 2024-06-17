@@ -44,6 +44,7 @@ export async function fetchUserByUsername(
       { username },
       { timeoutMs: 5000 }
     );
+    if (!user.username) return null;
     return User.parse({ ...user, id: uuidStringify(user.id) });
   } catch (err) {
     toHandledError(err);
