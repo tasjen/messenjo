@@ -4,7 +4,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
-import { chatClient } from "./grpc-clients/chat";
+import { chatClient } from "./grpc-clients/node";
 
 export function getUserId(): string {
   const userId = headers().get("userId");

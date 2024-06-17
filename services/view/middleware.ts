@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stringify as uuidStringify } from "uuid";
-import { authClient } from "@/lib/grpc-clients/auth";
+import { authClient } from "@/lib/grpc-clients/web";
 import { toHandledError } from "@/lib/utils";
 
 export async function middleware(req: NextRequest) {

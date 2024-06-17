@@ -4,7 +4,7 @@ import { getUserId } from "@/lib/data";
 import { z } from "zod";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { toHandledError } from "./utils";
-import { chatClient } from "./grpc-clients/chat";
+import { chatClient } from "./grpc-clients/node";
 
 export async function updateUser(username: string, pfp: string): Promise<void> {
   try {

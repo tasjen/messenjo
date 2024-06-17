@@ -1,4 +1,4 @@
-import { chatClient } from "@/lib/grpc-clients/chat";
+import { chatClient } from "@/lib/grpc-clients/node";
 import { parse as uuidParse } from "uuid";
 import { toHandledError } from "@/lib/utils";
 
