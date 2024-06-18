@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
 
-	chatConn, err := grpc.Dial("chat:3000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	chatConn, err := grpc.NewClient("chat:3000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
