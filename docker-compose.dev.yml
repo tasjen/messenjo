@@ -94,6 +94,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: messenjo-pgadmin-dev
+    profiles:
+      - pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev

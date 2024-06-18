@@ -9,7 +9,7 @@ dotenv: ["./services/chat/.env.dev", "./services/chat/.env.prod"]
 tasks:
   dev:
     cmds:
-      - docker compose -f docker-compose.dev.yml up {{.ARGS}} --scale pgadmin=0
+      - docker compose -f docker-compose.dev.yml up {{.ARGS}}
     env:
       HOST: localhost:3000
       MY_UID:
@@ -18,7 +18,7 @@ tasks:
         sh: id -g
   prod:
     cmds:
-      - docker compose -f docker-compose.prod.yml up {{.ARGS}} --scale pgadmin=0
+      - docker compose -f docker-compose.prod.yml up {{.ARGS}}
     env:
       HOST:
         sh: >
@@ -43,6 +43,17 @@ tasks:
           docker compose -f $DEV_COMPOSE down {{.ARGS}}
         else
           docker compose -f $PROD_COMPOSE down {{.ARGS}}
+        fi
+  pgadmin:
+    cmds:
+      - |
+        DEV_COMPOSE=docker-compose.dev.yml
+        PROD_COMPOSE=docker-compose.prod.yml
+        if [ -e $DEV_COMPOSE ]
+        then
+          docker compose -f $DEV_COMPOSE up pgadmin
+        else
+          docker compose -f $PROD_COMPOSE up pgadmin
         fi
 
   # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')

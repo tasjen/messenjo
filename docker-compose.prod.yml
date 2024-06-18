@@ -69,6 +69,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: messenjo-pgadmin-prod
+    profiles:
+      - pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: prod@prod.com
       PGADMIN_DEFAULT_PASSWORD: prod
