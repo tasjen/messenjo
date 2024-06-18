@@ -5,9 +5,7 @@ todo:
  - View & Streaming: Refactor gRPC client methods promisifier
  - All: Use Taskfile instead of Makefile
  - Streaming: Remove the Class
-
-ssh:
-ssh -i messenjo.pem ec2-user@54.255.204.69
+ - All: implement graceful shutdown
 
 install docker:
 sudo yum update -y
@@ -16,21 +14,38 @@ sudo systemctl start docker
 sudo usermod -a -G docker $(whoami)
 newgrp docker
 
-install docker-compose:
+install compose:
 DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} && \
 VERSION="2.27.1" && \
 mkdir -p $DOCKER_CONFIG/cli-plugins && \
-curl -SL "https://github.com/docker/compose/releases/download/v${VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
+curl -SL "https://github.com/docker/compose/releases/download/v$VERSION/docker-compose-$(uname -s)-$(uname -m)" \
 -o $DOCKER_CONFIG/cli-plugins/docker-compose && \
 docker compose version
 
 
-install make:
-sudo yum install make -y
+install task:
+sh -c "$(curl -L https://taskfile.dev/install.sh)" -- -d && \
+sudo mv ./bin/task /usr/local/bin/task && \
+sudo chmod +x /usr/local/bin/task
 
-move code to ec2:
-zip -qr messenjo-prod.zip services Makefile docker-compose.prod.yml -x \
-"*node_modules*" "*tmp*" "*gen/*" && \
-scp -i messenjo.pem messenjo-prod.zip \
-ec2-user@54.255.204.69:/home/ec2-user/ &&
-rm messenjo-prod.zip
+install task completion: #didn't work
+FILE_SRC="$(eval echo ~$USER)/.local/task.bash"; \
+curl -L https://github.com/go-task/task/blob/main/completion/bash/task.bash > $FILE_SRC && \
+sudo chmod +x $FILE_SRC && \
+echo "source $FILE_SRC" >> ~/.bash_profile
+
+
+install go-migrate:
+TMP_DIR="tmp-go-migrate"
+VERSION="4.17.1" \
+OS=$(uname -s) ARCH=$(uname -m)
+if [ "$ARCH" == "x86_64" ]; then
+  ARCH="386"
+fi
+mkdir ~/TMP_DIR && \
+cd ~/TMP_DIR && \
+curl -L \
+"https://github.com/golang-migrate/migrate/releases/download/v$VERSION/migrate.$OS-$ARCH.tar.gz" | tar xvz && \
+sudo chmod +x migrate
+sudo mv migrate /usr/local/bin/migrate
+cd .. && rm -rf TMP_DIR

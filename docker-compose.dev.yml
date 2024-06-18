@@ -62,6 +62,8 @@ services:
       POSTGRES_PASSWORD: dev
     volumes:
       - ./services/chatdb/data/dev:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
 
   redis:
     image: ghcr.io/microsoft/garnet-alpine
