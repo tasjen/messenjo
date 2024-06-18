@@ -74,7 +74,7 @@ tasks:
     cmds:
       - >
         zip -qr messenjo-prod.zip services Taskfile.yml docker-compose.prod.yml
-        -x "*node_modules*" "*tmp*" "*gen/*" "*.dev*"
+        -x "*node_modules*" "*tmp*" "*gen/*" "*.dev*" "*chatdb/data/*"
       - >
         scp -i messenjo.pem messenjo-prod.zip
         ec2-user@{{.EC2_HOST}}:/home/ec2-user/
