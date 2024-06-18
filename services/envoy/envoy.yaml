@@ -21,12 +21,10 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/" }
+                        - match: { prefix: "/messenjo.Auth" }
                           route:
-                            cluster: service_0
+                            cluster: auth_service
                             timeout: 0s
-                            max_stream_duration:
-                              grpc_timeout_header_max: 0s
                       cors:
                         allow_origin_string_match:
                           - prefix: "*"
@@ -42,8 +40,8 @@ static_resources:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-    - name: service_0
-      connect_timeout: 0.25s
+    - name: auth_service
+      connect_timeout: 1.25s
       type: logical_dns
       # HTTP/2 support
       typed_extension_protocol_options:
@@ -53,7 +51,7 @@ static_resources:
             http2_protocol_options: {}
       lb_policy: round_robin
       load_assignment:
-        cluster_name: cluster_0
+        cluster_name: auth_service
         endpoints:
           - lb_endpoints:
               - endpoint:

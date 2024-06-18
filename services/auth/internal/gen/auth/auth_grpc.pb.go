@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	Auth_VerifyToken_FullMethodName = "/Auth/VerifyToken"
+	Auth_VerifyToken_FullMethodName = "/messenjo.Auth/VerifyToken"
 )
 
 // AuthClient is the client API for Auth service.
@@ -97,7 +97,7 @@ func _Auth_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Auth_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Auth",
+	ServiceName: "messenjo.Auth",
 	HandlerType: (*AuthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

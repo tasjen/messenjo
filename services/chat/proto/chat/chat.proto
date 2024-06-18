@@ -1,12 +1,5 @@
-// go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.1
-// go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
-// export PATH="$PATH:$(go env GOPATH)/bin"
-
-// update empty and timestamp imports to
-// 	empty "google.golang.org/protobuf/types/known/emptypb"
-//	timestamp "google.golang.org/protobuf/types/known/timestamppb"
-
 syntax = "proto3";
+package messenjo;
 option go_package = "github.com/tasjen/messenjo/services/chat/internal/gen/chat";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";

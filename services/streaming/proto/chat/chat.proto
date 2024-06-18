@@ -1,4 +1,5 @@
 syntax = "proto3";
+package messenjo;
 
 service Chat {
   rpc GetGroupIds (GetGroupIdsReq) returns (GetGroupIdsRes) {}

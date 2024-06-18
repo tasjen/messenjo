@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	Chat_CreateUser_FullMethodName = "/Chat/CreateUser"
+	Chat_CreateUser_FullMethodName = "/messenjo.Chat/CreateUser"
 )
 
 // ChatClient is the client API for Chat service.
@@ -97,7 +97,7 @@ func _Chat_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(int
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Chat_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Chat",
+	ServiceName: "messenjo.Chat",
 	HandlerType: (*ChatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

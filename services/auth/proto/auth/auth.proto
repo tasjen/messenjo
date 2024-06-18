@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+package messenjo;
 option go_package = "github.com/tasjen/messenjo/services/auth/internal/gen/auth";
 
 service Auth {
