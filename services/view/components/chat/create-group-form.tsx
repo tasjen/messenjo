@@ -3,19 +3,20 @@
 import { useStore } from "@/lib/stores/client-store";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
 import { FriendContact, GroupContact } from "@/lib/schema";
-import * as actions from "@/lib/actions";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { chatClient } from "@/lib/grpc-clients/web";
 
 export default function CreateGroupForm() {
   const store = useStore();
-  const [selected, setSelected] = useState<string[]>([]);
+  const [userIds, setUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [pfp, setPfp] = useState("");
   const [errMessage, setErrMessage] = useState("");
@@ -23,13 +24,20 @@ export default function CreateGroupForm() {
 
   async function handleSubmit(): Promise<void> {
     try {
-      const groupId = await actions.createGroup(groupName, pfp, selected);
+      const { groupId } = await chatClient.createGroup(
+        {
+          groupName,
+          pfp,
+          userIds: [store.user.id, ...userIds].map((id) => uuidParse(id)),
+        },
+        { timeoutMs: 5000 }
+      );
       const createdGroup = GroupContact.parse({
         type: "group",
-        groupId,
+        groupId: uuidStringify(groupId),
         name: groupName,
         pfp,
-        memberCount: selected.length + 1,
+        memberCount: userIds.length + 1,
       });
       store.addContact(createdGroup);
       toast(
@@ -41,7 +49,7 @@ export default function CreateGroupForm() {
           },
         }
       );
-      setSelected([]);
+      setUserIds([]);
       setGroupName("");
       setPfp("");
       setErrMessage("");
@@ -98,8 +106,8 @@ export default function CreateGroupForm() {
         </div>
         <MultiSelect
           options={options}
-          selected={selected}
-          onChange={setSelected}
+          selected={userIds}
+          onChange={setUserIds}
         />
       </Label>
       <Button className="flex-grow-0">Submit</Button>

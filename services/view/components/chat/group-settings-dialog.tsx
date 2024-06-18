@@ -14,9 +14,10 @@ import clsx from "clsx";
 import { Button } from "../ui/button";
 import { useStore } from "@/lib/stores/client-store";
 import { useParams } from "next/navigation";
-import * as actions from "@/lib/actions";
 import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";
+import { chatClient } from "@/lib/grpc-clients/web";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 
 type Props = {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
   const currentSettings = store.contacts.find(
     (contact) => contact.groupId === params.groupId
   ) as GroupContact;
-  const [groupName, setGroupName] = useState(currentSettings?.name);
+  const [name, setName] = useState(currentSettings?.name);
   const [pfp, setPfp] = useState(currentSettings?.pfp);
   const [errMessage, setErrMessage] = useState("");
 
@@ -41,10 +42,17 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
 
   async function handleSubmit(): Promise<void> {
     try {
-      await actions.updateGroup(params.groupId, groupName, pfp);
+      await chatClient.updateGroup(
+        {
+          groupId: uuidParse(params.groupId),
+          name,
+          pfp,
+        },
+        { timeoutMs: 5000 }
+      );
       const updatedGroup: GroupContact = {
         ...currentSettings,
-        name: groupName,
+        name: name,
         pfp,
       };
       store.setGroup(updatedGroup);
@@ -62,7 +70,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
       open={isOpen}
       onOpenChange={(change) => {
         setIsOpen(change);
-        setGroupName(currentSettings.name);
+        setName(currentSettings.name);
         setPfp(currentSettings.pfp);
         setErrMessage("");
       }}
@@ -76,8 +84,8 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
             <div className="mb-2 font-bold">Group name</div>
             <Input
               autoComplete="off"
-              value={groupName}
-              onChange={({ target: { value } }) => setGroupName(value)}
+              value={name}
+              onChange={({ target: { value } }) => setName(value)}
             />
           </Label>
           <Label>
@@ -88,10 +96,8 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
             <div className="flex gap-2 items-center">
               <Avatar className="self-center h-20 w-20">
                 <AvatarImage src={pfp} alt="pfp preview" />
-                <AvatarFallback
-                  className={clsx(groupName !== "" && "text-3xl")}
-                >
-                  {groupName ? groupName[0] : "preview"}
+                <AvatarFallback className={clsx(name !== "" && "text-3xl")}>
+                  {name ? name[0] : "preview"}
                 </AvatarFallback>
               </Avatar>
               <Input

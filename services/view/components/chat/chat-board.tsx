@@ -10,8 +10,10 @@ import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
 import { ScrollArea } from "../ui/scroll-area";
-import * as actions from "@/lib/actions";
 import { toast } from "sonner";
+import { chatClient } from "@/lib/grpc-clients/web";
+import { parse as uuidParse } from "uuid";
+
 type Props = {
   messages: Message[];
 };
@@ -43,8 +45,11 @@ export default function ChatBoard(props: Props) {
       // reset by onbeforeunload event in ContactListClient.
       store.resetUnreadCount();
       if (contact && contact.unreadCount !== 0) {
-        actions
-          .resetUnreadCount(params.groupId)
+        chatClient
+          .resetUnreadCount(
+            { groupId: uuidParse(params.groupId) },
+            { timeoutMs: 5000 }
+          )
           .catch((err) => toast(err.message));
       }
     };

@@ -1,0 +1,15 @@
+syntax = "proto3";
+package messenjo;
+option go_package = "github.com/tasjen/messenjo/services/auth/internal/gen/auth";
+
+service Auth {
+  rpc VerifyToken (VerifyTokenReq) returns (VerifyTokenRes) {}
+}
+
+message VerifyTokenReq {
+  string token = 1;
+}
+
+message VerifyTokenRes {
+  bytes user_id = 1;
+}

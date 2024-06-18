@@ -9,42 +9,43 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
+	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
+	chat_pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/chat/internal/models"
 	empty "google.golang.org/protobuf/types/known/emptypb"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (app *application) GetUserByUsername(ctx context.Context, req *pb.GetUserByUsernameReq) (*pb.User, error) {
+func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetUserByUsernameReq) (*chat_pb.User, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &pb.User{}, errors.New("bad request")
+		return &chat_pb.User{}, errors.New("bad request")
 	}
 
 	user, err := app.users.GetByUsername(ctx, username)
 	switch {
 	case err == pgx.ErrNoRows:
-		return &pb.User{}, nil
+		return &chat_pb.User{}, nil
 	case err != nil:
-		return &pb.User{}, err
+		return &chat_pb.User{}, err
 	}
 
-	return &pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
+	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
-func (app *application) GetUserById(ctx context.Context, req *pb.GetUserByIdReq) (*pb.User, error) {
+func (app *application) GetUserById(ctx context.Context, req *chat_pb.GetUserByIdReq) (*chat_pb.User, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.User{}, err
+		return &chat_pb.User{}, err
 	}
 	user, err := app.users.GetById(ctx, userId)
-	return &pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, err
+	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, err
 }
 
-func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq) (*pb.GetContactsRes, error) {
+func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContactsReq) (*chat_pb.GetContactsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.GetContactsRes{Contacts: []*pb.Contact{}}, err
+		return &chat_pb.GetContactsRes{Contacts: []*chat_pb.Contact{}}, err
 	}
 	stmt := `
 		WITH latest_messages AS (
@@ -99,13 +100,13 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 	rows, err := models.DB.Query(ctx, stmt, userId)
 	switch {
 	case err == pgx.ErrNoRows:
-		return &pb.GetContactsRes{}, nil
+		return &chat_pb.GetContactsRes{}, nil
 	case err != nil:
-		return &pb.GetContactsRes{}, err
+		return &chat_pb.GetContactsRes{}, err
 	}
 
-	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*pb.Contact, error) {
-		var c pb.Contact
+	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*chat_pb.Contact, error) {
+		var c chat_pb.Contact
 		var lastMessageId sql.NullInt32
 		var lastContent sql.NullString
 		var lastSentAt sql.NullTime
@@ -113,7 +114,7 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &c.UnreadCount, &lastMessageId, &lastContent, &lastSentAt)
 		c.MemberCount = memberCount.Int32
 		if lastMessageId.Valid {
-			c.LastMessage = &pb.Message{
+			c.LastMessage = &chat_pb.Message{
 				Id:      lastMessageId.Int32,
 				Content: lastContent.String,
 				SentAt:  timestamp.New(lastSentAt.Time),
@@ -122,31 +123,31 @@ func (app *application) GetContacts(ctx context.Context, req *pb.GetContactsReq)
 		return &c, err
 	})
 	if err != nil {
-		return &pb.GetContactsRes{}, err
+		return &chat_pb.GetContactsRes{}, err
 	}
 
-	return &pb.GetContactsRes{Contacts: contacts}, nil
+	return &chat_pb.GetContactsRes{Contacts: contacts}, nil
 }
 
-func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq) (*pb.GetMessagesRes, error) {
+func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessagesReq) (*chat_pb.GetMessagesRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.GetMessagesRes{}, err
+		return &chat_pb.GetMessagesRes{}, err
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &pb.GetMessagesRes{}, err
+		return &chat_pb.GetMessagesRes{}, err
 	}
 
 	messages, err := app.messages.GetFromGroupId(ctx, userId, groupId)
 	if err != nil {
-		return &pb.GetMessagesRes{}, err
+		return &chat_pb.GetMessagesRes{}, err
 	}
 
-	var pbMessages []*pb.Message
+	var pbMessages []*chat_pb.Message
 	for _, e := range messages {
-		pbMessages = append(pbMessages, &pb.Message{
+		pbMessages = append(pbMessages, &chat_pb.Message{
 			Id:           int32(e.Id),
 			FromUsername: e.FromUsername,
 			FromPfp:      e.FromPfp.String,
@@ -154,14 +155,14 @@ func (app *application) GetMessages(ctx context.Context, req *pb.GetMessagesReq)
 			SentAt:       timestamp.New(e.SentAt),
 		})
 	}
-	return &pb.GetMessagesRes{Messages: pbMessages}, nil
+	return &chat_pb.GetMessagesRes{Messages: pbMessages}, nil
 }
 
 // this method is only for Streaming service when users connect to WebSocket
-func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq) (*pb.GetGroupIdsRes, error) {
+func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupIdsReq) (*chat_pb.GetGroupIdsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.GetGroupIdsRes{}, err
+		return &chat_pb.GetGroupIdsRes{}, err
 	}
 
 	stmt := `
@@ -172,9 +173,9 @@ func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq)
 	rows, err := models.DB.Query(ctx, stmt, userId)
 	switch {
 	case err == pgx.ErrNoRows:
-		return &pb.GetGroupIdsRes{}, nil
+		return &chat_pb.GetGroupIdsRes{}, nil
 	case err != nil:
-		return &pb.GetGroupIdsRes{}, err
+		return &chat_pb.GetGroupIdsRes{}, err
 	}
 
 	groupIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) ([]byte, error) {
@@ -183,18 +184,18 @@ func (app *application) GetGroupIds(ctx context.Context, req *pb.GetGroupIdsReq)
 		return groupId, err
 	})
 	if err != nil {
-		return &pb.GetGroupIdsRes{}, err
+		return &chat_pb.GetGroupIdsRes{}, err
 	}
 
-	return &pb.GetGroupIdsRes{GroupIds: groupIds}, nil
+	return &chat_pb.GetGroupIdsRes{GroupIds: groupIds}, nil
 }
 
 // this method is only for Auth service when creating new users
 // with default usernames being providerName joined by providerId
-func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserRes, error) {
+func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserReq) (*chat_pb.CreateUserRes, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &pb.CreateUserRes{}, errors.New("username must be at least 1 and not exceed 32 characters")
+		return &chat_pb.CreateUserRes{}, errors.New("username must be at least 1 and not exceed 32 characters")
 	}
 
 	userId := uuid.New()
@@ -203,7 +204,7 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 		// Returns an error if the cause of error isn't from duplicated username
 		var dupUsernameError *models.DupUsernameError
 		if !errors.As(err, &dupUsernameError) {
-			return &pb.CreateUserRes{}, err
+			return &chat_pb.CreateUserRes{}, err
 		}
 
 		// Else, return the user id of the username instead.
@@ -212,15 +213,20 @@ func (app *application) CreateUser(ctx context.Context, req *pb.CreateUserReq) (
 		// since users will be created in both ChatDB and AuthDB respectively.
 		user, err := app.users.GetByUsername(ctx, username)
 		if err != nil {
-			return &pb.CreateUserRes{}, err
+			return &chat_pb.CreateUserRes{}, err
 		}
 		userId = user.Id
 	}
 
-	return &pb.CreateUserRes{UserId: userId[:]}, nil
+	return &chat_pb.CreateUserRes{UserId: userId[:]}, nil
 }
 
-func (app *application) UpdateUser(ctx context.Context, req *pb.UpdateUserReq) (*empty.Empty, error) {
+func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserReq) (*empty.Empty, error) {
+	err := verifyUser(ctx, req.GetUserId(), app.authClient)
+	if err != nil {
+		return &empty.Empty{}, errors.New("unauthorized")
+	}
+
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
 		return &empty.Empty{}, err
@@ -244,45 +250,51 @@ func (app *application) UpdateUser(ctx context.Context, req *pb.UpdateUserReq) (
 	return &empty.Empty{}, err
 }
 
-func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.CreateGroupRes, error) {
+func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGroupReq) (*chat_pb.CreateGroupRes, error) {
+	// if the group creator's userId doesn't match his verified userId
+	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
+	if err != nil {
+		return &chat_pb.CreateGroupRes{}, errors.New("unauthorized")
+	}
+
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
-		return &pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
+		return &chat_pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
 	}
 	pfp := req.GetPfp()
 	if l := len(groupName); l > 1024 {
-		return &pb.CreateGroupRes{}, errors.New("profile picture's url not exceed 1024 characters")
+		return &chat_pb.CreateGroupRes{}, errors.New("profile picture's url not exceed 1024 characters")
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, groupName, pfp)
 	if err != nil {
-		return &pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, err
 	}
 
 	var userIds []uuid.UUID
 	for _, e := range req.GetUserIds() {
 		userId, err := uuid.FromBytes(e)
 		if err != nil {
-			return &pb.CreateGroupRes{}, err
+			return &chat_pb.CreateGroupRes{}, err
 		}
 		userIds = append(userIds, userId)
 	}
 
 	err = app.members.Add(ctx, tx, groupId, userIds)
 	if err != nil {
-		return &pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, err
 	}
 
 	go func() {
@@ -301,10 +313,19 @@ func (app *application) CreateGroup(ctx context.Context, req *pb.CreateGroupReq)
 		}
 	}()
 
-	return &pb.CreateGroupRes{GroupId: groupId[:]}, nil
+	return &chat_pb.CreateGroupRes{GroupId: groupId[:]}, nil
 }
 
-func (app *application) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq) (*empty.Empty, error) {
+func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGroupReq) (*empty.Empty, error) {
+	token, err := getToken(ctx)
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+	_, err = app.authClient.VerifyToken(ctx, &auth_pb.VerifyTokenReq{Token: token})
+	if err != nil {
+		return &empty.Empty{}, err
+	}
+
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, err
@@ -322,45 +343,50 @@ func (app *application) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq)
 	return &empty.Empty{}, err
 }
 
-func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*pb.AddFriendRes, error) {
+func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq) (*chat_pb.AddFriendRes, error) {
+	err := verifyUser(ctx, req.GetFromUserId(), app.authClient)
+	if err != nil {
+		return &chat_pb.AddFriendRes{}, errors.New("unauthorized")
+	}
+
 	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 
 	toUserId, err := uuid.FromBytes(req.GetToUserId())
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 
 	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
 	switch {
 	case err != nil:
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	case isFriend:
-		return &pb.AddFriendRes{}, errors.New("already friends")
+		return &chat_pb.AddFriendRes{}, errors.New("already friends")
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, "", "")
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 
 	err = app.members.Add(ctx, tx, groupId, []uuid.UUID{fromUserId, toUserId})
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, err
 	}
 
 	go func() {
@@ -386,10 +412,16 @@ func (app *application) AddFriend(ctx context.Context, req *pb.AddFriendReq) (*p
 		}
 	}()
 
-	return &pb.AddFriendRes{GroupId: groupId[:]}, nil
+	return &chat_pb.AddFriendRes{GroupId: groupId[:]}, nil
 }
 
-func (app *application) AddMembers(ctx context.Context, req *pb.AddMembersReq) (*empty.Empty, error) {
+func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersReq) (*empty.Empty, error) {
+	// if the adder doesn't belong to the group
+	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
+	if err != nil {
+		return &empty.Empty{}, errors.New("unauthorized")
+	}
+
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, err
@@ -419,42 +451,47 @@ func (app *application) AddMembers(ctx context.Context, req *pb.AddMembersReq) (
 	return &empty.Empty{}, err
 }
 
-func (app *application) AddMessage(ctx context.Context, req *pb.AddMessageReq) (*pb.AddMessageRes, error) {
+func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageReq) (*chat_pb.AddMessageRes, error) {
+	err := verifyUser(ctx, req.GetUserId(), app.authClient)
+	if err != nil {
+		return &chat_pb.AddMessageRes{}, errors.New("unauthorized")
+	}
+
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 
 	content := req.GetContent()
 	if l := len(content); l < 1 || l > 300 {
-		return &pb.AddMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
+		return &chat_pb.AddMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 	defer tx.Rollback(ctx)
 
 	sentAt := req.GetSentAt().AsTime()
 	id, fromUsername, fromPfp, err := app.messages.Add(ctx, tx, userId, groupId, content, sentAt)
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 
 	err = app.members.IncUnreadCount(ctx, tx, groupId, userId)
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, err
 	}
 
 	go func() {
@@ -469,10 +506,10 @@ func (app *application) AddMessage(ctx context.Context, req *pb.AddMessageReq) (
 		}
 	}()
 
-	return &pb.AddMessageRes{MessageId: id}, nil
+	return &chat_pb.AddMessageRes{MessageId: id}, nil
 }
 
-func (app *application) ResetUnreadCount(ctx context.Context, req *pb.ResetUnreadCountReq) (*empty.Empty, error) {
+func (app *application) ResetUnreadCount(ctx context.Context, req *chat_pb.ResetUnreadCountReq) (*empty.Empty, error) {
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, err

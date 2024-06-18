@@ -10,19 +10,22 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
+	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
+	chat_pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/chat/internal/models"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type application struct {
-	logger    *slog.Logger
-	users     models.IUserModel
-	groups    models.IGroupModel
-	members   models.IMemberModel
-	messages  models.IMessageModel
-	pubClient *redis.Client
-	pb.UnimplementedChatServer
+	logger     *slog.Logger
+	users      models.IUserModel
+	groups     models.IGroupModel
+	members    models.IMemberModel
+	messages   models.IMessageModel
+	authClient auth_pb.AuthClient
+	pubClient  *redis.Client
+	chat_pb.UnimplementedChatServer
 }
 
 func main() {
@@ -36,6 +39,15 @@ func main() {
 	defer pool.Close()
 	models.DB = pool
 
+	authConn, err := grpc.NewClient(
+		"auth:3001",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer authConn.Close()
+
 	addr := ":3000"
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -43,18 +55,19 @@ func main() {
 	}
 
 	app := &application{
-		logger:   slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		users:    models.NewUserModel(),
-		groups:   models.NewGroupModel(),
-		members:  models.NewMemberModel(),
-		messages: models.NewMessageModel(),
+		logger:     slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		users:      models.NewUserModel(),
+		groups:     models.NewGroupModel(),
+		members:    models.NewMemberModel(),
+		messages:   models.NewMessageModel(),
+		authClient: auth_pb.NewAuthClient(authConn),
 		pubClient: redis.NewClient(&redis.Options{
 			Addr: "redis:6379",
 		}),
 	}
 	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
 
-	pb.RegisterChatServer(s, app)
+	chat_pb.RegisterChatServer(s, app)
 	log.Printf("Server is running at %v", addr)
 	log.Fatalf("failed to serve: %v", s.Serve(lis))
 }

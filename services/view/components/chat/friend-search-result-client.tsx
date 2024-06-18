@@ -7,8 +7,9 @@ import { useStore } from "@/lib/stores/client-store";
 import Link from "next/link";
 import { UserCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import * as actions from "@/lib/actions";
+import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { toast } from "sonner";
+import { chatClient } from "@/lib/grpc-clients/web";
 
 type Props = {
   user: User;
@@ -29,11 +30,17 @@ export default function FriendSearchResultClient({ user }: Props) {
 
   async function handleAddFriend() {
     try {
-      const groupId = await actions.addFriend(user.id);
+      const { groupId } = await chatClient.addFriend(
+        {
+          fromUserId: uuidParse(store.user.id),
+          toUserId: uuidParse(user.id),
+        },
+        { timeoutMs: 5000 }
+      );
       store.addContact(
         FriendContact.parse({
           type: "friend",
-          groupId,
+          groupId: uuidStringify(groupId),
           pfp: user.pfp,
           name: user.username,
           userId: user.id,

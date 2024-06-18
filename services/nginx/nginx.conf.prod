@@ -17,6 +17,11 @@ http {
 
     location /api/auth/ {
       proxy_pass http://auth:3000/;
+      proxy_http_version 1.1;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location /api/streaming/ {
@@ -29,6 +34,11 @@ http {
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "Upgrade";
       proxy_read_timeout 30m;
+    }
+
+    location /api/grpc-web/ {
+      proxy_pass http://envoy:3000/;
+      proxy_http_version 1.1;
     }
   }
 }

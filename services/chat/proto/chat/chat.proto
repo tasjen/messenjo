@@ -96,6 +96,7 @@ message UpdateUserReq {
 message CreateGroupReq {
   string group_name = 1;
   string pfp = 2;
+  // group creator's userId must be the first element
   repeated bytes user_ids = 3;
 }
 message CreateGroupRes {
@@ -118,6 +119,7 @@ message AddFriendRes {
 
 message AddMembersReq {
   bytes group_id = 1;
+  // adder's userId must be the first element
   repeated bytes user_ids = 2;
 }
 
