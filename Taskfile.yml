@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  EC2_HOST: 18.141.209.198
+  EC2_HOST: 52.76.87.23
   MIGRATE: migrate -path ./services/chatdb/migrations/ -database $POSTGRESQL_URI
 
 dotenv: ["./services/chat/.env.dev", "./services/chat/.env.prod"]
@@ -21,9 +21,11 @@ tasks:
       - docker compose -f docker-compose.prod.yml up {{.ARGS}}
     env:
       HOST:
-        sh: >
-          curl -H "X-aws-ec2-metadata-token: {{.TOKEN}}"
-          "http://169.254.169.254/latest/meta-data/public-hostname"
+        tasjen.pro
+        # if no dns (use aws default public dns as HOST)
+        # sh: >
+        #   curl -H "X-aws-ec2-metadata-token: {{.TOKEN}}"
+        #   "http://169.254.169.254/latest/meta-data/public-hostname"
       MY_UID:
         sh: id -u
       MY_GID:
@@ -44,6 +46,7 @@ tasks:
         else
           docker compose -f $PROD_COMPOSE down {{.ARGS}}
         fi
+    silent: true
   pgadmin:
     cmds:
       - |
@@ -55,7 +58,7 @@ tasks:
         else
           docker compose -f $PROD_COMPOSE up pgadmin
         fi
-
+    silent: true
   # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')
   migrate-create:
     cmds:
@@ -90,4 +93,11 @@ tasks:
         scp -i messenjo.pem messenjo-prod.zip
         ec2-user@{{.EC2_HOST}}:/home/ec2-user/
       - rm messenjo-prod.zip
+    silent: true
+
+  # prod only
+  cert:
+    cmds:
+      - docker compose -f docker-compose.prod.yml up certbot
+      - task: down
     silent: true

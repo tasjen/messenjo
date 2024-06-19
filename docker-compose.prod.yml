@@ -8,6 +8,7 @@ services:
       context: ./services/view
       dockerfile: Dockerfile.prod
     depends_on:
+      - chat
       - envoy
 
   streaming:
@@ -19,6 +20,8 @@ services:
     env_file:
       - ./services/streaming/.env.prod
     depends_on:
+      - auth
+      - chat
       - redis
 
   auth:
@@ -40,6 +43,9 @@ services:
       dockerfile: Dockerfile.prod
     env_file:
       - ./services/chat/.env.prod
+    depends_on:
+      - auth
+      - redis
 
   redis:
     image: ghcr.io/microsoft/garnet-alpine
@@ -50,12 +56,16 @@ services:
     container_name: messenjo-nginx-prod
     volumes:
       - ./services/nginx/nginx.conf.prod:/etc/nginx/nginx.conf:ro
+      - ./services/certbot/conf:/etc/letsencrypt
+      - ./services/certbot/www:/var/www/certbot
     ports:
       - 80:80
       - 443:443
     depends_on:
       - auth
       - view
+      - streaming
+      - envoy
 
   envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
@@ -65,6 +75,7 @@ services:
     attach: false
     depends_on:
       - auth
+      - chat
 
   pgadmin:
     image: dpage/pgadmin4
@@ -77,3 +88,15 @@ services:
     attach: false
     ports:
       - 5050:80
+
+  certbot:
+    image: certbot/certbot
+    container_name: messenjo-certbot-dev
+    profiles:
+      - certbot
+    volumes:
+      - ./services/certbot/conf:/etc/letsencrypt
+      - ./services/certbot/www:/var/www/certbot
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email ${EMAIL} -d ${DOMAIN} --agree-tos
+    depends_on:
+      - nginx

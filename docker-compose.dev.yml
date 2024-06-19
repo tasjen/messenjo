@@ -12,6 +12,7 @@ services:
       - /app/node_modules
       - /app/.next
     depends_on:
+      - chat
       - envoy
 
   streaming:
@@ -26,6 +27,8 @@ services:
     env_file:
       - ./services/streaming/.env.dev
     depends_on:
+      - auth
+      - chat
       - redis
 
   auth:
@@ -51,7 +54,9 @@ services:
     env_file:
       - ./services/chat/.env.dev
     depends_on:
+      - auth
       - chatdb
+      - redis
 
   chatdb:
     image: postgres:16-alpine
@@ -81,6 +86,8 @@ services:
     depends_on:
       - auth
       - view
+      - streaming
+      - envoy
 
   envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
@@ -90,6 +97,7 @@ services:
     attach: false
     depends_on:
       - auth
+      - chat
 
   pgadmin:
     image: dpage/pgadmin4

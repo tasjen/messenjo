@@ -3,7 +3,7 @@ import { Chat } from "@/lib/gen/chat/chat_connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
 
-// for Next middleware
+// this runs in server (Next middleware)
 export const authClient = createPromiseClient(
   Auth,
   createGrpcWebTransport({
@@ -11,10 +11,13 @@ export const authClient = createPromiseClient(
   })
 );
 
-// for client app
+// this runs in client
 export const chatClient = createPromiseClient(
   Chat,
   createGrpcWebTransport({
-    baseUrl: `http://${typeof window !== "undefined" ? window.location.host : ""}/api/grpc-web`,
+    baseUrl:
+      typeof window !== "undefined"
+        ? `${window.location.origin}/api/grpc-web`
+        : "",
   })
 );

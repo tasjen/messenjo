@@ -2,10 +2,14 @@ todo:
  - View: Refactor error handlings. Choose custom error messages in the grpc-client file (reject(...))
           , then just log it when actions.ts or data.ts or whatever catch a ServiceError.
           Or create custom errors and check err instanceof ...
- - View & Streaming: Refactor gRPC client methods promisifier
  - All: Use Taskfile instead of Makefile
  - Streaming: Remove the Class
  - All: implement graceful shutdown
+ - All: improve grpc error handling & logging
+ - View: parse url before saving to DB, default to empty string if not valid 
+ - All: use specific hash version of docker images in production app
+ - All: set restart property in docker-compose files to 'unless-stopped'
+ - All: add gzip config to nginx.conf
 
 install docker:
 sudo yum update -y
