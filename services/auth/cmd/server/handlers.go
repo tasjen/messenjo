@@ -12,6 +12,8 @@ import (
 	auth_pb "github.com/tasjen/messenjo/services/auth/internal/gen/auth"
 	chat_pb "github.com/tasjen/messenjo/services/auth/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/auth/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type jwtClaims struct {
@@ -178,16 +180,22 @@ func (app *application) VerifyToken(ctx context.Context, req *auth_pb.VerifyToke
 			return []byte(JWT_SECRET), nil
 		})
 	if err != nil {
-		return &auth_pb.VerifyTokenRes{}, err
+		return &auth_pb.VerifyTokenRes{}, status.Error(
+			codes.Unauthenticated, err.Error(),
+		)
 	}
 
 	if !token.Valid {
-		return &auth_pb.VerifyTokenRes{}, errors.New("invalid token")
+		return &auth_pb.VerifyTokenRes{}, status.Error(
+			codes.Unauthenticated, "invalid token",
+		)
 	}
 
 	claims, ok := token.Claims.(*jwtClaims)
 	if !ok {
-		return &auth_pb.VerifyTokenRes{}, errors.New("failed asserting `token.Claims` to `*jwtClaims` type")
+		return &auth_pb.VerifyTokenRes{}, status.Error(
+			codes.Internal, "failed asserting `token.Claims` to `*jwtClaims` type",
+		)
 	}
 
 	userId := uuid.MustParse(claims.UserId)

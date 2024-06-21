@@ -123,12 +123,12 @@ app.listen(Number(PORT), (listenSocket) => {
 async function subToRedis() {
   await new Promise((resolve) => setTimeout(resolve, subDelay * 1e3));
   try {
-    const subClient = createClient({ url: REDIS_URI });
-    await subClient.connect();
+    const redisClient = createClient({ url: REDIS_URI });
+    await redisClient.connect();
     console.log(
       `Connected to redis server on port: ${REDIS_URI?.split(":").slice(-1)[0]}`
     );
-    await subClient.subscribe("main", onAction);
+    await redisClient.subscribe("main", onAction);
     console.log(`Subscribing to redis channel: "main"`);
   } catch (err) {
     if (err instanceof Error) {

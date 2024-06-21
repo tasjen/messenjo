@@ -7,8 +7,13 @@ import (
 	"net/http"
 
 	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
+
+var internalServerError = status.Error(codes.Internal, "internal server error")
+var unauthorizedError = status.Error(codes.Unauthenticated, "unauthorized")
 
 func getToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)

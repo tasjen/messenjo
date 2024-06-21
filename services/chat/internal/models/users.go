@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -56,17 +55,19 @@ func (m *UserModel) GetById(ctx context.Context, userId uuid.UUID) (User, error)
 
 func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error) {
 	stmt := `
-	SELECT COUNT(*) FROM groups
-		JOIN members m1 ON groups.id = m1.group_id
-		JOIN members m2 on groups.id = m2.group_id
-		WHERE name = ''
-  		AND m1.user_id = $1 
-  		AND m2.user_id = $2;`
+	SELECT COUNT(*)
+	FROM groups
+		JOIN members m1
+		ON groups.id = m1.group_id
+		JOIN members m2
+		ON groups.id = m2.group_id
+	WHERE name = ''
+  	AND m1.user_id = $1 
+  	AND m2.user_id = $2;`
 
 	var count int
 	err := DB.QueryRow(ctx, stmt, userId1, userId2).Scan(&count)
 	if err != nil {
-		log.Println(err)
 		return false, err
 	}
 
@@ -77,7 +78,6 @@ func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (b
 		return true, nil
 	default:
 		err := fmt.Errorf("userId %v and userId %v share %v friends relationship", userId1, userId2, count)
-		log.Println(err)
 		return true, err
 	}
 }

@@ -18,13 +18,13 @@ import (
 )
 
 type application struct {
-	logger     *slog.Logger
-	users      models.IUserModel
-	groups     models.IGroupModel
-	members    models.IMemberModel
-	messages   models.IMessageModel
-	authClient auth_pb.AuthClient
-	pubClient  *redis.Client
+	logger      *slog.Logger
+	users       models.IUserModel
+	groups      models.IGroupModel
+	members     models.IMemberModel
+	messages    models.IMessageModel
+	authClient  auth_pb.AuthClient
+	redisClient *redis.Client
 	chat_pb.UnimplementedChatServer
 }
 
@@ -61,7 +61,7 @@ func main() {
 		members:    models.NewMemberModel(),
 		messages:   models.NewMessageModel(),
 		authClient: auth_pb.NewAuthClient(authConn),
-		pubClient: redis.NewClient(&redis.Options{
+		redisClient: redis.NewClient(&redis.Options{
 			Addr: "redis:6379",
 		}),
 	}

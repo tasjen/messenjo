@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,8 @@ import (
 	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
 	chat_pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/chat/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	empty "google.golang.org/protobuf/types/known/emptypb"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -19,7 +22,10 @@ import (
 func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetUserByUsernameReq) (*chat_pb.User, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &chat_pb.User{}, errors.New("bad request")
+		return &chat_pb.User{}, status.Error(
+			codes.InvalidArgument,
+			"bad request",
+		)
 	}
 
 	user, err := app.users.GetByUsername(ctx, username)
@@ -27,7 +33,10 @@ func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetU
 	case err == pgx.ErrNoRows:
 		return &chat_pb.User{}, nil
 	case err != nil:
-		return &chat_pb.User{}, err
+		return &chat_pb.User{}, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
 	}
 
 	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
@@ -36,16 +45,26 @@ func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetU
 func (app *application) GetUserById(ctx context.Context, req *chat_pb.GetUserByIdReq) (*chat_pb.User, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &chat_pb.User{}, err
+		return &chat_pb.User{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 	user, err := app.users.GetById(ctx, userId)
-	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, err
+	if err != nil {
+		return &chat_pb.User{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
 func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContactsReq) (*chat_pb.GetContactsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &chat_pb.GetContactsRes{Contacts: []*chat_pb.Contact{}}, err
+		return &chat_pb.GetContactsRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 	stmt := `
 		WITH latest_messages AS (
@@ -102,7 +121,7 @@ func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContact
 	case err == pgx.ErrNoRows:
 		return &chat_pb.GetContactsRes{}, nil
 	case err != nil:
-		return &chat_pb.GetContactsRes{}, err
+		return &chat_pb.GetContactsRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*chat_pb.Contact, error) {
@@ -123,7 +142,7 @@ func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContact
 		return &c, err
 	})
 	if err != nil {
-		return &chat_pb.GetContactsRes{}, err
+		return &chat_pb.GetContactsRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &chat_pb.GetContactsRes{Contacts: contacts}, nil
@@ -132,17 +151,26 @@ func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContact
 func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessagesReq) (*chat_pb.GetMessagesRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &chat_pb.GetMessagesRes{}, err
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &chat_pb.GetMessagesRes{}, err
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
+		)
 	}
 
 	messages, err := app.messages.GetFromGroupId(ctx, userId, groupId)
-	if err != nil {
-		return &chat_pb.GetMessagesRes{}, err
+	switch {
+	case err == pgx.ErrNoRows:
+		return &chat_pb.GetMessagesRes{}, nil
+	case err != nil:
+		return &chat_pb.GetMessagesRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	var pbMessages []*chat_pb.Message
@@ -162,32 +190,22 @@ func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessage
 func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupIdsReq) (*chat_pb.GetGroupIdsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &chat_pb.GetGroupIdsRes{}, err
+		return &chat_pb.GetGroupIdsRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 
-	stmt := `
- 		SELECT group_id
-		FROM members
-		WHERE user_id = $1;`
-
-	rows, err := models.DB.Query(ctx, stmt, userId)
-	switch {
-	case err == pgx.ErrNoRows:
-		return &chat_pb.GetGroupIdsRes{}, nil
-	case err != nil:
-		return &chat_pb.GetGroupIdsRes{}, err
-	}
-
-	groupIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) ([]byte, error) {
-		var groupId []byte
-		err := row.Scan(&groupId)
-		return groupId, err
-	})
+	groupIds, err := app.members.GetGroupIds(ctx, userId)
 	if err != nil {
-		return &chat_pb.GetGroupIdsRes{}, err
+		return &chat_pb.GetGroupIdsRes{}, status.Error(codes.Internal, err.Error())
+	}
+	var groupIdsBytes [][]byte
+	for _, e := range groupIds {
+		groupIdsBytes = append(groupIdsBytes, e[:])
 	}
 
-	return &chat_pb.GetGroupIdsRes{GroupIds: groupIds}, nil
+	return &chat_pb.GetGroupIdsRes{GroupIds: groupIdsBytes}, nil
 }
 
 // this method is only for Auth service when creating new users
@@ -195,7 +213,10 @@ func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupId
 func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserReq) (*chat_pb.CreateUserRes, error) {
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 32 {
-		return &chat_pb.CreateUserRes{}, errors.New("username must be at least 1 and not exceed 32 characters")
+		return &chat_pb.CreateUserRes{}, status.Error(
+			codes.InvalidArgument,
+			"username must be between 1 and 16 characters long",
+		)
 	}
 
 	userId := uuid.New()
@@ -204,16 +225,17 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 		// Returns an error if the cause of error isn't from duplicated username
 		var dupUsernameError *models.DupUsernameError
 		if !errors.As(err, &dupUsernameError) {
-			return &chat_pb.CreateUserRes{}, err
+			return &chat_pb.CreateUserRes{}, status.Error(codes.Internal, err.Error())
 		}
 
 		// Else, return the user id of the username instead.
-		// This ensure that if a user is successfully created in ChatDB but somehow failed in AuthDB,
-		// there won't be an error from the next attempt to create the same user
-		// since users will be created in both ChatDB and AuthDB respectively.
+		// This ensure that if a user is successfully created in ChatDB
+		// but somehow failed in AuthDB, there won't be an error from
+		// the next attempt to create the same user since users will be
+		// created in both ChatDB and AuthDB respectively.
 		user, err := app.users.GetByUsername(ctx, username)
 		if err != nil {
-			return &chat_pb.CreateUserRes{}, err
+			return &chat_pb.CreateUserRes{}, status.Error(codes.Internal, err.Error())
 		}
 		userId = user.Id
 	}
@@ -224,77 +246,95 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserReq) (*empty.Empty, error) {
 	err := verifyUser(ctx, req.GetUserId(), app.authClient)
 	if err != nil {
-		return &empty.Empty{}, errors.New("unauthorized")
+		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 
 	username := req.GetUsername()
 	if l := len(username); l < 1 || l > 16 {
-		return &empty.Empty{}, errors.New("username must be at least 1 and not exceed 16 characters")
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			"username must be between 1 and 16 characters long",
+		)
 	}
 
 	pfp := req.GetPfp()
 	if l := len(pfp); l > 1024 {
-		return &empty.Empty{}, errors.New("pfpUrl name must not exceed 1024 characters")
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			"profile picture's url not exceed 1024 characters",
+		)
 	}
 
 	err = app.users.Update(ctx, userId, username, pfp)
 	var dupUsernameError *models.DupUsernameError
 	if err != nil && !errors.As(err, &dupUsernameError) {
-		return &empty.Empty{}, errors.New("internal server error")
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}
-	return &empty.Empty{}, err
+	return &empty.Empty{}, nil
 }
 
 func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGroupReq) (*chat_pb.CreateGroupRes, error) {
 	// if the group creator's userId doesn't match his verified userId
 	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
 	if err != nil {
-		return &chat_pb.CreateGroupRes{}, errors.New("unauthorized")
+		return &chat_pb.CreateGroupRes{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
-		return &chat_pb.CreateGroupRes{}, errors.New("group name must be at least 1 and not exceed 16 characters")
+		return &chat_pb.CreateGroupRes{}, status.Error(
+			codes.InvalidArgument,
+			"group name must be between 1 and 16 characters long",
+		)
 	}
 	pfp := req.GetPfp()
 	if l := len(groupName); l > 1024 {
-		return &chat_pb.CreateGroupRes{}, errors.New("profile picture's url not exceed 1024 characters")
+		return &chat_pb.CreateGroupRes{}, status.Error(
+			codes.InvalidArgument,
+			"profile picture's url not exceed 1024 characters",
+		)
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &chat_pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, groupName, pfp)
 	if err != nil {
-		return &chat_pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	var userIds []uuid.UUID
 	for _, e := range req.GetUserIds() {
 		userId, err := uuid.FromBytes(e)
 		if err != nil {
-			return &chat_pb.CreateGroupRes{}, err
+			return &chat_pb.CreateGroupRes{}, status.Error(
+				codes.InvalidArgument,
+				fmt.Sprint("invalid userId: ", e),
+			)
 		}
 		userIds = append(userIds, userId)
 	}
 
 	err = app.members.Add(ctx, tx, groupId, userIds)
 	if err != nil {
-		return &chat_pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &chat_pb.CreateGroupRes{}, err
+		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	go func() {
@@ -305,11 +345,11 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 		action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
 		actionJson, err := json.Marshal(action)
 		if err != nil {
-			app.logger.Error(err.Error())
+			app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			app.pubClient.Publish(newCtx, "main", actionJson)
+			app.redisClient.Publish(newCtx, "main", actionJson)
 		}
 	}()
 
@@ -319,74 +359,98 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGroupReq) (*empty.Empty, error) {
 	token, err := getToken(ctx)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 	_, err = app.authClient.VerifyToken(ctx, &auth_pb.VerifyTokenReq{Token: token})
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
+		)
 	}
 	groupName := req.GetName()
 	if l := len(groupName); l < 1 || l > 16 {
-		return &empty.Empty{}, errors.New("group name must be at least 1 and not exceed 16 characters")
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			"group name must be between 1 and 16 characters long",
+		)
 	}
 	pfp := req.GetPfp()
 	if l := len(pfp); l > 1024 {
-		return &empty.Empty{}, errors.New("profile picture's url must not exceed 1024 characters")
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			"profile picture's url must not exceed 1024 characters",
+		)
 	}
 
 	err = app.groups.Update(ctx, groupId, groupName, pfp)
-	return &empty.Empty{}, err
+	if err != nil {
+		return &empty.Empty{}, status.Error(
+			codes.Internal,
+			err.Error(),
+		)
+	}
+	return &empty.Empty{}, nil
 }
 
 func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq) (*chat_pb.AddFriendRes, error) {
 	err := verifyUser(ctx, req.GetFromUserId(), app.authClient)
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, errors.New("unauthorized")
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid fromUserId: ", req.GetFromUserId()),
+		)
 	}
 
 	toUserId, err := uuid.FromBytes(req.GetToUserId())
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid toUserId: ", req.GetToUserId()),
+		)
 	}
 
 	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
 	switch {
 	case err != nil:
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	case isFriend:
-		return &chat_pb.AddFriendRes{}, errors.New("already friends")
+		return &chat_pb.AddFriendRes{}, status.Error(
+			codes.PermissionDenied,
+			"already friends",
+		)
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
 	defer tx.Rollback(ctx)
 
 	groupId := uuid.New()
 	err = app.groups.Add(ctx, tx, groupId, "", "")
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = app.members.Add(ctx, tx, groupId, []uuid.UUID{fromUserId, toUserId})
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &chat_pb.AddFriendRes{}, err
+		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	go func() {
@@ -406,9 +470,9 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 		)
 		actionJson, err := json.Marshal(action)
 		if err != nil {
-			app.logger.Warn(err.Error())
+			app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
 		} else {
-			app.pubClient.Publish(newCtx, "main", actionJson)
+			app.redisClient.Publish(newCtx, "main", actionJson)
 		}
 	}()
 
@@ -419,90 +483,104 @@ func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersR
 	// if the adder doesn't belong to the group
 	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
 	if err != nil {
-		return &empty.Empty{}, errors.New("unauthorized")
+		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
+		)
 	}
 
 	var userIds []uuid.UUID
 	for _, e := range req.GetUserIds() {
 		userId, err := uuid.FromBytes(e)
 		if err != nil {
-			return &empty.Empty{}, err
+			return &empty.Empty{}, status.Error(
+				codes.InvalidArgument,
+				fmt.Sprint("invalid userId: ", userId),
+			)
 		}
 		userIds = append(userIds, userId)
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}
 	defer tx.Rollback(ctx)
 
 	err = app.members.Add(ctx, tx, groupId, userIds)
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = tx.Commit(ctx)
-	return &empty.Empty{}, err
+	if err != nil {
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &empty.Empty{}, nil
 }
 
 func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageReq) (*chat_pb.AddMessageRes, error) {
 	err := verifyUser(ctx, req.GetUserId(), app.authClient)
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, errors.New("unauthorized")
+		return &chat_pb.AddMessageRes{}, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
+		)
 	}
 
 	content := req.GetContent()
 	if l := len(content); l < 1 || l > 300 {
-		return &chat_pb.AddMessageRes{}, errors.New("message must be at least 1 character and not exceed 300 characters")
+		return &chat_pb.AddMessageRes{}, status.Error(
+			codes.InvalidArgument,
+			"message must be at least 1 character and not exceed 300 characters",
+		)
 	}
 
 	tx, err := models.DB.Begin(ctx)
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
 	}
 	defer tx.Rollback(ctx)
 
 	sentAt := req.GetSentAt().AsTime()
 	id, fromUsername, fromPfp, err := app.messages.Add(ctx, tx, userId, groupId, content, sentAt)
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
-	}
-
-	err = app.members.IncUnreadCount(ctx, tx, groupId, userId)
-	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return &chat_pb.AddMessageRes{}, err
+		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	go func() {
 		sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
 		sendMessageActionJson, err := json.Marshal(sendMessageAction)
 		if err != nil {
-			app.logger.Error(err.Error())
+			app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			app.pubClient.Publish(newCtx, "main", sendMessageActionJson)
+			app.redisClient.Publish(newCtx, "main", sendMessageActionJson)
 		}
 	}()
 
@@ -512,14 +590,24 @@ func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageR
 func (app *application) ResetUnreadCount(ctx context.Context, req *chat_pb.ResetUnreadCountReq) (*empty.Empty, error) {
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
+		)
 	}
 
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
-		return &empty.Empty{}, err
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid userId: ", req.GetUserId()),
+		)
 	}
 
 	err = app.members.ResetUnreadCount(ctx, groupId, userId)
-	return &empty.Empty{}, err
+	if err != nil {
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &empty.Empty{}, nil
 }

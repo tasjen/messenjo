@@ -7,7 +7,11 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+var internalServerError = status.Error(codes.Internal, "internal server error")
 
 // Generates a random 16-character base64 string
 func generateOauthState() string {

@@ -10,6 +10,9 @@ todo:
  - All: use specific hash version of docker images in production app
  - All: set restart property in docker-compose files to 'unless-stopped'
  - All: add gzip config to nginx.conf
+ - certbot: add auto renew
+ - ChatDB: Task 'migrate' command should work in dev mode
+ - Chat & View: remove userId from grpc methods, use token to identify user instead
 
 install docker:
 sudo yum update -y

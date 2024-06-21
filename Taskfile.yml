@@ -1,7 +1,7 @@
 version: "3"
 
 vars:
-  EC2_HOST: 52.76.87.23
+  EC2_IPv4: 52.76.87.23
   MIGRATE: migrate -path ./services/chatdb/migrations/ -database $POSTGRESQL_URI
 
 dotenv: ["./services/chat/.env.dev", "./services/chat/.env.prod"]
@@ -22,14 +22,10 @@ tasks:
     env:
       HOST:
         tasjen.pro
-        # if no dns (use aws default public dns as HOST)
+        # if no DNS, use AWS default public DNS as HOST
         # sh: >
         #   curl -H "X-aws-ec2-metadata-token: {{.TOKEN}}"
         #   "http://169.254.169.254/latest/meta-data/public-hostname"
-      MY_UID:
-        sh: id -u
-      MY_GID:
-        sh: id -g
     vars:
       TOKEN:
         sh: >
@@ -62,7 +58,7 @@ tasks:
   # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')
   migrate-create:
     cmds:
-      - migrate create -ext=.sql -dir=./services/chatdb/migrations {{.LABEL}}
+      - migrate create -seq -ext=.sql -dir=./services/chatdb/migrations {{.LABEL}}
   migrate-version:
     cmds:
       - "{{.MIGRATE}} version"
@@ -83,7 +79,7 @@ tasks:
   # dev only
   ssh: # ssh to an ec2 instance
     cmds:
-      - ssh -i messenjo.pem ec2-user@{{.EC2_HOST}}
+      - ssh -i messenjo.pem ec2-user@{{.EC2_IPv4}}
   push: # pushes all source code required to start a production app to an ec2 instance
     cmds:
       - >
@@ -91,7 +87,7 @@ tasks:
         -x "*node_modules*" "*tmp*" "*gen/*" "*.dev*" "*chatdb/data/*"
       - >
         scp -i messenjo.pem messenjo-prod.zip
-        ec2-user@{{.EC2_HOST}}:/home/ec2-user/
+        ec2-user@{{.EC2_IPv4}}:/home/ec2-user/
       - rm messenjo-prod.zip
     silent: true
 

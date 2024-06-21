@@ -59,11 +59,7 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 		err := row.Scan(&m.Id, &m.FromUsername, &m.FromPfp, &m.Content, &m.SentAt)
 		return m, err
 	})
-	if err != nil {
-		return []Message{}, err
-	}
-
-	return messages, nil
+	return messages, err
 }
 
 func (m *MessageModel) Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error) {

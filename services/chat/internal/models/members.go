@@ -9,7 +9,7 @@ import (
 
 type IMemberModel interface {
 	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds []uuid.UUID) error
-	IncUnreadCount(ctx context.Context, tx pgx.Tx, groupId, userId uuid.UUID) error
+	GetGroupIds(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error)
 	ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error
 }
 
@@ -37,13 +37,24 @@ func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, use
 	return err
 }
 
-func (m *MemberModel) IncUnreadCount(ctx context.Context, tx pgx.Tx, groupId, userId uuid.UUID) error {
+func (m *MemberModel) GetGroupIds(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error) {
 	stmt := `
-	UPDATE members
-	SET unread_count = LEAST(unread_count + 1, 99)
-	WHERE group_id = $1 and user_id != $2;`
-	_, err := tx.Exec(ctx, stmt, groupId, userId)
-	return err
+		SELECT group_id
+ 		FROM members
+ 		WHERE user_id = $1;`
+
+	rows, err := DB.Query(ctx, stmt, userId)
+	if err != nil {
+		return []uuid.UUID{}, err
+	}
+
+	groupIds, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (uuid.UUID, error) {
+		var groupId uuid.UUID
+		err := row.Scan(&groupId)
+		return groupId, err
+	})
+
+	return groupIds, err
 }
 
 func (m *MemberModel) ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error {
