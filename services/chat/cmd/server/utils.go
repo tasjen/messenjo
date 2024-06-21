@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 
 	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
 	"google.golang.org/grpc/codes"
@@ -46,4 +47,29 @@ func verifyUser(ctx context.Context, userId []byte, authClient auth_pb.AuthClien
 		return errors.New("unauthorized, received userId doesn't match")
 	}
 	return nil
+}
+
+func isValidUrl(s string) bool {
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+
+	return true
+}
+
+func parsePfp(s string) (string, error) {
+	if len(s) == 0 {
+		return s, nil
+	}
+	if len(s) > 1024 {
+		return "", errors.New("profile picture's url must not exceed 1024 characters")
+	}
+	if !isValidUrl(s) {
+		return "", errors.New("invalid url")
+	}
+	return s, nil
 }

@@ -219,8 +219,16 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 		)
 	}
 
+	pfp, err := parsePfp(req.GetPfp())
+	if err != nil {
+		return &chat_pb.CreateUserRes{}, status.Error(
+			codes.InvalidArgument,
+			err.Error(),
+		)
+	}
+
 	userId := uuid.New()
-	err := app.users.Add(ctx, userId, username, req.GetPfp())
+	err = app.users.Add(ctx, userId, username, pfp)
 	if err != nil {
 		// Returns an error if the cause of error isn't from duplicated username
 		var dupUsernameError *models.DupUsernameError
@@ -265,11 +273,11 @@ func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserR
 		)
 	}
 
-	pfp := req.GetPfp()
-	if l := len(pfp); l > 1024 {
+	pfp, err := parsePfp(req.GetPfp())
+	if err != nil {
 		return &empty.Empty{}, status.Error(
 			codes.InvalidArgument,
-			"profile picture's url not exceed 1024 characters",
+			err.Error(),
 		)
 	}
 
@@ -295,11 +303,11 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 			"group name must be between 1 and 16 characters long",
 		)
 	}
-	pfp := req.GetPfp()
-	if l := len(groupName); l > 1024 {
+	pfp, err := parsePfp(req.GetPfp())
+	if err != nil {
 		return &chat_pb.CreateGroupRes{}, status.Error(
 			codes.InvalidArgument,
-			"profile picture's url not exceed 1024 characters",
+			err.Error(),
 		)
 	}
 
@@ -373,6 +381,7 @@ func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGrou
 			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
 		)
 	}
+
 	groupName := req.GetName()
 	if l := len(groupName); l < 1 || l > 16 {
 		return &empty.Empty{}, status.Error(
@@ -380,11 +389,11 @@ func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGrou
 			"group name must be between 1 and 16 characters long",
 		)
 	}
-	pfp := req.GetPfp()
-	if l := len(pfp); l > 1024 {
+	pfp, err := parsePfp(req.GetPfp())
+	if err != nil {
 		return &empty.Empty{}, status.Error(
 			codes.InvalidArgument,
-			"profile picture's url must not exceed 1024 characters",
+			err.Error(),
 		)
 	}
 
