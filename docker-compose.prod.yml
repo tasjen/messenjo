@@ -10,6 +10,7 @@ services:
     depends_on:
       - chat
       - envoy
+    restart: unless-stopped
 
   streaming:
     image: messenjo-streaming:prod
@@ -23,6 +24,7 @@ services:
       - auth
       - chat
       - redis
+    restart: unless-stopped
 
   auth:
     image: messenjo-auth:prod
@@ -34,6 +36,7 @@ services:
       dockerfile: Dockerfile.prod
     env_file:
       - ./services/auth/.env.prod
+    restart: unless-stopped
 
   chat:
     image: messenjo-chat:prod
@@ -46,10 +49,12 @@ services:
     depends_on:
       - auth
       - redis
+    restart: unless-stopped
 
   redis:
     image: ghcr.io/microsoft/garnet-alpine
     container_name: messenjo-redis-prod
+    restart: unless-stopped
 
   nginx:
     image: nginx:stable-alpine
@@ -67,6 +72,7 @@ services:
       - view
       - streaming
       - envoy
+    restart: unless-stopped
 
   envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
@@ -77,6 +83,7 @@ services:
     depends_on:
       - auth
       - chat
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4
