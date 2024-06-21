@@ -2,10 +2,9 @@ version: "3"
 
 vars:
   EC2_IPv4: 52.76.87.23
-  MIGRATE: migrate -path ./services/chatdb/migrations/ -database $POSTGRESQL_URI
-
+  # for dev mode, replace original chatdb host with localhost + sslmode=disable
+  MIGRATE: migrate -path ./services/chatdb/migrations/ -database ${POSTGRESQL_URI/"chatdb:5432/postgres"/"localhost:5432/postgres?sslmode=disable"}
 dotenv: ["./services/chat/.env.dev", "./services/chat/.env.prod"]
-
 tasks:
   dev:
     cmds:
@@ -55,6 +54,7 @@ tasks:
           docker compose -f $PROD_COMPOSE up pgadmin
         fi
     silent: true
+
   # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')
   migrate-create:
     cmds:
@@ -95,5 +95,4 @@ tasks:
   cert:
     cmds:
       - docker compose -f docker-compose.prod.yml up certbot
-      - task: down
     silent: true

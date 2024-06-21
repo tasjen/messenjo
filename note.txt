@@ -4,10 +4,8 @@ todo:
           Or create custom errors and check err instanceof ...
  - All: implement graceful shutdown
  - All: improve grpc error handling & logging
- - View: parse url before saving to DB, default to empty string if not valid 
  - All: use specific hash version of docker images in production app
  - certbot: add auto renew
- - ChatDB: Task 'migrate' command should work in dev mode
  - Chat & View: remove userId from grpc methods, use token to identify user instead
 
 install docker:
