@@ -34,6 +34,8 @@ services:
   auth:
     image: messenjo-auth:dev
     container_name: messenjo-auth-dev
+    environment:
+      - HOST=${HOST}
     build:
       context: ./services/auth
       dockerfile: Dockerfile.dev
