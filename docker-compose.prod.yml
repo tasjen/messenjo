@@ -81,7 +81,6 @@ services:
       - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
     attach: false
     depends_on:
-      - auth
       - chat
     restart: unless-stopped
 
