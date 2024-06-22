@@ -3,6 +3,17 @@ todo:
  - All: use specific hash version of docker images in production app
  - certbot: add auto renew
  - Chat: in AddMember handler, check if the user is a member of the group before continuing
+ - View: Lazily load messages
+
+
+prod image build order:
+1. auth
+2. redis
+3. chat
+4. envoy
+5. view
+6. streaming
+7. nginx
 
 install docker:
 sudo yum update -y
