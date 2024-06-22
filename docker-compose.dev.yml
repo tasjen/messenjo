@@ -111,5 +111,3 @@ services:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev
     attach: false
-    ports:
-      - 5050:80

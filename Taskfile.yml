@@ -83,7 +83,8 @@ tasks:
   push: # pushes all source code required to start a production app to an ec2 instance
     cmds:
       - >
-        zip -qr messenjo-prod.zip services Taskfile.yml docker-compose.prod.yml
+        zip -qr messenjo-prod.zip
+        services Taskfile.yml docker-compose.prod.yml .env.prod
         -x "*node_modules*" "*tmp*" "*gen/*" "*.dev*" "*chatdb/data/*"
       - >
         scp -i messenjo.pem messenjo-prod.zip

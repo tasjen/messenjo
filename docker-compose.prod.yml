@@ -89,12 +89,9 @@ services:
     container_name: messenjo-pgadmin-prod
     profiles:
       - pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: prod@prod.com
-      PGADMIN_DEFAULT_PASSWORD: prod
+    env_file:
+      - ./.env.prod
     attach: false
-    ports:
-      - 5050:80
 
   certbot:
     image: certbot/certbot
