@@ -61,37 +61,38 @@ func (app *application) authHandler(
 	req interface{},
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
-) (res interface{}, err error) {
-	if info.FullMethod != "/messenjo.Chat/GetGroupIds" {
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return res, status.Error(codes.Unauthenticated, "no metadata")
-		}
-
-		rawCookieArr := md.Get("cookie")
-		if len(rawCookieArr) == 0 {
-			return res, status.Error(codes.Unauthenticated, "no cookie")
-		}
-
-		header := http.Header{}
-		header.Add("Cookie", rawCookieArr[0])
-		r := http.Request{Header: header}
-		token, err := r.Cookie("auth_jwt")
-		if err != nil {
-			return res, status.Error(codes.Unauthenticated, "no auth cookie")
-		}
-
-		authResp, err := app.authClient.VerifyToken(
-			ctx,
-			&auth_pb.VerifyTokenReq{Token: token.Value},
-		)
-		if err != nil {
-			return res, status.Error(codes.Unauthenticated, err.Error())
-		}
-
-		ctx = context.WithValue(ctx, userIdKey{}, uuid.UUID(authResp.UserId))
+) (interface{}, error) {
+	// no auth for GetGroupIds
+	if info.FullMethod == "/messenjo.Chat/GetGroupIds" {
+		return handler(ctx, req)
 	}
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "no metadata")
+	}
+
+	rawCookieArr := md.Get("cookie")
+	if len(rawCookieArr) == 0 {
+		return nil, status.Error(codes.Unauthenticated, "no cookie")
+	}
+
+	header := http.Header{}
+	header.Add("Cookie", rawCookieArr[0])
+	r := http.Request{Header: header}
+	token, err := r.Cookie("auth_jwt")
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "no auth cookie")
+	}
+
+	authResp, err := app.authClient.VerifyToken(
+		ctx,
+		&auth_pb.VerifyTokenReq{Token: token.Value},
+	)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	ctx = context.WithValue(ctx, userIdKey{}, uuid.UUID(authResp.UserId))
 	// call serviceHandler
-	res, err = handler(ctx, req)
-	return res, err
+	return handler(ctx, req)
 }
