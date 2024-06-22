@@ -10,19 +10,16 @@ http {
     location / {
       proxy_pass http://view:3000;
       proxy_http_version 1.1;
-      include /etc/nginx/conf.d/headers.conf;
     }
 
     location /api/auth/ {
       proxy_pass http://auth:3000/;
       proxy_http_version 1.1;
-      include /etc/nginx/conf.d/headers.conf;
     }
 
     location /api/streaming/ {
       proxy_pass http://streaming:3000/;
       proxy_http_version 1.1;
-      include /etc/nginx/conf.d/headers.conf;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "Upgrade";
       proxy_read_timeout 24h;
@@ -34,7 +31,10 @@ http {
     }
 
     location /pgadmin/ {
-      proxy_pass http://pgadmin:80/;
+      # for letting nginx start even if pgadmin isn't up
+      set $upstream_pgadmin pgadmin;
+      proxy_pass http://$upstream_pgadmin:80/;
+
       proxy_set_header X-Script-Name /pgadmin;
       proxy_set_header X-Scheme $scheme;
       proxy_set_header Host $http_host;

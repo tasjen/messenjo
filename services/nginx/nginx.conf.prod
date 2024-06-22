@@ -58,7 +58,10 @@ http {
     }
 
     location /pgadmin/ {
-      proxy_pass http://pgadmin:80/;
+      # for letting nginx start even if pgadmin isn't up
+      set $upstream_pgadmin pgadmin;
+      proxy_pass http://$upstream_pgadmin:80/;
+
       proxy_set_header X-Script-Name /pgadmin;
       proxy_set_header X-Scheme $scheme;
       proxy_set_header Host $http_host;
