@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stringify as uuidStringify } from "uuid";
-import { authClient } from "@/lib/grpc-clients/web";
-import { toHandledError } from "@/lib/utils";
 
 export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname !== "/login") {
@@ -11,12 +8,7 @@ export async function middleware(req: NextRequest) {
         throw new Error("no token");
       }
 
-      const { userId } = await authClient.verifyToken(
-        { token },
-        { timeoutMs: 5000 }
-      );
       const headers = new Headers(req.headers);
-      headers.set("userId", uuidStringify(userId));
       if (req.cookies.get("new_user")?.value === "") {
         headers.set("new_user", "");
       }
@@ -25,7 +17,6 @@ export async function middleware(req: NextRequest) {
       res.cookies.delete("new_user");
       return res;
     } catch (err) {
-      toHandledError(err);
       return NextResponse.redirect(new URL("/login", req.url));
     }
   }

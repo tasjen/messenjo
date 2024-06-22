@@ -21,10 +21,6 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/messenjo.Auth" }
-                          route:
-                            cluster: auth_service
-                            timeout: 0s
                         - match: { prefix: "/messenjo.Chat" }
                           route:
                             cluster: chat_service
@@ -44,25 +40,6 @@ static_resources:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-    - name: auth_service
-      connect_timeout: 1.25s
-      type: logical_dns
-      # HTTP/2 support
-      typed_extension_protocol_options:
-        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
-          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
-          explicit_http_config:
-            http2_protocol_options: {}
-      lb_policy: round_robin
-      load_assignment:
-        cluster_name: auth_service
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: auth
-                      port_value: 3001
     - name: chat_service
       connect_timeout: 1.25s
       type: logical_dns

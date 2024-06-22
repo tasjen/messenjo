@@ -4,14 +4,20 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"runtime/debug"
 
+	"github.com/google/uuid"
+	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func (app *application) recoverGrpcServer(
+type userIdKey struct{}
+
+func (app *application) errorHandler(
 	ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
@@ -26,6 +32,7 @@ func (app *application) recoverGrpcServer(
 			err = internalServerError
 		}
 	}()
+	// call authHandler
 	res, err = handler(ctx, req)
 	if err != nil {
 		status, ok := status.FromError(err)
@@ -46,5 +53,45 @@ func (app *application) recoverGrpcServer(
 			err = unauthorizedError
 		}
 	}
+	return res, err
+}
+
+func (app *application) authHandler(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (res interface{}, err error) {
+	if info.FullMethod != "/messenjo.Chat/GetGroupIds" {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return res, status.Error(codes.Unauthenticated, "no metadata")
+		}
+
+		rawCookieArr := md.Get("cookie")
+		if len(rawCookieArr) == 0 {
+			return res, status.Error(codes.Unauthenticated, "no cookie")
+		}
+
+		header := http.Header{}
+		header.Add("Cookie", rawCookieArr[0])
+		r := http.Request{Header: header}
+		token, err := r.Cookie("auth_jwt")
+		if err != nil {
+			return res, status.Error(codes.Unauthenticated, "no auth cookie")
+		}
+
+		authResp, err := app.authClient.VerifyToken(
+			ctx,
+			&auth_pb.VerifyTokenReq{Token: token.Value},
+		)
+		if err != nil {
+			return res, status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		ctx = context.WithValue(ctx, userIdKey{}, uuid.UUID(authResp.UserId))
+	}
+	// call serviceHandler
+	res, err = handler(ctx, req)
 	return res, err
 }

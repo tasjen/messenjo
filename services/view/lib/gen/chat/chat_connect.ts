@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddFriendReq, AddFriendRes, AddMembersReq, AddMessageReq, AddMessageRes, CreateGroupReq, CreateGroupRes, GetContactsReq, GetContactsRes, GetMessagesReq, GetMessagesRes, GetUserByIdReq, GetUserByUsernameReq, ResetUnreadCountReq, UpdateGroupReq, UpdateUserReq, User } from "./chat_pb";
+import { AddFriendReq, AddFriendRes, AddMembersReq, AddMessageReq, AddMessageRes, CreateGroupReq, CreateGroupRes, GetContactsRes, GetMessagesReq, GetMessagesRes, GetUserByUsernameReq, ResetUnreadCountReq, UpdateGroupReq, UpdateUserReq, User } from "./chat_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -22,11 +22,11 @@ export const Chat = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc messenjo.Chat.GetUserById
+     * @generated from rpc messenjo.Chat.GetUserInfo
      */
-    getUserById: {
-      name: "GetUserById",
-      I: GetUserByIdReq,
+    getUserInfo: {
+      name: "GetUserInfo",
+      I: Empty,
       O: User,
       kind: MethodKind.Unary,
     },
@@ -35,7 +35,7 @@ export const Chat = {
      */
     getContacts: {
       name: "GetContacts",
-      I: GetContactsReq,
+      I: Empty,
       O: GetContactsRes,
       kind: MethodKind.Unary,
     },

@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/stores/client-store";
-import { parse as uuidParse } from "uuid";
 import { useState } from "react";
 import { toast } from "sonner";
 import NoSSR from "./no-ssr";
@@ -25,7 +24,7 @@ export default function NewUsernameDialog() {
   async function handleSubmit(): Promise<void> {
     try {
       await chatClient.updateUser(
-        { userId: uuidParse(store.user.id), username, pfp: store.user.pfp },
+        { username, pfp: store.user.pfp },
         { timeoutMs: 5000 }
       );
       store.setUser({ ...store.user, username });

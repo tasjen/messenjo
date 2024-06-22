@@ -6,9 +6,9 @@ import { useParams } from "next/navigation";
 import { useStore } from "@/lib/stores/client-store";
 import ChatFormSkeleton from "@/components/skeletons/chat-form";
 import { SendHorizonal } from "lucide-react";
-import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { parse as uuidParse } from "uuid";
+import { handleWebError } from "@/lib/utils";
 
 export default function ChatForm() {
   const params = useParams<{ groupId: string }>();
@@ -34,7 +34,6 @@ export default function ChatForm() {
     chatClient
       .addMessage(
         {
-          userId: uuidParse(store.user.id),
           groupId: uuidParse(params.groupId),
           content,
           sentAt: {
@@ -44,7 +43,7 @@ export default function ChatForm() {
         },
         { timeoutMs: 5000 }
       )
-      .catch(() => toast(`failed to send message: '${content}'`));
+      .catch((err) => handleWebError(err));
     contentInput.current.value = "";
   }
 

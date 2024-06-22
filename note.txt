@@ -1,12 +1,8 @@
 todo:
- - View: Refactor error handlings. Choose custom error messages in the grpc-client file (reject(...))
-          , then just log it when actions.ts or data.ts or whatever catch a ServiceError.
-          Or create custom errors and check err instanceof ...
  - All: implement graceful shutdown
- - All: improve grpc error handling & logging
  - All: use specific hash version of docker images in production app
  - certbot: add auto renew
- - Chat & View: remove userId from grpc methods, use token to identify user instead
+ - Chat: in AddMember handler, check if the user is a member of the group before continuing
 
 install docker:
 sudo yum update -y

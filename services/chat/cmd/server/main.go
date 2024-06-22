@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,12 +31,18 @@ type application struct {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("%v: %v", err, debug.Stack())
+	}
+}
+
+func run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	pool, err := getDbPool(ctx, os.Getenv("POSTGRESQL_URI"))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer pool.Close()
 	models.DB = pool
@@ -44,14 +52,14 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return fmt.Errorf("cannot connect to Auth service: %v", err)
 	}
 	defer authConn.Close()
 
 	addr := ":3000"
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	app := &application{
@@ -65,11 +73,16 @@ func main() {
 			Addr: "redis:6379",
 		}),
 	}
-	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			app.errorHandler,
+			app.authHandler,
+		),
+	)
 
 	chat_pb.RegisterChatServer(s, app)
 	log.Printf("Server is running at %v", addr)
-	log.Fatalf("failed to serve: %v", s.Serve(lis))
+	return s.Serve(lis)
 }
 
 func getDbPool(ctx context.Context, pgURI string) (*pgxpool.Pool, error) {

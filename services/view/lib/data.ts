@@ -1,16 +1,11 @@
 import { redirect } from "next/navigation";
-import { toHandledError, toDateMs } from "@/lib/utils";
+import { toDateMs, handleNodeError } from "@/lib/utils";
 import { unstable_noStore as noStore } from "next/cache";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { chatClient } from "./grpc-clients/node";
-
-export function getUserId(): string {
-  const userId = headers().get("userId");
-  if (!userId) redirect("/login");
-  return userId;
-}
+import { Empty } from "@bufbuild/protobuf";
 
 export function isNewUser(): boolean {
   return headers().get("new_user") === "";
@@ -19,17 +14,16 @@ export function isNewUser(): boolean {
 export async function fetchUserInfo(): Promise<User> {
   noStore();
   try {
-    const userId = getUserId();
-    const user = await chatClient.getUserById(
-      { userId: uuidParse(userId) },
-      { timeoutMs: 5000 }
-    );
+    const user = await chatClient.getUserInfo(new Empty(), {
+      headers: { cookie: cookies().toString() },
+      timeoutMs: 5000,
+    });
     return User.parse({
       ...user,
-      id: userId,
+      id: uuidStringify(user.id),
     });
   } catch (err) {
-    toHandledError(err);
+    handleNodeError(err);
     redirect("/error");
   }
 }
@@ -42,12 +36,15 @@ export async function fetchUserByUsername(
   try {
     const user = await chatClient.getUserByUsername(
       { username },
-      { timeoutMs: 5000 }
+      {
+        headers: { cookie: cookies().toString() },
+        timeoutMs: 5000,
+      }
     );
     if (!user.username) return null;
     return User.parse({ ...user, id: uuidStringify(user.id) });
   } catch (err) {
-    toHandledError(err);
+    handleNodeError(err);
     redirect("/error");
   }
 }
@@ -56,12 +53,10 @@ export async function fetchContacts(): Promise<Contact[]> {
   noStore();
   // await new Promise((resolve) => setTimeout(resolve, 1000));
   try {
-    const { contacts } = await chatClient.getContacts(
-      {
-        userId: uuidParse(getUserId()),
-      },
-      { timeoutMs: 5000 }
-    );
+    const { contacts } = await chatClient.getContacts(new Empty(), {
+      headers: { cookie: cookies().toString() },
+      timeoutMs: 5000,
+    });
     return contacts.map((e) =>
       Contact.parse({
         ...e,
@@ -79,7 +74,7 @@ export async function fetchContacts(): Promise<Contact[]> {
       })
     );
   } catch (err) {
-    toHandledError(err);
+    handleNodeError(err);
     redirect("/error");
   }
 }
@@ -90,10 +85,12 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
   try {
     const { messages } = await chatClient.getMessages(
       {
-        userId: uuidParse(getUserId()),
         groupId: uuidParse(groupId),
       },
-      { timeoutMs: 5000 }
+      {
+        headers: { cookie: cookies().toString() },
+        timeoutMs: 5000,
+      }
     );
     return messages.map((e) =>
       Message.parse({
@@ -102,7 +99,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
       })
     );
   } catch (err) {
-    toHandledError(err);
+    handleNodeError(err);
     redirect("/error");
   }
 }

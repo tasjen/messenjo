@@ -96,6 +96,7 @@ app.ws<UserData>("/", {
         `userId: ${userId} connected, total user online: ${userManager.getNumUsers()}`
       );
     } catch (err) {
+      ws.close();
       if (err instanceof Error) {
         logger.error(`failed to open WebSockets: ${err.message}`);
       } else {

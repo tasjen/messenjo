@@ -17,7 +17,7 @@ import { useParams } from "next/navigation";
 import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
-import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { parse as uuidParse } from "uuid";
 
 type Props = {
   isOpen: boolean;

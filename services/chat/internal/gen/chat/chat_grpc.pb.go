@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion8
 const (
 	Chat_CreateUser_FullMethodName        = "/messenjo.Chat/CreateUser"
 	Chat_GetUserByUsername_FullMethodName = "/messenjo.Chat/GetUserByUsername"
-	Chat_GetUserById_FullMethodName       = "/messenjo.Chat/GetUserById"
+	Chat_GetUserInfo_FullMethodName       = "/messenjo.Chat/GetUserInfo"
 	Chat_GetContacts_FullMethodName       = "/messenjo.Chat/GetContacts"
 	Chat_GetMessages_FullMethodName       = "/messenjo.Chat/GetMessages"
 	Chat_CreateGroup_FullMethodName       = "/messenjo.Chat/CreateGroup"
@@ -41,10 +41,10 @@ const (
 type ChatClient interface {
 	// for Auth
 	CreateUser(ctx context.Context, in *CreateUserReq, opts ...grpc.CallOption) (*CreateUserRes, error)
-	// for View
+	// for View (auth required)
 	GetUserByUsername(ctx context.Context, in *GetUserByUsernameReq, opts ...grpc.CallOption) (*User, error)
-	GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*User, error)
-	GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error)
+	GetUserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*User, error)
+	GetContacts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetContactsRes, error)
 	GetMessages(ctx context.Context, in *GetMessagesReq, opts ...grpc.CallOption) (*GetMessagesRes, error)
 	CreateGroup(ctx context.Context, in *CreateGroupReq, opts ...grpc.CallOption) (*CreateGroupRes, error)
 	UpdateUser(ctx context.Context, in *UpdateUserReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -53,7 +53,7 @@ type ChatClient interface {
 	AddMembers(ctx context.Context, in *AddMembersReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddMessage(ctx context.Context, in *AddMessageReq, opts ...grpc.CallOption) (*AddMessageRes, error)
 	ResetUnreadCount(ctx context.Context, in *ResetUnreadCountReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// for Streaming
+	// for Streaming (no auth required)
 	GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts ...grpc.CallOption) (*GetGroupIdsRes, error)
 }
 
@@ -85,17 +85,17 @@ func (c *chatClient) GetUserByUsername(ctx context.Context, in *GetUserByUsernam
 	return out, nil
 }
 
-func (c *chatClient) GetUserById(ctx context.Context, in *GetUserByIdReq, opts ...grpc.CallOption) (*User, error) {
+func (c *chatClient) GetUserInfo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(User)
-	err := c.cc.Invoke(ctx, Chat_GetUserById_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Chat_GetUserInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *chatClient) GetContacts(ctx context.Context, in *GetContactsReq, opts ...grpc.CallOption) (*GetContactsRes, error) {
+func (c *chatClient) GetContacts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetContactsRes, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetContactsRes)
 	err := c.cc.Invoke(ctx, Chat_GetContacts_FullMethodName, in, out, cOpts...)
@@ -201,10 +201,10 @@ func (c *chatClient) GetGroupIds(ctx context.Context, in *GetGroupIdsReq, opts .
 type ChatServer interface {
 	// for Auth
 	CreateUser(context.Context, *CreateUserReq) (*CreateUserRes, error)
-	// for View
+	// for View (auth required)
 	GetUserByUsername(context.Context, *GetUserByUsernameReq) (*User, error)
-	GetUserById(context.Context, *GetUserByIdReq) (*User, error)
-	GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error)
+	GetUserInfo(context.Context, *emptypb.Empty) (*User, error)
+	GetContacts(context.Context, *emptypb.Empty) (*GetContactsRes, error)
 	GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error)
 	CreateGroup(context.Context, *CreateGroupReq) (*CreateGroupRes, error)
 	UpdateUser(context.Context, *UpdateUserReq) (*emptypb.Empty, error)
@@ -213,7 +213,7 @@ type ChatServer interface {
 	AddMembers(context.Context, *AddMembersReq) (*emptypb.Empty, error)
 	AddMessage(context.Context, *AddMessageReq) (*AddMessageRes, error)
 	ResetUnreadCount(context.Context, *ResetUnreadCountReq) (*emptypb.Empty, error)
-	// for Streaming
+	// for Streaming (no auth required)
 	GetGroupIds(context.Context, *GetGroupIdsReq) (*GetGroupIdsRes, error)
 	mustEmbedUnimplementedChatServer()
 }
@@ -228,10 +228,10 @@ func (UnimplementedChatServer) CreateUser(context.Context, *CreateUserReq) (*Cre
 func (UnimplementedChatServer) GetUserByUsername(context.Context, *GetUserByUsernameReq) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
-func (UnimplementedChatServer) GetUserById(context.Context, *GetUserByIdReq) (*User, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
+func (UnimplementedChatServer) GetUserInfo(context.Context, *emptypb.Empty) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
 }
-func (UnimplementedChatServer) GetContacts(context.Context, *GetContactsReq) (*GetContactsRes, error) {
+func (UnimplementedChatServer) GetContacts(context.Context, *emptypb.Empty) (*GetContactsRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContacts not implemented")
 }
 func (UnimplementedChatServer) GetMessages(context.Context, *GetMessagesReq) (*GetMessagesRes, error) {
@@ -310,26 +310,26 @@ func _Chat_GetUserByUsername_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Chat_GetUserById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserByIdReq)
+func _Chat_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChatServer).GetUserById(ctx, in)
+		return srv.(ChatServer).GetUserInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Chat_GetUserById_FullMethodName,
+		FullMethod: Chat_GetUserInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).GetUserById(ctx, req.(*GetUserByIdReq))
+		return srv.(ChatServer).GetUserInfo(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Chat_GetContacts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetContactsReq)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func _Chat_GetContacts_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: Chat_GetContacts_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChatServer).GetContacts(ctx, req.(*GetContactsReq))
+		return srv.(ChatServer).GetContacts(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -524,8 +524,8 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Chat_GetUserByUsername_Handler,
 		},
 		{
-			MethodName: "GetUserById",
-			Handler:    _Chat_GetUserById_Handler,
+			MethodName: "GetUserInfo",
+			Handler:    _Chat_GetUserInfo_Handler,
 		},
 		{
 			MethodName: "GetContacts",

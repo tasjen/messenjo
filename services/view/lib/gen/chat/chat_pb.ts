@@ -93,80 +93,6 @@ export class GetUserByUsernameReq extends Message$1<GetUserByUsernameReq> {
 }
 
 /**
- * @generated from message messenjo.GetUserByIdReq
- */
-export class GetUserByIdReq extends Message$1<GetUserByIdReq> {
-  /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  constructor(data?: PartialMessage<GetUserByIdReq>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "messenjo.GetUserByIdReq";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUserByIdReq {
-    return new GetUserByIdReq().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUserByIdReq {
-    return new GetUserByIdReq().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUserByIdReq {
-    return new GetUserByIdReq().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetUserByIdReq | PlainMessage<GetUserByIdReq> | undefined, b: GetUserByIdReq | PlainMessage<GetUserByIdReq> | undefined): boolean {
-    return proto3.util.equals(GetUserByIdReq, a, b);
-  }
-}
-
-/**
- * @generated from message messenjo.GetContactsReq
- */
-export class GetContactsReq extends Message$1<GetContactsReq> {
-  /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  constructor(data?: PartialMessage<GetContactsReq>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "messenjo.GetContactsReq";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetContactsReq {
-    return new GetContactsReq().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetContactsReq {
-    return new GetContactsReq().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetContactsReq {
-    return new GetContactsReq().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetContactsReq | PlainMessage<GetContactsReq> | undefined, b: GetContactsReq | PlainMessage<GetContactsReq> | undefined): boolean {
-    return proto3.util.equals(GetContactsReq, a, b);
-  }
-}
-
-/**
  * @generated from message messenjo.GetContactsRes
  */
 export class GetContactsRes extends Message$1<GetContactsRes> {
@@ -287,12 +213,7 @@ export class Contact extends Message$1<Contact> {
  */
 export class GetMessagesReq extends Message$1<GetMessagesReq> {
   /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  /**
-   * @generated from field: bytes group_id = 2;
+   * @generated from field: bytes group_id = 1;
    */
   groupId = new Uint8Array(0);
 
@@ -304,8 +225,7 @@ export class GetMessagesReq extends Message$1<GetMessagesReq> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "messenjo.GetMessagesReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 2, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 1, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMessagesReq {
@@ -428,17 +348,12 @@ export class Message extends Message$1<Message> {
  */
 export class UpdateUserReq extends Message$1<UpdateUserReq> {
   /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  /**
-   * @generated from field: string username = 2;
+   * @generated from field: string username = 1;
    */
   username = "";
 
   /**
-   * @generated from field: string pfp = 3;
+   * @generated from field: string pfp = 2;
    */
   pfp = "";
 
@@ -450,9 +365,8 @@ export class UpdateUserReq extends Message$1<UpdateUserReq> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "messenjo.UpdateUserReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 2, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "pfp", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "pfp", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateUserReq {
@@ -612,12 +526,7 @@ export class UpdateGroupReq extends Message$1<UpdateGroupReq> {
  */
 export class AddFriendReq extends Message$1<AddFriendReq> {
   /**
-   * @generated from field: bytes from_user_id = 1;
-   */
-  fromUserId = new Uint8Array(0);
-
-  /**
-   * @generated from field: bytes to_user_id = 2;
+   * @generated from field: bytes to_user_id = 1;
    */
   toUserId = new Uint8Array(0);
 
@@ -629,8 +538,7 @@ export class AddFriendReq extends Message$1<AddFriendReq> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "messenjo.AddFriendReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "from_user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 2, name: "to_user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 1, name: "to_user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AddFriendReq {
@@ -735,22 +643,17 @@ export class AddMembersReq extends Message$1<AddMembersReq> {
  */
 export class AddMessageReq extends Message$1<AddMessageReq> {
   /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  /**
-   * @generated from field: bytes group_id = 2;
+   * @generated from field: bytes group_id = 1;
    */
   groupId = new Uint8Array(0);
 
   /**
-   * @generated from field: string content = 3;
+   * @generated from field: string content = 2;
    */
   content = "";
 
   /**
-   * @generated from field: google.protobuf.Timestamp sent_at = 4;
+   * @generated from field: google.protobuf.Timestamp sent_at = 3;
    */
   sentAt?: Timestamp;
 
@@ -762,10 +665,9 @@ export class AddMessageReq extends Message$1<AddMessageReq> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "messenjo.AddMessageReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 2, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 3, name: "content", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "sent_at", kind: "message", T: Timestamp },
+    { no: 1, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 2, name: "content", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "sent_at", kind: "message", T: Timestamp },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AddMessageReq {
@@ -827,12 +729,7 @@ export class AddMessageRes extends Message$1<AddMessageRes> {
  */
 export class ResetUnreadCountReq extends Message$1<ResetUnreadCountReq> {
   /**
-   * @generated from field: bytes user_id = 1;
-   */
-  userId = new Uint8Array(0);
-
-  /**
-   * @generated from field: bytes group_id = 2;
+   * @generated from field: bytes group_id = 1;
    */
   groupId = new Uint8Array(0);
 
@@ -844,8 +741,7 @@ export class ResetUnreadCountReq extends Message$1<ResetUnreadCountReq> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "messenjo.ResetUnreadCountReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
-    { no: 2, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 1, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ResetUnreadCountReq {

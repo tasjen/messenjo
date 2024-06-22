@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
 	chat_pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/chat/internal/models"
 	"google.golang.org/grpc/codes"
@@ -42,12 +41,12 @@ func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetU
 	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
-func (app *application) GetUserById(ctx context.Context, req *chat_pb.GetUserByIdReq) (*chat_pb.User, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
+func (app *application) GetUserInfo(ctx context.Context, req *empty.Empty) (*chat_pb.User, error) {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &chat_pb.User{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 	user, err := app.users.GetById(ctx, userId)
@@ -58,12 +57,12 @@ func (app *application) GetUserById(ctx context.Context, req *chat_pb.GetUserByI
 	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
-func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContactsReq) (*chat_pb.GetContactsRes, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
+func (app *application) GetContacts(ctx context.Context, req *empty.Empty) (*chat_pb.GetContactsRes, error) {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &chat_pb.GetContactsRes{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 	stmt := `
@@ -149,11 +148,11 @@ func (app *application) GetContacts(ctx context.Context, req *chat_pb.GetContact
 }
 
 func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessagesReq) (*chat_pb.GetMessagesRes, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &chat_pb.GetMessagesRes{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 
@@ -187,6 +186,7 @@ func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessage
 }
 
 // this method is only for Streaming service when users connect to WebSocket
+// no auth required
 func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupIdsReq) (*chat_pb.GetGroupIdsRes, error) {
 	userId, err := uuid.FromBytes(req.GetUserId())
 	if err != nil {
@@ -252,16 +252,11 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 }
 
 func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserReq) (*empty.Empty, error) {
-	err := verifyUser(ctx, req.GetUserId(), app.authClient)
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &empty.Empty{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 
@@ -290,12 +285,6 @@ func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserR
 }
 
 func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGroupReq) (*chat_pb.CreateGroupRes, error) {
-	// if the group creator's userId doesn't match his verified userId
-	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
-	if err != nil {
-		return &chat_pb.CreateGroupRes{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
 	groupName := req.GetGroupName()
 	if l := len(groupName); l < 1 || l > 16 {
 		return &chat_pb.CreateGroupRes{}, status.Error(
@@ -323,7 +312,16 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	var userIds []uuid.UUID
+	// group creator
+	creatorUserId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
+		return &chat_pb.CreateGroupRes{}, status.Error(
+			codes.Internal,
+			"failed to get `userId` from ctx",
+		)
+	}
+
+	userIds := []uuid.UUID{creatorUserId}
 	for _, e := range req.GetUserIds() {
 		userId, err := uuid.FromBytes(e)
 		if err != nil {
@@ -365,15 +363,6 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 }
 
 func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGroupReq) (*empty.Empty, error) {
-	token, err := getToken(ctx)
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-	_, err = app.authClient.VerifyToken(ctx, &auth_pb.VerifyTokenReq{Token: token})
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, status.Error(
@@ -408,16 +397,11 @@ func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGrou
 }
 
 func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq) (*chat_pb.AddFriendRes, error) {
-	err := verifyUser(ctx, req.GetFromUserId(), app.authClient)
-	if err != nil {
-		return &chat_pb.AddFriendRes{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
-	fromUserId, err := uuid.FromBytes(req.GetFromUserId())
-	if err != nil {
+	fromUserId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &chat_pb.AddFriendRes{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid fromUserId: ", req.GetFromUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 
@@ -489,12 +473,6 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 }
 
 func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersReq) (*empty.Empty, error) {
-	// if the adder doesn't belong to the group
-	err := verifyUser(ctx, req.GetUserIds()[0], app.authClient)
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, status.Error(
@@ -535,16 +513,11 @@ func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersR
 }
 
 func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageReq) (*chat_pb.AddMessageRes, error) {
-	err := verifyUser(ctx, req.GetUserId(), app.authClient)
-	if err != nil {
-		return &chat_pb.AddMessageRes{}, status.Error(codes.Unauthenticated, err.Error())
-	}
-
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
 		return &chat_pb.AddMessageRes{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
+			codes.Internal,
+			"failed to get `userId` from ctx",
 		)
 	}
 
@@ -597,19 +570,19 @@ func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageR
 }
 
 func (app *application) ResetUnreadCount(ctx context.Context, req *chat_pb.ResetUnreadCountReq) (*empty.Empty, error) {
+	userId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
+		return &empty.Empty{}, status.Error(
+			codes.Internal,
+			"failed to get `userId` from ctx",
+		)
+	}
+
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {
 		return &empty.Empty{}, status.Error(
 			codes.InvalidArgument,
 			fmt.Sprint("invalid groupId: ", req.GetGroupId()),
-		)
-	}
-
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
-		return &empty.Empty{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
 		)
 	}
 

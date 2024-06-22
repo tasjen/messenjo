@@ -28,13 +28,14 @@ export default function CreateGroupForm() {
         {
           groupName,
           pfp,
-          userIds: [store.user.id, ...userIds].map((id) => uuidParse(id)),
+          userIds: userIds.map((id) => uuidParse(id)),
         },
         { timeoutMs: 5000 }
       );
+      const groupIdString = uuidStringify(groupId);
       const createdGroup = GroupContact.parse({
         type: "group",
-        groupId: uuidStringify(groupId),
+        groupId: groupIdString,
         name: groupName,
         pfp,
         memberCount: userIds.length + 1,
@@ -45,7 +46,7 @@ export default function CreateGroupForm() {
         {
           action: {
             label: "Chat",
-            onClick: () => router.push(`/chat/${groupId}`),
+            onClick: () => router.push(`/chat/${groupIdString}`),
           },
         }
       );

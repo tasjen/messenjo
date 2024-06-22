@@ -8,8 +8,8 @@ import Link from "next/link";
 import { UserCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
-import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
+import { handleWebError } from "@/lib/utils";
 
 type Props = {
   user: User;
@@ -32,7 +32,6 @@ export default function FriendSearchResultClient({ user }: Props) {
     try {
       const { groupId } = await chatClient.addFriend(
         {
-          fromUserId: uuidParse(store.user.id),
           toUserId: uuidParse(user.id),
         },
         { timeoutMs: 5000 }
@@ -47,9 +46,7 @@ export default function FriendSearchResultClient({ user }: Props) {
         })
       );
     } catch (err) {
-      if (err instanceof Error) {
-        toast(err.message);
-      }
+      handleWebError(err);
     }
   }
 

@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -35,27 +37,36 @@ type application struct {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("%v: %v", err, debug.Stack())
+	}
+}
+
+func run() error {
 	var err error
 	if IS_PROD, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	awsConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		return fmt.Errorf("unable to load SDK config, %v", err)
 	}
 
-	chatConn, err := grpc.NewClient("chat:3000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	chatConn, err := grpc.NewClient(
+		"chat:3000",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return fmt.Errorf("cannot connect to Chat service: %v", err)
 	}
 	defer chatConn.Close()
 
 	accountTableName := os.Getenv("ACCOUNT_TABLE_NAME")
 	if accountTableName == "" {
-		log.Fatal("please specify the name of DynamoDB table ",
+		return fmt.Errorf("please specify the name of DynamoDB table %v",
 			"that stores user accounts `ACCOUNT_TABLE_NAME` in .env file")
 	}
 
@@ -75,9 +86,12 @@ func main() {
 	tableExists, err := app.accounts.TableExists(ctx)
 	switch {
 	case err != nil:
-		log.Fatal(err)
+		return err
 	case !tableExists:
-		log.Fatalf("Table `%v` doesn't exists. Please create one", accountTableName)
+		return fmt.Errorf(
+			"table `%v` doesn't exists. Please create one",
+			accountTableName,
+		)
 	}
 
 	go app.startGrpcService()
@@ -91,14 +105,14 @@ func main() {
 	}
 
 	log.Printf("HTTP server is running at %v", srv.Addr)
-	log.Fatal(srv.ListenAndServe())
+	return srv.ListenAndServe()
 }
 
 func (app *application) startGrpcService() {
 	addr := ":3001"
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v: %v", err, debug.Stack())
 	}
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))

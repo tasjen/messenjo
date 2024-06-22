@@ -10,9 +10,9 @@ import ChatBoardSkeleton from "@/components/skeletons/chat-board";
 import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
 import { ScrollArea } from "../ui/scroll-area";
-import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { parse as uuidParse } from "uuid";
+import { handleWebError } from "@/lib/utils";
 
 type Props = {
   messages: Message[];
@@ -39,19 +39,20 @@ export default function ChatBoard(props: Props) {
       // the current chat room once after enter and another after
       // leave. For example, if a user navigate from chat room 'A'
       // to 'B', the unreadCount on both client and server of chat
-      // room 'A' and 'B' will be reset if the unreadCount of each
-      // chat room is not zero. The unreadCount of the last chat room
-      // that the user has visited before closing the page will be
-      // reset by onbeforeunload event in ContactListClient.
+      // room 'A' and 'B' will be reset whether it's zero or not
+      // (cannot check if unreadCount is 0 or not since the
+      // unreadCount inside this callback won't update and its value
+      // will always be the value at first page mount).
+      // If users close the page on a chat room. The unreadCount of
+      // that chat room will be reset by onbeforeunload event
+      // in ContactListClient.
       store.resetUnreadCount();
-      if (contact && contact.unreadCount !== 0) {
-        chatClient
-          .resetUnreadCount(
-            { groupId: uuidParse(params.groupId) },
-            { timeoutMs: 5000 }
-          )
-          .catch((err) => toast(err.message));
-      }
+      chatClient
+        .resetUnreadCount(
+          { groupId: uuidParse(params.groupId) },
+          { timeoutMs: 5000 }
+        )
+        .catch((err) => handleWebError(err));
     };
   }, []);
 
