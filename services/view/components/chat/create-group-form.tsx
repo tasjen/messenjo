@@ -24,14 +24,11 @@ export default function CreateGroupForm() {
 
   async function handleSubmit(): Promise<void> {
     try {
-      const { groupId } = await chatClient.createGroup(
-        {
-          groupName,
-          pfp,
-          userIds: userIds.map((id) => uuidParse(id)),
-        },
-        { timeoutMs: 5000 }
-      );
+      const { groupId } = await chatClient.createGroup({
+        groupName,
+        pfp,
+        userIds: userIds.map((id) => uuidParse(id)),
+      });
       const groupIdString = uuidStringify(groupId);
       const createdGroup = GroupContact.parse({
         type: "group",

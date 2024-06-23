@@ -36,12 +36,9 @@ app.ws<UserData>("/", {
       if (!cookies.auth_jwt) {
         throw new Error("no token");
       }
-      const { userId } = await authClient.verifyToken(
-        {
-          token: cookies.auth_jwt,
-        },
-        { timeoutMs: 5000 }
-      );
+      const { userId } = await authClient.verifyToken({
+        token: cookies.auth_jwt,
+      });
       if (!userId.length) {
         throw new Error("no `res.userId` returned from verifyToken");
       }
@@ -80,12 +77,9 @@ app.ws<UserData>("/", {
       if (conns) {
         topics = conns[0].getTopics();
       } else {
-        const { groupIds } = await chatClient.getGroupIds(
-          {
-            userId: uuidParse(userId),
-          },
-          { timeoutMs: 5000 }
-        );
+        const { groupIds } = await chatClient.getGroupIds({
+          userId: uuidParse(userId),
+        });
         topics = groupIds.map((e) => uuidStringify(e)).concat(userId);
       }
       for (const t of topics) {

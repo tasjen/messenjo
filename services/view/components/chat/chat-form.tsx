@@ -32,17 +32,14 @@ export default function ChatForm() {
       sentAt,
     });
     chatClient
-      .addMessage(
-        {
-          groupId: uuidParse(params.groupId),
-          content,
-          sentAt: {
-            seconds: BigInt(Math.floor(sentAt / 1e3)),
-            nanos: new Date(sentAt).getMilliseconds() * 1e6,
-          },
+      .addMessage({
+        groupId: uuidParse(params.groupId),
+        content,
+        sentAt: {
+          seconds: BigInt(Math.floor(sentAt / 1e3)),
+          nanos: new Date(sentAt).getMilliseconds() * 1e6,
         },
-        { timeoutMs: 5000 }
-      )
+      })
       .catch((err) => handleWebError(err));
     contentInput.current.value = "";
   }

@@ -48,10 +48,7 @@ export default function ChatBoard(props: Props) {
       // in ContactListClient.
       store.resetUnreadCount();
       chatClient
-        .resetUnreadCount(
-          { groupId: uuidParse(params.groupId) },
-          { timeoutMs: 5000 }
-        )
+        .resetUnreadCount({ groupId: uuidParse(params.groupId) })
         .catch((err) => handleWebError(err));
     };
   }, []);

@@ -23,10 +23,7 @@ export default function NewUsernameDialog() {
 
   async function handleSubmit(): Promise<void> {
     try {
-      await chatClient.updateUser(
-        { username, pfp: store.user.pfp },
-        { timeoutMs: 5000 }
-      );
+      await chatClient.updateUser({ username, pfp: store.user.pfp });
       store.setUser({ ...store.user, username });
       toast(`Your username has been changed to ${username}`, {
         action: {

@@ -30,12 +30,9 @@ export default function FriendSearchResultClient({ user }: Props) {
 
   async function handleAddFriend() {
     try {
-      const { groupId } = await chatClient.addFriend(
-        {
-          toUserId: uuidParse(user.id),
-        },
-        { timeoutMs: 5000 }
-      );
+      const { groupId } = await chatClient.addFriend({
+        toUserId: uuidParse(user.id),
+      });
       store.addContact(
         FriendContact.parse({
           type: "friend",

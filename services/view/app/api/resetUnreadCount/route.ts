@@ -14,7 +14,6 @@ export async function POST(req: Request) {
       },
       {
         headers: { cookie: cookies().toString() },
-        timeoutMs: 5000,
       }
     );
   } catch (err) {

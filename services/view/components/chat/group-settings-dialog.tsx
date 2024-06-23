@@ -42,14 +42,11 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
 
   async function handleSubmit(): Promise<void> {
     try {
-      await chatClient.updateGroup(
-        {
-          groupId: uuidParse(params.groupId),
-          name,
-          pfp,
-        },
-        { timeoutMs: 5000 }
-      );
+      await chatClient.updateGroup({
+        groupId: uuidParse(params.groupId),
+        name,
+        pfp,
+      });
       const updatedGroup: GroupContact = {
         ...currentSettings,
         name: name,

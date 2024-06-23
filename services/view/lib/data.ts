@@ -16,7 +16,6 @@ export async function fetchUserInfo(): Promise<User> {
   try {
     const user = await chatClient.getUserInfo(new Empty(), {
       headers: { cookie: cookies().toString() },
-      timeoutMs: 5000,
     });
     return User.parse({
       ...user,
@@ -38,7 +37,6 @@ export async function fetchUserByUsername(
       { username },
       {
         headers: { cookie: cookies().toString() },
-        timeoutMs: 5000,
       }
     );
     if (!user.username) return null;
@@ -55,7 +53,6 @@ export async function fetchContacts(): Promise<Contact[]> {
   try {
     const { contacts } = await chatClient.getContacts(new Empty(), {
       headers: { cookie: cookies().toString() },
-      timeoutMs: 5000,
     });
     return contacts.map((e) =>
       Contact.parse({
@@ -89,7 +86,6 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
       },
       {
         headers: { cookie: cookies().toString() },
-        timeoutMs: 5000,
       }
     );
     return messages.map((e) =>
