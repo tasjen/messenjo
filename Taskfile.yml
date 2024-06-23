@@ -44,14 +44,14 @@ tasks:
     silent: true
   pgadmin:
     cmds:
+      - task down ARGS=nginx;
       - |
         DEV_COMPOSE=docker-compose.dev.yml
-        PROD_COMPOSE=docker-compose.prod.yml
         if [ -e $DEV_COMPOSE ]
         then
-          docker compose -f $DEV_COMPOSE up pgadmin
+          task dev ARGS="pgadmin nginx -d";
         else
-          docker compose -f $PROD_COMPOSE up pgadmin
+          task prod ARGS="pgadmin nginx -d";
         fi
     silent: true
 
