@@ -2,6 +2,25 @@ events {
 }
 
 http {
+
+  upstream view_upstream {
+    server view:3000 max_fails=1 fail_timeout=2s;
+    keepalive 4;
+    keepalive_timeout 60s;
+  }
+
+  upstream auth_upstream {
+    server auth:3000 max_fails=1 fail_timeout=2s;
+    keepalive 4;
+    keepalive_timeout 60s;
+  }
+
+  upstream envoy_upstream {
+    server envoy:3000 max_fails=1 fail_timeout=2s;
+    keepalive 32;
+    keepalive_timeout 60s;
+  }
+
   server {
     listen 80 default_server;
 
@@ -32,29 +51,35 @@ http {
     ssl_prefer_server_ciphers on;
 
     location / {
-      proxy_pass http://view:3000;
+      proxy_pass http://view_upstream;
       proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_next_upstream error timeout http_500;
       include /etc/nginx/conf.d/headers.conf;
     }
 
     location /api/auth/ {
-      proxy_pass http://auth:3000/;
+      proxy_pass http://auth_upstream/;
       proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_next_upstream error timeout http_500;
       include /etc/nginx/conf.d/headers.conf;
     }
 
     location /api/streaming/ {
       proxy_pass http://streaming:3000/;
       proxy_http_version 1.1;
-      include /etc/nginx/conf.d/headers.conf;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection "Upgrade";
       proxy_read_timeout 30m;
+      include /etc/nginx/conf.d/headers.conf;
     }
 
     location /api/grpc-web/ {
-      proxy_pass http://envoy:3000/;
+      proxy_pass http://envoy_upstream/;
       proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_next_upstream error timeout http_500;
     }
 
     location /pgadmin/ {
