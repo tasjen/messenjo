@@ -3,29 +3,33 @@ package models
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IMessageModel interface {
 	GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error)
-	Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error)
+	Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error)
 }
 
-type MessageModel struct{}
+type MessageModel struct {
+	DB *pgxpool.Pool
+}
 
-func NewMessageModel() *MessageModel {
-	return &MessageModel{}
+func NewMessageModel(db *pgxpool.Pool) *MessageModel {
+	return &MessageModel{DB: db}
 }
 
 type Message struct {
-	Id           int            `db:"id"`
-	FromUsername string         `db:"from_username"`
-	FromPfp      sql.NullString `db:"from_pfp"`
-	Content      string         `db:"content"`
-	SentAt       time.Time      `db:"sent_at"`
+	Id           int       `db:"id"`
+	FromUsername string    `db:"from_username"`
+	FromPfp      string    `db:"from_pfp"`
+	Content      string    `db:"content"`
+	SentAt       time.Time `db:"sent_at"`
 }
 
 func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error) {
@@ -49,20 +53,31 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 			AND members.group_id = $2
 		ORDER BY sent_at DESC;`
 
-	rows, err := DB.Query(ctx, stmt, userId, groupId)
+	rows, err := m.DB.Query(ctx, stmt, userId, groupId)
 	if err != nil {
 		return []Message{}, err
 	}
 
 	messages, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (Message, error) {
 		var m Message
-		err := row.Scan(&m.Id, &m.FromUsername, &m.FromPfp, &m.Content, &m.SentAt)
+		var fromPfp sql.NullString
+		err := row.Scan(&m.Id, &m.FromUsername, &fromPfp, &m.Content, &m.SentAt)
+		if err != nil {
+			return Message{}, err
+		}
+		m.FromPfp = fromPfp.String
 		return m, err
 	})
-	return messages, err
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []Message{}, nil
+		}
+		return []Message{}, err
+	}
+	return messages, nil
 }
 
-func (m *MessageModel) Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error) {
+func (m *MessageModel) Add(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error) {
 	stmt := `
 		WITH sent_message AS (
 			INSERT INTO messages (user_id, group_id, content, sent_at)
@@ -80,6 +95,6 @@ func (m *MessageModel) Add(ctx context.Context, tx pgx.Tx, userId, groupId uuid.
 		fromUsername string
 		fromPfp      string
 	)
-	err := tx.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt.UnixMilli())/1000).Scan(&id, &fromUsername, &fromPfp)
+	err := m.DB.QueryRow(ctx, stmt, userId, groupId, content, float64(sentAt.UnixMilli())/1000).Scan(&id, &fromUsername, &fromPfp)
 	return id, fromUsername, fromPfp, err
 }

@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	chat_pb "github.com/tasjen/messenjo/services/chat/internal/gen/chat"
 	"github.com/tasjen/messenjo/services/chat/internal/models"
 	"google.golang.org/grpc/codes"
@@ -27,17 +25,13 @@ func (app *application) GetUserByUsername(ctx context.Context, req *chat_pb.GetU
 		)
 	}
 
-	user, err := app.users.GetByUsername(ctx, username)
-	switch {
-	case err == pgx.ErrNoRows:
-		return &chat_pb.User{}, nil
-	case err != nil:
+	user, err := app.data.GetUserByUsername(ctx, username)
+	if err != nil {
 		return &chat_pb.User{}, status.Error(
 			codes.Internal,
 			err.Error(),
 		)
 	}
-
 	return &chat_pb.User{Id: user.Id[:], Username: user.Username, Pfp: user.Pfp}, nil
 }
 
@@ -49,7 +43,7 @@ func (app *application) GetUserInfo(ctx context.Context, req *empty.Empty) (*cha
 			"failed to get `userId` from ctx",
 		)
 	}
-	user, err := app.users.GetById(ctx, userId)
+	user, err := app.data.GetUserById(ctx, userId)
 	if err != nil {
 		return &chat_pb.User{}, status.Error(codes.Internal, err.Error())
 	}
@@ -65,86 +59,30 @@ func (app *application) GetContacts(ctx context.Context, req *empty.Empty) (*cha
 			"failed to get `userId` from ctx",
 		)
 	}
-	stmt := `
-		WITH latest_messages AS (
-			SELECT DISTINCT ON (group_id) *
-			FROM messages
-			ORDER BY group_id, sent_at DESC
-		),
-		my_contacts AS (
-			SELECT *
-			FROM members
-			WHERE user_id = $1
-		)
-		SELECT
-			DISTINCT
-			CASE
-				WHEN groups.name = '' THEN  'friend'
-				ELSE 'group'
-			END AS "type",
-			groups.id AS group_id,
-			CASE
-				WHEN groups.name = '' THEN users.id
-				ELSE NULL
-			END AS user_id,
-			COALESCE(
-				NULLIF(groups.name, ''),
-				users.username
-			) AS name,
-			CASE
-				WHEN groups.name = '' THEN users.pfp
-				ELSE groups.pfp
-			END AS pfp,
-			CASE
-				WHEN groups.name = '' THEN NULL
-				ELSE (SELECT COUNT(*) FROM members WHERE members.group_id = groups.id)
-			END AS member_count,
-			my_contacts.unread_count AS unread_count,
-			latest_messages.id AS last_message_id,
-			latest_messages.content AS last_content,
-			latest_messages.sent_at AS last_sent_at
-		FROM
-			members
-			JOIN "groups"
-			ON members.group_id = groups.id
-			JOIN my_contacts
-			ON members.group_id = my_contacts.group_id
-			JOIN users
-			ON members.user_id = users.id
-			LEFT JOIN latest_messages
-			ON groups.id = latest_messages.group_id
-		WHERE
-			users.id != $1;`
-	rows, err := models.DB.Query(ctx, stmt, userId)
-	switch {
-	case err == pgx.ErrNoRows:
-		return &chat_pb.GetContactsRes{}, nil
-	case err != nil:
-		return &chat_pb.GetContactsRes{}, status.Error(codes.Internal, err.Error())
-	}
-
-	contacts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (*chat_pb.Contact, error) {
-		var c chat_pb.Contact
-		var lastMessageId sql.NullInt32
-		var lastContent sql.NullString
-		var lastSentAt sql.NullTime
-		var memberCount sql.NullInt32
-		err := row.Scan(&c.Type, &c.GroupId, &c.UserId, &c.Name, &c.Pfp, &memberCount, &c.UnreadCount, &lastMessageId, &lastContent, &lastSentAt)
-		c.MemberCount = memberCount.Int32
-		if lastMessageId.Valid {
-			c.LastMessage = &chat_pb.Message{
-				Id:      lastMessageId.Int32,
-				Content: lastContent.String,
-				SentAt:  timestamp.New(lastSentAt.Time),
-			}
-		}
-		return &c, err
-	})
+	contacts, err := app.data.GetContacts(ctx, userId)
 	if err != nil {
 		return &chat_pb.GetContactsRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &chat_pb.GetContactsRes{Contacts: contacts}, nil
+	var contactsPb []*chat_pb.Contact
+	for _, e := range contacts {
+		contactsPb = append(contactsPb, &chat_pb.Contact{
+			Type:        e.Type,
+			GroupId:     e.GroupId[:],
+			UserId:      e.UserId[:],
+			Name:        e.Name,
+			Pfp:         e.Pfp,
+			MemberCount: int32(e.MemberCount),
+			UnreadCount: int32(e.UnreadCount),
+			LastMessage: &chat_pb.Message{
+				Id:      int32(e.LastMessageId),
+				Content: e.LastContent,
+				SentAt:  timestamp.New(e.LastSentAt),
+			},
+		})
+	}
+
+	return &chat_pb.GetContactsRes{Contacts: contactsPb}, nil
 }
 
 func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessagesReq) (*chat_pb.GetMessagesRes, error) {
@@ -164,25 +102,22 @@ func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessage
 		)
 	}
 
-	messages, err := app.messages.GetFromGroupId(ctx, userId, groupId)
-	switch {
-	case err == pgx.ErrNoRows:
-		return &chat_pb.GetMessagesRes{}, nil
-	case err != nil:
+	messages, err := app.data.GetMessagesFromGroupId(ctx, userId, groupId)
+	if err != nil {
 		return &chat_pb.GetMessagesRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	var pbMessages []*chat_pb.Message
+	var messagesPb []*chat_pb.Message
 	for _, e := range messages {
-		pbMessages = append(pbMessages, &chat_pb.Message{
+		messagesPb = append(messagesPb, &chat_pb.Message{
 			Id:           int32(e.Id),
 			FromUsername: e.FromUsername,
-			FromPfp:      e.FromPfp.String,
+			FromPfp:      e.FromPfp,
 			Content:      e.Content,
 			SentAt:       timestamp.New(e.SentAt),
 		})
 	}
-	return &chat_pb.GetMessagesRes{Messages: pbMessages}, nil
+	return &chat_pb.GetMessagesRes{Messages: messagesPb}, nil
 }
 
 // this method is only for Streaming service when users connect to WebSocket
@@ -196,7 +131,7 @@ func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupId
 		)
 	}
 
-	groupIds, err := app.members.GetGroupIds(ctx, userId)
+	groupIds, err := app.data.GetGroupIdsFromUserId(ctx, userId)
 	if err != nil {
 		return &chat_pb.GetGroupIdsRes{}, status.Error(codes.Internal, err.Error())
 	}
@@ -227,8 +162,7 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 		)
 	}
 
-	userId := uuid.New()
-	err = app.users.Add(ctx, userId, username, pfp)
+	userId, err := app.data.AddUser(ctx, username, pfp)
 	if err != nil {
 		// Returns an error if the cause of error isn't from duplicated username
 		var dupUsernameError *models.DupUsernameError
@@ -241,7 +175,7 @@ func (app *application) CreateUser(ctx context.Context, req *chat_pb.CreateUserR
 		// but somehow failed in AuthDB, there won't be an error from
 		// the next attempt to create the same user since users will be
 		// created in both ChatDB and AuthDB respectively.
-		user, err := app.users.GetByUsername(ctx, username)
+		user, err := app.data.GetUserByUsername(ctx, username)
 		if err != nil {
 			return &chat_pb.CreateUserRes{}, status.Error(codes.Internal, err.Error())
 		}
@@ -276,9 +210,15 @@ func (app *application) UpdateUser(ctx context.Context, req *chat_pb.UpdateUserR
 		)
 	}
 
-	err = app.users.Update(ctx, userId, username, pfp)
+	err = app.data.UpdateUser(ctx, userId, username, pfp)
 	var dupUsernameError *models.DupUsernameError
-	if err != nil && !errors.As(err, &dupUsernameError) {
+	if err != nil {
+		if errors.As(err, &dupUsernameError) {
+			return &empty.Empty{}, status.Error(
+				codes.InvalidArgument,
+				fmt.Sprintf("username `%v` already exists", username),
+			)
+		}
 		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}
 	return &empty.Empty{}, nil
@@ -298,18 +238,6 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 			codes.InvalidArgument,
 			err.Error(),
 		)
-	}
-
-	tx, err := models.DB.Begin(ctx)
-	if err != nil {
-		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
-	}
-	defer tx.Rollback(ctx)
-
-	groupId := uuid.New()
-	err = app.groups.Add(ctx, tx, groupId, groupName, pfp)
-	if err != nil {
-		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	// group creator
@@ -333,12 +261,7 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 		userIds = append(userIds, userId)
 	}
 
-	err = app.members.Add(ctx, tx, groupId, userIds)
-	if err != nil {
-		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
-	}
-
-	err = tx.Commit(ctx)
+	groupId, err := app.data.CreateGroup(ctx, groupName, pfp, userIds...)
 	if err != nil {
 		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
@@ -386,7 +309,7 @@ func (app *application) UpdateGroup(ctx context.Context, req *chat_pb.UpdateGrou
 		)
 	}
 
-	err = app.groups.Update(ctx, groupId, groupName, pfp)
+	err = app.data.UpdateGroup(ctx, groupId, groupName, pfp)
 	if err != nil {
 		return &empty.Empty{}, status.Error(
 			codes.Internal,
@@ -413,35 +336,7 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 		)
 	}
 
-	isFriend, err := app.users.IsFriend(ctx, fromUserId, toUserId)
-	switch {
-	case err != nil:
-		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
-	case isFriend:
-		return &chat_pb.AddFriendRes{}, status.Error(
-			codes.PermissionDenied,
-			"already friends",
-		)
-	}
-
-	tx, err := models.DB.Begin(ctx)
-	if err != nil {
-		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
-	}
-	defer tx.Rollback(ctx)
-
-	groupId := uuid.New()
-	err = app.groups.Add(ctx, tx, groupId, "", "")
-	if err != nil {
-		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
-	}
-
-	err = app.members.Add(ctx, tx, groupId, []uuid.UUID{fromUserId, toUserId})
-	if err != nil {
-		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
-	}
-
-	err = tx.Commit(ctx)
+	groupId, err := app.data.AddFriend(ctx, fromUserId, toUserId)
 	if err != nil {
 		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
@@ -449,7 +344,7 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 	go func() {
 		newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		fromUser, err := app.users.GetById(newCtx, fromUserId)
+		fromUser, err := app.data.GetUserById(newCtx, fromUserId)
 		if err != nil {
 			app.logger.Error(err.Error())
 			return
@@ -493,18 +388,7 @@ func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersR
 		userIds = append(userIds, userId)
 	}
 
-	tx, err := models.DB.Begin(ctx)
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
-	}
-	defer tx.Rollback(ctx)
-
-	err = app.members.Add(ctx, tx, groupId, userIds)
-	if err != nil {
-		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
-	}
-
-	err = tx.Commit(ctx)
+	err = app.data.AddMembers(ctx, groupId, userIds...)
 	if err != nil {
 		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}
@@ -536,33 +420,21 @@ func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageR
 			"message must be at least 1 character and not exceed 300 characters",
 		)
 	}
-
-	tx, err := models.DB.Begin(ctx)
-	if err != nil {
-		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
-	}
-	defer tx.Rollback(ctx)
-
 	sentAt := req.GetSentAt().AsTime()
-	id, fromUsername, fromPfp, err := app.messages.Add(ctx, tx, userId, groupId, content, sentAt)
-	if err != nil {
-		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
-	}
-
-	err = tx.Commit(ctx)
+	id, fromUsername, fromPfp, err := app.data.AddMessage(ctx, userId, groupId, content, sentAt)
 	if err != nil {
 		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	go func() {
-		sendMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
-		sendMessageActionJson, err := json.Marshal(sendMessageAction)
+		addMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
+		addMessageActionJson, err := json.Marshal(addMessageAction)
 		if err != nil {
 			app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			app.redisClient.Publish(newCtx, "main", sendMessageActionJson)
+			app.redisClient.Publish(newCtx, "main", addMessageActionJson)
 		}
 	}()
 
@@ -586,7 +458,7 @@ func (app *application) ResetUnreadCount(ctx context.Context, req *chat_pb.Reset
 		)
 	}
 
-	err = app.members.ResetUnreadCount(ctx, groupId, userId)
+	err = app.data.ResetUnreadCount(ctx, groupId, userId)
 	if err != nil {
 		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
 	}

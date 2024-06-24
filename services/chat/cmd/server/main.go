@@ -21,10 +21,7 @@ import (
 
 type application struct {
 	logger      *slog.Logger
-	users       models.IUserModel
-	groups      models.IGroupModel
-	members     models.IMemberModel
-	messages    models.IMessageModel
+	data        models.IDataModel
 	authClient  auth_pb.AuthClient
 	redisClient *redis.Client
 	chat_pb.UnimplementedChatServer
@@ -37,7 +34,7 @@ func main() {
 }
 
 func run() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	pool, err := getDbPool(ctx, os.Getenv("POSTGRESQL_URI"))
@@ -45,7 +42,6 @@ func run() error {
 		return err
 	}
 	defer pool.Close()
-	models.DB = pool
 
 	authConn, err := grpc.NewClient(
 		"auth:3001",
@@ -64,10 +60,7 @@ func run() error {
 
 	app := &application{
 		logger:     slog.New(slog.NewJSONHandler(os.Stdout, nil)),
-		users:      models.NewUserModel(),
-		groups:     models.NewGroupModel(),
-		members:    models.NewMemberModel(),
-		messages:   models.NewMessageModel(),
+		data:       models.NewDataModel(pool),
 		authClient: auth_pb.NewAuthClient(authConn),
 		redisClient: redis.NewClient(&redis.Options{
 			Addr: "redis:6379",

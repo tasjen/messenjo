@@ -43,13 +43,13 @@ func main() {
 }
 
 func run() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	var err error
 	if IS_PROD, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	awsConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to load SDK config, %v", err)

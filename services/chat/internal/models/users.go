@@ -7,20 +7,23 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IUserModel interface {
-	Add(ctx context.Context, userId uuid.UUID, username, pfp string) error
+	Add(ctx context.Context, userId uuid.UUID, username, pfp string) (uuid.UUID, error)
 	GetByUsername(ctx context.Context, username string) (User, error)
 	GetById(ctx context.Context, userId uuid.UUID) (User, error)
 	IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (bool, error)
 	Update(ctx context.Context, userId uuid.UUID, username, pfp string) error
 }
 
-type UserModel struct{}
+type UserModel struct {
+	DB *pgxpool.Pool
+}
 
-func NewUserModel() *UserModel {
-	return &UserModel{}
+func NewUserModel(db *pgxpool.Pool) *UserModel {
+	return &UserModel{DB: db}
 }
 
 type User struct {
@@ -29,26 +32,27 @@ type User struct {
 	Pfp      string    `db:"pfp"`
 }
 
-func (m *UserModel) Add(ctx context.Context, userId uuid.UUID, username, pfp string) error {
+func (m *UserModel) Add(ctx context.Context, username, pfp string) (uuid.UUID, error) {
 	stmt := `INSERT INTO users (id, username, pfp) VALUES ($1, $2, $3);`
-	_, err := DB.Exec(ctx, stmt, userId, username, pfp)
+	userId := uuid.New()
+	_, err := m.DB.Exec(ctx, stmt, userId, username, pfp)
 	var pgErr *pgconn.PgError
 	if err != nil && errors.As(err, &pgErr) && pgErr.Code == "23505" {
-		return &DupUsernameError{Username: username}
+		return uuid.UUID{}, &DupUsernameError{Username: username}
 	}
-	return err
+	return userId, nil
 }
 
 func (m *UserModel) GetByUsername(ctx context.Context, username string) (User, error) {
 	var user User
-	err := DB.QueryRow(ctx, `
+	err := m.DB.QueryRow(ctx, `
 		SELECT * FROM users WHERE username = $1;`, username).Scan(&user.Id, &user.Username, &user.Pfp)
 	return user, err
 }
 
 func (m *UserModel) GetById(ctx context.Context, userId uuid.UUID) (User, error) {
 	var user User
-	err := DB.QueryRow(ctx,
+	err := m.DB.QueryRow(ctx,
 		`SELECT * FROM users WHERE id = $1`, userId).Scan(&user.Id, &user.Username, &user.Pfp)
 	return user, err
 }
@@ -66,7 +70,7 @@ func (m *UserModel) IsFriend(ctx context.Context, userId1, userId2 uuid.UUID) (b
   	AND m2.user_id = $2;`
 
 	var count int
-	err := DB.QueryRow(ctx, stmt, userId1, userId2).Scan(&count)
+	err := m.DB.QueryRow(ctx, stmt, userId1, userId2).Scan(&count)
 	if err != nil {
 		return false, err
 	}
@@ -87,7 +91,7 @@ func (m *UserModel) Update(ctx context.Context, userId uuid.UUID, username, pfp 
 		UPDATE users
 		SET username = $2, pfp = $3
 		WHERE id = $1;`
-	_, err := DB.Exec(ctx, stmt, userId, username, pfp)
+	_, err := m.DB.Exec(ctx, stmt, userId, username, pfp)
 	var pgErr *pgconn.PgError
 	if err != nil && errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		return &DupUsernameError{Username: username}

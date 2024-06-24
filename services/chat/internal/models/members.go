@@ -2,21 +2,25 @@ package models
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IMemberModel interface {
-	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds []uuid.UUID) error
-	GetGroupIds(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error)
+	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds ...uuid.UUID) error
+	GetGroupIdsFromUserId(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error)
 	ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error
 }
 
-type MemberModel struct{}
+type MemberModel struct {
+	DB *pgxpool.Pool
+}
 
-func NewMemberModel() *MemberModel {
-	return &MemberModel{}
+func NewMemberModel(db *pgxpool.Pool) *MemberModel {
+	return &MemberModel{DB: db}
 }
 
 type Member struct {
@@ -25,7 +29,7 @@ type Member struct {
 	UnreadCount int16     `db:"unread_count"`
 }
 
-func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds []uuid.UUID) error {
+func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds ...uuid.UUID) error {
 	_, err := tx.CopyFrom(
 		ctx,
 		pgx.Identifier{"members"},
@@ -37,13 +41,13 @@ func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, use
 	return err
 }
 
-func (m *MemberModel) GetGroupIds(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error) {
+func (m *MemberModel) GetGroupIdsFromUserId(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error) {
 	stmt := `
 		SELECT group_id
  		FROM members
  		WHERE user_id = $1;`
 
-	rows, err := DB.Query(ctx, stmt, userId)
+	rows, err := m.DB.Query(ctx, stmt, userId)
 	if err != nil {
 		return []uuid.UUID{}, err
 	}
@@ -54,7 +58,14 @@ func (m *MemberModel) GetGroupIds(ctx context.Context, userId uuid.UUID) ([]uuid
 		return groupId, err
 	})
 
-	return groupIds, err
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []uuid.UUID{}, nil
+		}
+		return []uuid.UUID{}, err
+	}
+
+	return groupIds, nil
 }
 
 func (m *MemberModel) ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error {
@@ -62,6 +73,6 @@ func (m *MemberModel) ResetUnreadCount(ctx context.Context, groupId, userId uuid
 		UPDATE members
 		SET unread_count = 0
 		WHERE group_id = $1 AND user_id = $2;`
-	_, err := DB.Exec(ctx, stmt, groupId, userId)
+	_, err := m.DB.Exec(ctx, stmt, groupId, userId)
 	return err
 }
