@@ -278,7 +278,10 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			app.redisClient.Publish(newCtx, "main", actionJson)
+			err = app.redisClient.Publish(newCtx, "main", actionJson).Err()
+			if err != nil {
+				app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
+			}
 		}
 	}()
 
@@ -360,7 +363,10 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 		if err != nil {
 			app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
 		} else {
-			app.redisClient.Publish(newCtx, "main", actionJson)
+			err = app.redisClient.Publish(newCtx, "main", actionJson).Err()
+			if err != nil {
+				app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
+			}
 		}
 	}()
 
@@ -434,7 +440,10 @@ func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageR
 		} else {
 			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
-			app.redisClient.Publish(newCtx, "main", addMessageActionJson)
+			err = app.redisClient.Publish(newCtx, "main", addMessageActionJson).Err()
+			if err != nil {
+				app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
+			}
 		}
 	}()
 
