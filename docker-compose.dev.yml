@@ -1,36 +1,4 @@
 services:
-  view:
-    image: messenjo-view:dev
-    container_name: messenjo-view-dev
-    environment:
-      - HOST=${HOST}
-    build:
-      context: ./services/view
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./services/view:/app
-      - /app/node_modules
-      - /app/.next
-    depends_on:
-      - chat
-      - envoy
-
-  streaming:
-    image: messenjo-streaming:dev
-    container_name: messenjo-streaming-dev
-    build:
-      context: ./services/streaming
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./services/streaming:/app
-      - /app/node_modules
-    env_file:
-      - ./services/streaming/.env.dev
-    depends_on:
-      - auth
-      - chat
-      - redis
-
   auth:
     image: messenjo-auth:dev
     container_name: messenjo-auth-dev
@@ -60,6 +28,38 @@ services:
       - chatdb
       - redis
 
+  streaming:
+    image: messenjo-streaming:dev
+    container_name: messenjo-streaming-dev
+    build:
+      context: ./services/streaming
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/streaming:/app
+      - /app/node_modules
+    env_file:
+      - ./services/streaming/.env.dev
+    depends_on:
+      - auth
+      - chat
+      - redis
+
+  view:
+    image: messenjo-view:dev
+    container_name: messenjo-view-dev
+    environment:
+      - HOST=${HOST}
+    build:
+      context: ./services/view
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./services/view:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - chat
+      - envoy
+
   chatdb:
     image: postgres:16-alpine
     container_name: messenjo-chatdb-dev
@@ -78,6 +78,16 @@ services:
     build:
       context: ./services/redis
 
+  envoy:
+    image: envoyproxy/envoy:distroless-v1.30-latest
+    container_name: messenjo-envoy-dev
+    volumes:
+      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    attach: false
+    depends_on:
+      - auth
+      - chat
+
   nginx:
     image: nginx:stable-alpine
     container_name: messenjo-nginx-dev
@@ -92,22 +102,12 @@ services:
       - streaming
       - envoy
 
-  envoy:
-    image: envoyproxy/envoy:distroless-v1.30-latest
-    container_name: messenjo-envoy-dev
-    volumes:
-      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
-    attach: false
-    depends_on:
-      - auth
-      - chat
-
   pgadmin:
     image: dpage/pgadmin4
     container_name: messenjo-pgadmin-dev
-    profiles:
-      - pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: dev@dev.com
       PGADMIN_DEFAULT_PASSWORD: dev
     attach: false
+    ports:
+      - 5050:5050

@@ -1,31 +1,4 @@
 services:
-  view:
-    image: messenjo-view:prod
-    container_name: messenjo-view-prod
-    environment:
-      - HOST=${HOST}
-    build:
-      context: ./services/view
-      dockerfile: Dockerfile.prod
-    depends_on:
-      - chat
-      - envoy
-    restart: unless-stopped
-
-  streaming:
-    image: messenjo-streaming:prod
-    container_name: messenjo-streaming-prod
-    build:
-      context: ./services/streaming
-      dockerfile: Dockerfile.prod
-    env_file:
-      - ./services/streaming/.env.prod
-    depends_on:
-      - auth
-      - chat
-      - redis
-    restart: unless-stopped
-
   auth:
     image: messenjo-auth:prod
     container_name: messenjo-auth-prod
@@ -51,9 +24,46 @@ services:
       - redis
     restart: unless-stopped
 
+  streaming:
+    image: messenjo-streaming:prod
+    container_name: messenjo-streaming-prod
+    build:
+      context: ./services/streaming
+      dockerfile: Dockerfile.prod
+    env_file:
+      - ./services/streaming/.env.prod
+    depends_on:
+      - auth
+      - chat
+      - redis
+    restart: unless-stopped
+
+  view:
+    image: messenjo-view:prod
+    container_name: messenjo-view-prod
+    environment:
+      - HOST=${HOST}
+    build:
+      context: ./services/view
+      dockerfile: Dockerfile.prod
+    depends_on:
+      - chat
+      - envoy
+    restart: unless-stopped
+
   redis:
     image: ghcr.io/microsoft/garnet-alpine
     container_name: messenjo-redis-prod
+    restart: unless-stopped
+
+  envoy:
+    image: envoyproxy/envoy:distroless-v1.30-latest
+    container_name: messenjo-envoy-prod
+    volumes:
+      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
+    attach: false
+    depends_on:
+      - chat
     restart: unless-stopped
 
   nginx:
@@ -74,21 +84,9 @@ services:
       - envoy
     restart: unless-stopped
 
-  envoy:
-    image: envoyproxy/envoy:distroless-v1.30-latest
-    container_name: messenjo-envoy-prod
-    volumes:
-      - ./services/envoy/envoy.yaml:/etc/envoy/envoy.yaml
-    attach: false
-    depends_on:
-      - chat
-    restart: unless-stopped
-
   pgadmin:
     image: dpage/pgadmin4
     container_name: messenjo-pgadmin-prod
-    profiles:
-      - pgadmin
     env_file:
       - ./.env.prod
     attach: false

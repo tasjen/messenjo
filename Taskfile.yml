@@ -4,55 +4,31 @@ vars:
   EC2_IPv4: 52.76.87.23
   # for dev mode, replace original chatdb host with localhost + sslmode=disable
   MIGRATE: migrate -path ./services/chatdb/migrations/ -database ${POSTGRESQL_URI/"chatdb:5432/postgres"/"localhost:5432/postgres?sslmode=disable"}
+  DEV_COMPOSE: docker-compose.dev.yml
+  PROD_COMPOSE: docker-compose.prod.yml
+
 dotenv: ["./services/chat/.env.dev", "./services/chat/.env.prod"]
+
 tasks:
-  dev:
+  compose-*:
     cmds:
-      - docker compose -f docker-compose.dev.yml up {{.ARGS}}
+      - |
+        if [ -e {{.DEV_COMPOSE}} ]
+        then
+          HOST=localhost:3000 docker compose -f {{.DEV_COMPOSE}} {{index .MATCH 0}} {{.ARGS}};
+        else
+          HOST=tasjen.pro docker compose -f {{.PROD_COMPOSE}} {{index .MATCH 0}} {{.ARGS}};
+        fi
     env:
-      HOST: localhost:3000
       MY_UID:
         sh: id -u
       MY_GID:
         sh: id -g
-  prod:
-    cmds:
-      - docker compose -f docker-compose.prod.yml up {{.ARGS}}
-    env:
-      HOST:
-        tasjen.pro
-        # if no DNS, use AWS default public DNS as HOST
-        # sh: >
-        #   curl -H "X-aws-ec2-metadata-token: {{.TOKEN}}"
-        #   "http://169.254.169.254/latest/meta-data/public-hostname"
-    vars:
-      TOKEN:
-        sh: >
-          curl -X PUT "http://169.254.169.254/latest/api/token"
-          -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"
-  down:
-    cmds:
-      - |
-        DEV_COMPOSE=docker-compose.dev.yml
-        PROD_COMPOSE=docker-compose.prod.yml
-        if [ -e $DEV_COMPOSE ]
-        then
-          docker compose -f $DEV_COMPOSE down {{.ARGS}}
-        else
-          docker compose -f $PROD_COMPOSE down {{.ARGS}}
-        fi
     silent: true
-  pgadmin:
+
+  attach:
     cmds:
-      - task down ARGS=nginx;
-      - |
-        DEV_COMPOSE=docker-compose.dev.yml
-        if [ -e $DEV_COMPOSE ]
-        then
-          task dev ARGS="pgadmin nginx -d";
-        else
-          task prod ARGS="pgadmin nginx -d";
-        fi
+      - task compose-up ARGS="auth chat streaming view nginx"
     silent: true
 
   # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')
