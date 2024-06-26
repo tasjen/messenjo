@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { useStore } from "@/lib/stores/client-store";
+import { ReactNode } from "react";
 
 type Props = {
   fallback?: ReactNode;
@@ -8,11 +9,7 @@ type Props = {
 };
 
 export default function NoSSR({ fallback, children }: Props) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { isClient } = useStore();
 
   return isClient ? children : fallback;
 }

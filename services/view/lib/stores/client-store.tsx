@@ -1,7 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { createContext, useContext, ReactNode, useReducer } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useReducer,
+  useEffect,
+} from "react";
 import { User, Message, Contact, GroupContact, Action } from "@/lib/schema";
 import { useParams } from "next/navigation";
 
@@ -9,6 +15,7 @@ type State = {
   user: User;
   contacts: Contact[];
   isWsDisconnected: boolean;
+  isClient: boolean;
 };
 
 type Action =
@@ -51,17 +58,24 @@ type Action =
   | {
       type: "SET_IS_DISCONNECTED";
       payload: boolean;
+    }
+  | {
+      type: "SET_IS_CLIENT";
+      payload: boolean;
     };
 
 const initState: State = {
   user: {} as User,
   contacts: [],
   isWsDisconnected: false,
+  isClient: false,
 };
 
 function storeReducer(state: State, action: Action): State {
   const { type, payload } = action;
   switch (type) {
+    case "SET_IS_CLIENT":
+      return { ...state, isClient: payload };
     case "SET_USER":
       return { ...state, user: payload };
     case "SET_GROUP":
@@ -150,6 +164,7 @@ type TStore = {
   isWsDisconnected: boolean;
   connectWs: () => void;
   disConnectWs: () => void;
+  isClient: boolean;
 };
 
 const StoreContext = createContext<TStore | null>(null);
@@ -157,6 +172,10 @@ const StoreContext = createContext<TStore | null>(null);
 export default function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initState);
   const params = useParams<{ groupId: string }>();
+
+  useEffect(() => {
+    dispatch({ type: "SET_IS_CLIENT", payload: true });
+  }, []);
 
   function setUser(user: User): void {
     dispatch({ type: "SET_USER", payload: user });
