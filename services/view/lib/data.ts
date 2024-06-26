@@ -59,7 +59,7 @@ export async function fetchContacts(): Promise<Contact[]> {
         ...e,
         groupId: e.groupId && uuidStringify(e.groupId),
         userId: e.userId.length && uuidStringify(e.userId),
-        messages: e.lastMessage
+        messages: e.lastMessage?.id
           ? [
               {
                 id: e.lastMessage.id,
