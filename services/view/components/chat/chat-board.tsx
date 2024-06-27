@@ -14,7 +14,6 @@ import { parse as uuidParse } from "uuid";
 import { handleWebError, toDateMs } from "@/lib/util";
 import { useInView } from "react-intersection-observer";
 import { useDebouncedCallback } from "use-debounce";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { MESSAGES_BATCH_SIZE } from "@/lib/config";
 
 type Props = {
@@ -24,9 +23,8 @@ type Props = {
 export default function ChatBoard(props: Props) {
   const params = useParams<{ groupId: string }>();
   const store = useStore();
+  const listRef = useRef<HTMLUListElement>(null);
   const { ref: inViewRef, inView } = useInView({ threshold: 0.9 });
-  const lastMessageRef = useRef<HTMLLIElement>(null);
-  const [listRef] = useAutoAnimate({ duration: 100 });
 
   const contact = store.contacts.find((e) => e.groupId === params.groupId);
 
@@ -81,7 +79,7 @@ export default function ChatBoard(props: Props) {
       contact &&
       contact.messages[0]?.fromUsername === store.user.username
     ) {
-      lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+      listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     }
     // call loadMoreMessages again in case 'inView' is still 'true' after loaded
     loadMoreMessages();
@@ -109,13 +107,8 @@ export default function ChatBoard(props: Props) {
         className="flex flex-col-reverse gap-2 overflow-auto mb-auto
         border-t pt-2 pr-2 -mr-2"
       >
-        {contact.messages.map((message, index) => (
-          <MessageItem
-            key={message.id}
-            contact={contact}
-            message={message}
-            ref={index === 0 ? lastMessageRef : undefined}
-          />
+        {contact.messages.map((message) => (
+          <MessageItem key={message.id} contact={contact} message={message} />
         ))}
         {!contact.allMessagesLoaded && (
           <div ref={inViewRef} className="mx-auto">
