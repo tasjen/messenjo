@@ -6,6 +6,7 @@ import { Contact, Message, User } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { chatClient } from "./grpc-clients/node";
 import { Empty } from "@bufbuild/protobuf";
+import { MESSAGES_BATCH_SIZE } from "./config";
 
 export function isNewUser(): boolean {
   return headers().get("new_user") === "";
@@ -77,7 +78,7 @@ export async function fetchContacts(): Promise<Contact[]> {
   }
 }
 
-export async function fetchMessages(groupId: string): Promise<Message[]> {
+export async function fetchLatestMessages(groupId: string): Promise<Message[]> {
   noStore();
   // await new Promise((resolve) => setTimeout(resolve, 500));
   try {
@@ -85,7 +86,7 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
       {
         groupId: uuidParse(groupId),
         start: 1,
-        end: 15,
+        end: MESSAGES_BATCH_SIZE,
       },
       {
         headers: { cookie: cookies().toString() },

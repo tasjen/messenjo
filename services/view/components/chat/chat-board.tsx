@@ -15,6 +15,7 @@ import { handleWebError, toDateMs } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import { useDebouncedCallback } from "use-debounce";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { MESSAGES_BATCH_SIZE } from "@/lib/config";
 
 type Props = {
   messages: Message[];
@@ -34,7 +35,7 @@ export default function ChatBoard(props: Props) {
     const { messages } = await chatClient.getMessages({
       groupId: uuidParse(params.groupId),
       start: contact.messages.length + 1,
-      end: contact.messages.length + 15,
+      end: contact.messages.length + MESSAGES_BATCH_SIZE,
     });
     store.loadOlderMessages(
       messages.map((m) =>

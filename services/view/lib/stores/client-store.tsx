@@ -10,6 +10,7 @@ import {
 } from "react";
 import { User, Message, Contact, GroupContact, Action } from "@/lib/schema";
 import { useParams } from "next/navigation";
+import { MESSAGES_BATCH_SIZE } from "../config";
 
 type State = {
   user: User;
@@ -115,7 +116,8 @@ function storeReducer(state: State, action: Action): State {
             : {
                 ...contact,
                 messages: [...contact.messages, ...payload.messages],
-                allMessagesLoaded: !payload.messages.length,
+                allMessagesLoaded:
+                  payload.messages.length < MESSAGES_BATCH_SIZE,
               }
         ),
       };
