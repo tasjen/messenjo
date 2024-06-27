@@ -3,7 +3,7 @@
 
 import { Contact, User } from "@/lib/schema";
 import { useEffect, useState } from "react";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import ContactItem from "./contact-item";

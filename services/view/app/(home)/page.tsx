@@ -2,7 +2,7 @@ import NoSSR from "@/components/no-ssr";
 import { ThemeSwitchSkeleton } from "@/components/skeletons/theme-switch";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getUserInfo } from "@/lib/stores/server-store";
+import { getUserInfo } from "@/lib/store/server";
 
 export default async function HomePage() {
   const user = await getUserInfo();

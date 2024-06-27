@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { toDateMs, handleNodeError } from "@/lib/utils";
+import { toDateMs, handleNodeError } from "@/lib/util";
 import { unstable_noStore as noStore } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";

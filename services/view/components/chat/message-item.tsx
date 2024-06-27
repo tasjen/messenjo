@@ -2,7 +2,7 @@
 
 import { forwardRef, useCallback } from "react";
 import { Contact, Message } from "@/lib/schema";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import clsx from "clsx";
 import dayjs from "dayjs";

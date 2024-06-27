@@ -3,13 +3,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FriendContact, User } from "@/lib/schema";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import Link from "next/link";
 import { UserCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { chatClient } from "@/lib/grpc-clients/web";
-import { handleWebError } from "@/lib/utils";
+import { handleWebError } from "@/lib/util";
 
 type Props = {
   user: User;

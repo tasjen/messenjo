@@ -1,6 +1,6 @@
 import { chatClient } from "@/lib/grpc-clients/node";
 import { parse as uuidParse } from "uuid";
-import { handleNodeError } from "@/lib/utils";
+import { handleNodeError } from "@/lib/util";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {

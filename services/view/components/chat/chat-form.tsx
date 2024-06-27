@@ -3,12 +3,12 @@ import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import ChatFormSkeleton from "@/components/skeletons/chat-form";
 import { SendHorizonal } from "lucide-react";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { parse as uuidParse } from "uuid";
-import { handleWebError } from "@/lib/utils";
+import { handleWebError } from "@/lib/util";
 
 export default function ChatForm() {
   const params = useParams<{ groupId: string }>();

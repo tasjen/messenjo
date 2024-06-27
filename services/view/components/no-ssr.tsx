@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { ReactNode } from "react";
 
 type Props = {

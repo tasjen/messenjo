@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { useState } from "react";
 import { toast } from "sonner";
 import NoSSR from "./no-ssr";

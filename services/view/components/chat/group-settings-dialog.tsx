@@ -12,7 +12,7 @@ import { Input } from "../ui/input";
 import { Dispatch, SetStateAction, useState } from "react";
 import clsx from "clsx";
 import { Button } from "../ui/button";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { useParams } from "next/navigation";
 import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";

@@ -5,7 +5,7 @@ import { useEffect, useMemo } from "react";
 import useWebSocket from "react-use-websocket";
 import { z } from "zod";
 import { Action } from "@/lib/schema";
-import { useStore } from "@/lib/stores/client-store";
+import { useStore } from "@/lib/store/client";
 import { toast } from "sonner";
 
 export default function Streaming() {
