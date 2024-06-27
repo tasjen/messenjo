@@ -4,6 +4,10 @@ todo:
  - certbot: add auto renew
  - Chat: in AddMember handler, check if the user is a member of the group before continuing
  - View: Lazily load messages
+ - View: remove react-usewebsocket
+ - View: store group members in contact state
+ - View: improve ChatBoard UI (pfp, date)
+ - View: fix skeleton components
 
 
 prod image build order:

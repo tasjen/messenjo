@@ -8,6 +8,7 @@ import type { Contact } from "@/lib/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import NoSSR from "@/components/no-ssr";
 import { Badge } from "./ui/badge";
+import { useCallback } from "react";
 
 type Props = {
   contact: Contact;
@@ -17,7 +18,7 @@ export default function ContactItem({ contact }: Props) {
   const pathname = usePathname();
   const params = useParams<{ groupId?: string }>();
 
-  function formattedTime(lastSentAt?: number): string {
+  const formattedTime = useCallback((lastSentAt?: number): string => {
     const now = dayjs();
     if (!lastSentAt) {
       return "No data";
@@ -32,7 +33,7 @@ export default function ContactItem({ contact }: Props) {
     } else {
       return dayjs(lastSentAt).format("DD/MM/YYYY");
     }
-  }
+  }, []);
 
   return (
     <li>

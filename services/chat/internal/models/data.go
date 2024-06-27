@@ -15,7 +15,7 @@ type IDataModel interface {
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserById(ctx context.Context, userId uuid.UUID) (User, error)
 	GetContacts(ctx context.Context, userId uuid.UUID) ([]Contact, error)
-	GetMessagesFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error)
+	GetMessagesFromGroupId(ctx context.Context, userId, groupId uuid.UUID, start, end int) ([]Message, error)
 	GetGroupIdsFromUserId(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error)
 	AddUser(ctx context.Context, username, pfp string) (uuid.UUID, error)
 	UpdateUser(ctx context.Context, userId uuid.UUID, username, pfp string) error
@@ -161,8 +161,8 @@ func (d *DataModel) GetContacts(ctx context.Context, userId uuid.UUID) ([]Contac
 	return contacts, err
 }
 
-func (d *DataModel) GetMessagesFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error) {
-	return messages.GetFromGroupId(ctx, userId, groupId)
+func (d *DataModel) GetMessagesFromGroupId(ctx context.Context, userId, groupId uuid.UUID, start, end int) ([]Message, error) {
+	return messages.GetFromGroupId(ctx, userId, groupId, start, end)
 }
 
 func (d *DataModel) GetGroupIdsFromUserId(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error) {

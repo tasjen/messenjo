@@ -102,7 +102,31 @@ func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessage
 		)
 	}
 
-	messages, err := app.data.GetMessagesFromGroupId(ctx, userId, groupId)
+	start, end := req.GetStart(), req.GetEnd()
+	switch {
+	case start < 1:
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("`start` must be greater than 0", req.GetGroupId()),
+		)
+	case end < 1:
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("`end` must be greater than 0", req.GetGroupId()),
+		)
+	case start > end:
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("`end` must be greater than `start`", req.GetGroupId()),
+		)
+	case end-start > 50:
+		return &chat_pb.GetMessagesRes{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("cannot get more than 50 messages at a time", req.GetGroupId()),
+		)
+	}
+
+	messages, err := app.data.GetMessagesFromGroupId(ctx, userId, groupId, int(start), int(end))
 	if err != nil {
 		return &chat_pb.GetMessagesRes{}, status.Error(codes.Internal, err.Error())
 	}

@@ -52,6 +52,8 @@ message Contact {
 
 message GetMessagesReq {
   bytes group_id = 1;
+  int32 start = 2;
+  int32 end = 3;
 }
 message GetMessagesRes {
   repeated Message messages = 1;

@@ -32,7 +32,14 @@ type Action =
       payload: Contact[];
     }
   | {
-      type: "LOAD_MESSAGES";
+      type: "LOAD_LATEST_MESSAGES";
+      payload: {
+        groupId: string;
+        messages: Message[];
+      };
+    }
+  | {
+      type: "LOAD_OLDER_MESSAGES";
       payload: {
         groupId: string;
         messages: Message[];
@@ -74,8 +81,6 @@ const initState: State = {
 function storeReducer(state: State, action: Action): State {
   const { type, payload } = action;
   switch (type) {
-    case "SET_IS_CLIENT":
-      return { ...state, isClient: payload };
     case "SET_USER":
       return { ...state, user: payload };
     case "SET_GROUP":
@@ -87,14 +92,31 @@ function storeReducer(state: State, action: Action): State {
       };
     case "LOAD_CONTACTS":
       return { ...state, contacts: payload };
-    case "LOAD_MESSAGES":
+    case "LOAD_LATEST_MESSAGES":
       return {
         ...state,
         contacts: state.contacts.map((contact) =>
           // only load messages if not already
-          contact.groupId !== payload.groupId || contact.messagesLoaded
+          contact.groupId !== payload.groupId || contact.latestMessagesLoaded
             ? contact
-            : { ...contact, messages: payload.messages, messagesLoaded: true }
+            : {
+                ...contact,
+                messages: payload.messages,
+                latestMessagesLoaded: true,
+              }
+        ),
+      };
+    case "LOAD_OLDER_MESSAGES":
+      return {
+        ...state,
+        contacts: state.contacts.map((contact) =>
+          contact.groupId !== payload.groupId || contact.allMessagesLoaded
+            ? contact
+            : {
+                ...contact,
+                messages: [...contact.messages, ...payload.messages],
+                allMessagesLoaded: !payload.messages.length,
+              }
         ),
       };
     case "ADD_MESSAGE":
@@ -103,7 +125,7 @@ function storeReducer(state: State, action: Action): State {
         contacts: state.contacts.map((contact) =>
           // only add a message if the message is not already added
           // by checking username and sentAt field since one user cannot (?)
-          // send more than one messages with the same sentAt field
+          // send more than one messages with the same sentAt value
           contact.groupId !== payload.groupId ||
           contact.messages.find(
             (m) =>
@@ -148,23 +170,26 @@ function storeReducer(state: State, action: Action): State {
       };
     case "SET_IS_DISCONNECTED":
       return { ...state, isWsDisconnected: payload };
+    case "SET_IS_CLIENT":
+      return { ...state, isClient: payload };
   }
 }
 
 type TStore = {
   user: User;
   contacts: Contact[];
+  isWsDisconnected: boolean;
+  isClient: boolean;
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
   loadContacts: (contacts: Contact[]) => void;
-  loadMessages: (messages: Message[]) => void;
+  loadLatestMessages: (messages: Message[]) => void;
+  loadOlderMessages: (messages: Message[]) => void;
   addMessage: (groupId: string, message: Message) => void;
   resetUnreadCount: () => void;
   addContact: (contact: Contact) => void;
-  isWsDisconnected: boolean;
   connectWs: () => void;
   disConnectWs: () => void;
-  isClient: boolean;
 };
 
 const StoreContext = createContext<TStore | null>(null);
@@ -190,9 +215,16 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
-  function loadMessages(messages: Message[]): void {
+  function loadLatestMessages(messages: Message[]): void {
     dispatch({
-      type: "LOAD_MESSAGES",
+      type: "LOAD_LATEST_MESSAGES",
+      payload: { groupId: params.groupId, messages },
+    });
+  }
+
+  function loadOlderMessages(messages: Message[]): void {
+    dispatch({
+      type: "LOAD_OLDER_MESSAGES",
       payload: { groupId: params.groupId, messages },
     });
   }
@@ -227,7 +259,8 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
         setUser,
         setGroup,
         loadContacts,
-        loadMessages,
+        loadLatestMessages,
+        loadOlderMessages,
         addMessage,
         resetUnreadCount,
         addContact,

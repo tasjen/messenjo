@@ -47,6 +47,43 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
+
+  /* .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s;
+
+    &:hover {
+      scrollbar-color: hsl(var(--bg-border)) transparent;
+    }
+
+    &:not(:hover)::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar {
+      width: 0.5rem;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      @apply bg-border;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+  } */
+
+  :not(:hover)::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.475rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border;
+    border-radius: 5px;
+  }
 }
 
 @layer base {

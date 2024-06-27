@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,7 +31,11 @@ type Message struct {
 	SentAt       time.Time `db:"sent_at"`
 }
 
-func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.UUID) ([]Message, error) {
+func (m *MessageModel) GetFromGroupId(
+	ctx context.Context,
+	userId, groupId uuid.UUID,
+	start, end int,
+) ([]Message, error) {
 	stmt := `
 		SELECT
 			messages.id AS "id",
@@ -51,9 +54,10 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 		WHERE
 			members.user_id = $1
 			AND members.group_id = $2
-		ORDER BY sent_at DESC;`
+		ORDER BY sent_at DESC
+		LIMIT $3 OFFSET $4;`
 
-	rows, err := m.DB.Query(ctx, stmt, userId, groupId)
+	rows, err := m.DB.Query(ctx, stmt, userId, groupId, end-start+1, start-1)
 	if err != nil {
 		return []Message{}, err
 	}
@@ -69,9 +73,6 @@ func (m *MessageModel) GetFromGroupId(ctx context.Context, userId, groupId uuid.
 		return m, err
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return []Message{}, nil
-		}
 		return []Message{}, err
 	}
 	return messages, nil

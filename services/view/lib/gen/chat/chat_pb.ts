@@ -217,6 +217,16 @@ export class GetMessagesReq extends Message$1<GetMessagesReq> {
    */
   groupId = new Uint8Array(0);
 
+  /**
+   * @generated from field: int32 start = 2;
+   */
+  start = 0;
+
+  /**
+   * @generated from field: int32 end = 3;
+   */
+  end = 0;
+
   constructor(data?: PartialMessage<GetMessagesReq>) {
     super();
     proto3.util.initPartial(data, this);
@@ -226,6 +236,8 @@ export class GetMessagesReq extends Message$1<GetMessagesReq> {
   static readonly typeName = "messenjo.GetMessagesReq";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+    { no: 2, name: "start", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "end", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMessagesReq {

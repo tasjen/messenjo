@@ -110,4 +110,4 @@ services:
       PGADMIN_DEFAULT_PASSWORD: dev
     attach: false
     ports:
-      - 5050:5050
+      - 5050:80

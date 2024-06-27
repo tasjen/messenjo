@@ -68,6 +68,7 @@ export async function fetchContacts(): Promise<Contact[]> {
               },
             ]
           : [],
+        allMessagesLoaded: !e.lastMessage?.id,
       })
     );
   } catch (err) {
@@ -83,6 +84,8 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
     const { messages } = await chatClient.getMessages(
       {
         groupId: uuidParse(groupId),
+        start: 1,
+        end: 15,
       },
       {
         headers: { cookie: cookies().toString() },
