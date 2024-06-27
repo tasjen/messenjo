@@ -1,18 +1,12 @@
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { logger } from "./logger";
-import { Timestamp } from "@bufbuild/protobuf";
 import { toast } from "sonner";
 import { Code, ConnectError } from "@connectrpc/connect";
 import { redirect } from "next/navigation";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-export function toDateMs(timestamp?: Timestamp): number {
-  if (!timestamp) return 0;
-  return Number(timestamp.seconds ?? 0) * 1e3 + (timestamp.nanos ?? 0) / 1e6;
 }
 
 export function handleNodeError(err: unknown): void {

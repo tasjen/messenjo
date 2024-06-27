@@ -11,7 +11,7 @@ import MessageItem from "./message-item";
 import GroupMenuButton from "./group-menu-button";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { parse as uuidParse } from "uuid";
-import { handleWebError, toDateMs } from "@/lib/util";
+import { handleWebError } from "@/lib/util";
 import { useInView } from "react-intersection-observer";
 import { useDebouncedCallback } from "use-debounce";
 import { MESSAGES_BATCH_SIZE } from "@/lib/config";
@@ -39,7 +39,7 @@ export default function ChatBoard(props: Props) {
       messages.map((m) =>
         Message.parse({
           ...m,
-          sentAt: toDateMs(m.sentAt),
+          sentAt: m.sentAt?.toDate().getTime() ?? 0,
         })
       )
     );

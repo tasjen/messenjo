@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { toDateMs, handleNodeError } from "@/lib/util";
+import { handleNodeError } from "@/lib/util";
 import { unstable_noStore as noStore } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { Contact, Message, User } from "@/lib/schema";
@@ -65,7 +65,7 @@ export async function fetchContacts(): Promise<Contact[]> {
               {
                 id: e.lastMessage.id,
                 content: e.lastMessage.content,
-                sentAt: toDateMs(e.lastMessage.sentAt),
+                sentAt: e.lastMessage.sentAt?.toDate().getTime() ?? 0,
               },
             ]
           : [],
@@ -95,7 +95,7 @@ export async function fetchLatestMessages(groupId: string): Promise<Message[]> {
     return messages.map((e) =>
       Message.parse({
         ...e,
-        sentAt: toDateMs(e.sentAt),
+        sentAt: e.sentAt?.toDate().getTime() ?? 0,
       })
     );
   } catch (err) {
