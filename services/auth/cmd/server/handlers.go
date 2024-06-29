@@ -177,7 +177,7 @@ func (app *application) VerifyToken(ctx context.Context, req *auth_pb.VerifyToke
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
-			return []byte(JWT_SECRET), nil
+			return []byte(jwtSecret), nil
 		})
 	if err != nil {
 		return &auth_pb.VerifyTokenRes{}, status.Error(

@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
 	"net"
 	"os"
+	"os/signal"
 	"runtime/debug"
+	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,24 +30,43 @@ type application struct {
 	chat_pb.UnimplementedChatServer
 }
 
+var (
+	grpcPort        = flag.Int("grpcPort", 3000, "grpc port")
+	postgresURI     = os.Getenv("POSTGRESQL_URI")
+	authServiceHost = "auth:3001"
+	redisHost       = "redis:6379"
+	grpcServer      *grpc.Server
+	errCh           = make(chan error)
+)
+
 func main() {
 	if err := run(); err != nil {
-		log.Fatalf("%v: %v", err, debug.Stack())
+		log.Fatalf("%v: %v", err, string(debug.Stack()))
+	} else {
+		log.Println("Chat server has been gracefully shutdown")
 	}
 }
 
 func run() error {
+	flag.Parse()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := getDbPool(ctx, os.Getenv("POSTGRESQL_URI"))
+	// connect to ChatDB
+	pool, err := pgxpool.New(ctx, postgresURI)
+	if err != nil {
+		return err
+	}
+	err = pool.Ping(ctx)
 	if err != nil {
 		return err
 	}
 	defer pool.Close()
 
+	// connect to Auth's gRPC server
 	authConn, err := grpc.NewClient(
-		"auth:3001",
+		authServiceHost,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -52,38 +74,49 @@ func run() error {
 	}
 	defer authConn.Close()
 
-	addr := ":3000"
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-
 	app := &application{
 		logger:     slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 		data:       models.NewDataModel(pool),
 		authClient: auth_pb.NewAuthClient(authConn),
 		redisClient: redis.NewClient(&redis.Options{
-			Addr: "redis:6379",
+			Addr: redisHost,
 		}),
 	}
-	s := grpc.NewServer(
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
+	if err != nil {
+		return err
+	}
+	grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			app.errorHandler,
 			app.authHandler,
 		),
 	)
+	chat_pb.RegisterChatServer(grpcServer, app)
 
-	chat_pb.RegisterChatServer(s, app)
-	log.Printf("Server is running at %v", addr)
-	return s.Serve(lis)
-}
+	// start grpc server
+	go func() {
+		if err = grpcServer.Serve(lis); err != nil {
+			errCh <- err
+		}
+	}()
+	log.Printf("Server is running at :%d", *grpcPort)
 
-func getDbPool(ctx context.Context, pgURI string) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(ctx, pgURI)
-	if err != nil {
-		return &pgxpool.Pool{}, err
+	// graceful shutdown
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(
+		sigCh, os.Interrupt, syscall.SIGINT, syscall.SIGTERM,
+	)
+	defer signal.Stop(sigCh)
+
+	select {
+	case err := <-errCh:
+		return err
+	case sig := <-sigCh:
+		log.Printf("signal '%v' detected, Chat server is being shutdown", sig)
+		cancel()
+		grpcServer.GracefulStop()
+		return nil
 	}
-
-	err = pool.Ping(ctx)
-	return pool, err
 }

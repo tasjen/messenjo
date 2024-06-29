@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"runtime/debug"
-	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -24,8 +26,15 @@ import (
 )
 
 var (
-	IS_PROD    bool
-	JWT_SECRET = os.Getenv("JWT_SECRET")
+	isProd           = flag.Bool("prod", false, "is production mode")
+	httpPort         = flag.Int("httpPort", 3000, "http port")
+	grpcPort         = flag.Int("grpcPort", 3001, "grpc port")
+	jwtSecret        = os.Getenv("JWT_SECRET")
+	accountTableName = os.Getenv("ACCOUNT_TABLE_NAME")
+	chatServiceHost  = "chat:3000"
+	httpServer       *http.Server
+	grpcServer       *grpc.Server
+	errCh            = make(chan error)
 )
 
 type application struct {
@@ -38,25 +47,26 @@ type application struct {
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatalf("%v: %v", err, debug.Stack())
+		log.Fatalf("%v: %v", err, string(debug.Stack()))
+	} else {
+		log.Println("Auth server has been gracefully shutdown")
 	}
 }
 
 func run() error {
+	flag.Parse()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	var err error
-	if IS_PROD, err = strconv.ParseBool(os.Getenv("IS_PROD")); err != nil {
-		return err
-	}
 	awsConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to load SDK config, %v", err)
 	}
 
+	// connect to Chat's gRPC server
 	chatConn, err := grpc.NewClient(
-		"chat:3000",
+		chatServiceHost,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -64,7 +74,6 @@ func run() error {
 	}
 	defer chatConn.Close()
 
-	accountTableName := os.Getenv("ACCOUNT_TABLE_NAME")
 	if accountTableName == "" {
 		return fmt.Errorf("please specify the name of DynamoDB table %v",
 			"that stores user accounts `ACCOUNT_TABLE_NAME` in .env file")
@@ -83,6 +92,7 @@ func run() error {
 		chatClient: chat_pb.NewChatClient(chatConn),
 	}
 
+	// check if account table exists
 	tableExists, err := app.accounts.TableExists(ctx)
 	switch {
 	case err != nil:
@@ -94,30 +104,54 @@ func run() error {
 		)
 	}
 
-	go app.startGrpcService()
-
-	srv := &http.Server{
-		Addr:         ":3000",
+	httpServer = &http.Server{
+		Addr:         fmt.Sprintf(":%d", *httpPort),
 		Handler:      app.recoverHttpServer(app.routes()),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Printf("HTTP server is running at %v", srv.Addr)
-	return srv.ListenAndServe()
-}
-
-func (app *application) startGrpcService() {
-	addr := ":3001"
-	lis, err := net.Listen("tcp", addr)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *grpcPort))
 	if err != nil {
-		log.Fatalf("%v: %v", err, debug.Stack())
+		return err
 	}
+	grpcServer = grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
+	auth_pb.RegisterAuthServer(grpcServer, app)
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(app.recoverGrpcServer))
+	// start http server
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			errCh <- err
+		}
+	}()
+	log.Printf("HTTP server is running at :%d", *httpPort)
 
-	auth_pb.RegisterAuthServer(s, app)
-	log.Printf("gRPC server is running at %v", addr)
-	log.Fatalf("failed to serve: %v", s.Serve(lis))
+	// start grpc server
+	go func() {
+		if err = grpcServer.Serve(lis); err != nil {
+			errCh <- err
+		}
+	}()
+	log.Printf("gRPC server is running at :%d", *grpcPort)
+
+	// graceful shutdown
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(
+		sigCh, os.Interrupt, syscall.SIGINT, syscall.SIGTERM,
+	)
+	defer signal.Stop(sigCh)
+
+	select {
+	case err := <-errCh:
+		return err
+	case sig := <-sigCh:
+		log.Printf("signal '%v' detected, Auth server is being shutdown", sig)
+		cancel()
+		if err := httpServer.Shutdown(context.Background()); err != nil {
+			return err
+		}
+		grpcServer.GracefulStop()
+		return nil
+	}
 }
