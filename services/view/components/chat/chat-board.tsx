@@ -36,6 +36,7 @@ export default function ChatBoard(props: Props) {
       end: contact.messages.length + MESSAGES_BATCH_SIZE,
     });
     store.loadOlderMessages(
+      params.groupId,
       messages.map((m) =>
         Message.parse({
           ...m,
@@ -58,7 +59,7 @@ export default function ChatBoard(props: Props) {
       // be the value at first page mount). If a user close the page
       // on a chat room. The unreadCount of that chat room will be
       // reset by 'onbeforeunload' event in ContactListClient
-      store.resetUnreadCount();
+      store.resetUnreadCount(params.groupId);
       chatClient
         .resetUnreadCount({ groupId: uuidParse(params.groupId) })
         .catch((err) => handleWebError(err));
@@ -69,7 +70,7 @@ export default function ChatBoard(props: Props) {
     // cannot loadMessages in a useEffect with an empty dependency array
     // as loadMessages may run before loadContacts, making some users
     // randomly fail to render messages
-    store.loadLatestMessages(props.messages);
+    store.loadLatestMessages(params.groupId, props.messages);
   }, [contact?.latestMessagesLoaded]);
 
   // scroll to bottom if the user send a message

@@ -9,7 +9,6 @@ import {
   useEffect,
 } from "react";
 import { User, Message, Contact, GroupContact, Action } from "@/lib/schema";
-import { useParams } from "next/navigation";
 import { MESSAGES_BATCH_SIZE } from "../config";
 
 type State = {
@@ -185,10 +184,10 @@ type TStore = {
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
   loadContacts: (contacts: Contact[]) => void;
-  loadLatestMessages: (messages: Message[]) => void;
-  loadOlderMessages: (messages: Message[]) => void;
+  loadLatestMessages: (groupId: string, messages: Message[]) => void;
+  loadOlderMessages: (groupId: string, messages: Message[]) => void;
   addMessage: (groupId: string, message: Message) => void;
-  resetUnreadCount: () => void;
+  resetUnreadCount: (groupId: string) => void;
   addContact: (contact: Contact) => void;
   connectWs: () => void;
   disConnectWs: () => void;
@@ -198,7 +197,6 @@ const StoreContext = createContext<TStore | null>(null);
 
 export default function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initState);
-  const params = useParams<{ groupId: string }>();
 
   useEffect(() => {
     dispatch({ type: "SET_IS_CLIENT", payload: true });
@@ -217,17 +215,17 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "LOAD_CONTACTS", payload: contacts });
   }
 
-  function loadLatestMessages(messages: Message[]): void {
+  function loadLatestMessages(groupId: string, messages: Message[]): void {
     dispatch({
       type: "LOAD_LATEST_MESSAGES",
-      payload: { groupId: params.groupId, messages },
+      payload: { groupId: groupId, messages },
     });
   }
 
-  function loadOlderMessages(messages: Message[]): void {
+  function loadOlderMessages(groupId: string, messages: Message[]): void {
     dispatch({
       type: "LOAD_OLDER_MESSAGES",
-      payload: { groupId: params.groupId, messages },
+      payload: { groupId: groupId, messages },
     });
   }
 
@@ -235,10 +233,10 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "ADD_MESSAGE", payload: { groupId, message } });
   }
 
-  function resetUnreadCount(): void {
+  function resetUnreadCount(groupId: string): void {
     dispatch({
       type: "RESET_UNREAD_COUNT",
-      payload: { groupId: params.groupId },
+      payload: { groupId },
     });
   }
 
