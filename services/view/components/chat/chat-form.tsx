@@ -40,7 +40,7 @@ export default function ChatForm() {
           nanos: new Date(sentAt).getMilliseconds() * 1e6,
         },
       })
-      .catch((err) => handleWebError(err));
+      .catch(handleWebError);
     contentInput.current.value = "";
   }
 

@@ -28,23 +28,23 @@ export default function FriendSearchResultClient({ user }: Props) {
     (contact) => (contact as FriendContact).userId === user.id
   );
 
-  async function handleAddFriend() {
-    try {
-      const { groupId } = await chatClient.addFriend({
+  function handleAddFriend() {
+    chatClient
+      .addFriend({
         toUserId: uuidParse(user.id),
-      });
-      store.addContact(
-        FriendContact.parse({
-          type: "friend",
-          groupId: uuidStringify(groupId),
-          pfp: user.pfp,
-          name: user.username,
-          userId: user.id,
-        })
-      );
-    } catch (err) {
-      handleWebError(err);
-    }
+      })
+      .then(({ groupId }) =>
+        store.addContact(
+          FriendContact.parse({
+            type: "friend",
+            groupId: uuidStringify(groupId),
+            pfp: user.pfp,
+            name: user.username,
+            userId: user.id,
+          })
+        )
+      )
+      .catch(handleWebError);
   }
 
   return (

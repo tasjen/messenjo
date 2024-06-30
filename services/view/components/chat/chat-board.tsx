@@ -24,33 +24,37 @@ export default function ChatBoard(props: Props) {
   const params = useParams<{ groupId: string }>();
   const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
-  const { ref: inViewRef, inView } = useInView({ threshold: 0.9 });
+  const msgLoader = useInView({ threshold: 0.9 });
 
   const contact = store.contacts.find((e) => e.groupId === params.groupId);
 
-  const loadMoreMessages = useDebouncedCallback(async () => {
-    if (!inView || !contact || contact.allMessagesLoaded) return;
-    const { messages } = await chatClient.getMessages({
-      groupId: uuidParse(params.groupId),
-      start: contact.messages.length + 1,
-      end: contact.messages.length + MESSAGES_BATCH_SIZE,
-    });
-    store.loadOlderMessages(
-      params.groupId,
-      messages.map((m) =>
-        Message.parse({
-          ...m,
-          sentAt: m.sentAt?.toDate().getTime() ?? 0,
-        })
+  const loadMoreMessages = useDebouncedCallback(() => {
+    if (!msgLoader.inView || !contact || contact.allMessagesLoaded) return;
+    chatClient
+      .getMessages({
+        groupId: uuidParse(params.groupId),
+        start: contact.messages.length + 1,
+        end: contact.messages.length + MESSAGES_BATCH_SIZE,
+      })
+      .then(({ messages }) =>
+        store.loadOlderMessages(
+          params.groupId,
+          messages.map((m) =>
+            Message.parse({
+              ...m,
+              sentAt: m.sentAt?.toDate().getTime() ?? 0,
+            })
+          )
+        )
       )
-    );
+      .catch(handleWebError);
   }, 300);
 
   useEffect(() => {
     return () => {
-      // This callback will be invoke on component mount/unmount.
+      // This callback is invoked on component mount/unmount.
       // It resets the unread counts on both client and server of
-      // the current chat room once on entering and another after
+      // the current chat room once on entering and another on
       // leaving. For example, if a user navigate from chat room 'A'
       // to 'B', the unreadCount on both client and server of chat
       // room 'A' and 'B' will be reset whether it's zero or not
@@ -59,10 +63,10 @@ export default function ChatBoard(props: Props) {
       // be the value at first page mount). If a user close the page
       // on a chat room. The unreadCount of that chat room will be
       // reset by 'onbeforeunload' event in ContactListClient
-      store.resetUnreadCount(params.groupId);
       chatClient
         .resetUnreadCount({ groupId: uuidParse(params.groupId) })
-        .catch((err) => handleWebError(err));
+        .then(() => store.resetUnreadCount(params.groupId))
+        .catch(handleWebError);
     };
   }, []);
 
@@ -76,7 +80,7 @@ export default function ChatBoard(props: Props) {
   // scroll to bottom if the user send a message
   useEffect(() => {
     if (
-      !inView &&
+      !msgLoader.inView &&
       contact &&
       contact.messages[0]?.fromUsername === store.user.username
     ) {
@@ -88,7 +92,7 @@ export default function ChatBoard(props: Props) {
 
   useEffect(() => {
     loadMoreMessages();
-  }, [inView]);
+  }, [msgLoader.inView]);
 
   if (!store.user || !contact?.latestMessagesLoaded) {
     return <ChatBoardSkeleton />;
@@ -112,9 +116,9 @@ export default function ChatBoard(props: Props) {
           <MessageItem key={message.id} contact={contact} message={message} />
         ))}
         {!contact.allMessagesLoaded && (
-          <div ref={inViewRef} className="mx-auto">
+          <div ref={msgLoader.ref} className="mx-auto">
             <Loader2
-              strokeWidth={inView ? 3 : 0}
+              strokeWidth={msgLoader.inView ? 3 : 0}
               className="animate-spin self-center"
             />
           </div>
