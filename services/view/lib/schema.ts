@@ -23,7 +23,7 @@ export const FriendContact = z.object({
   messages: z.array(Message).default([]),
   unreadCount: z.number().default(0),
   latestMessagesLoaded: z.boolean().default(false),
-  allMessagesLoaded: z.boolean(),
+  allMessagesLoaded: z.boolean().default(false),
 });
 
 export const GroupContact = z

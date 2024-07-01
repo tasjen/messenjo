@@ -50,6 +50,12 @@ type Action =
       payload: Contact;
     }
   | {
+      type: "REMOVE_CONTACT";
+      payload: {
+        groupId: string;
+      };
+    }
+  | {
       type: "ADD_MESSAGE";
       payload: {
         groupId: string;
@@ -103,6 +109,8 @@ function storeReducer(state: State, action: Action): State {
                 ...contact,
                 messages: payload.messages,
                 latestMessagesLoaded: true,
+                allMessagesLoaded:
+                  payload.messages.length < MESSAGES_BATCH_SIZE,
               }
         ),
       };
@@ -169,6 +177,13 @@ function storeReducer(state: State, action: Action): State {
             ? state.contacts
             : [...state.contacts, payload],
       };
+    case "REMOVE_CONTACT":
+      return {
+        ...state,
+        contacts: state.contacts.filter(
+          (contact) => contact.groupId !== payload.groupId
+        ),
+      };
     case "SET_IS_DISCONNECTED":
       return { ...state, isWsDisconnected: payload };
     case "SET_IS_CLIENT":
@@ -189,6 +204,7 @@ type TStore = {
   addMessage: (groupId: string, message: Message) => void;
   resetUnreadCount: (groupId: string) => void;
   addContact: (contact: Contact) => void;
+  removeContact: (groupId: string) => void;
   connectWs: () => void;
   disConnectWs: () => void;
 };
@@ -244,6 +260,9 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "ADD_CONTACT", payload: contact });
   }
 
+  function removeContact(groupId: string): void {
+    dispatch({ type: "REMOVE_CONTACT", payload: { groupId } });
+  }
   function connectWs(): void {
     dispatch({ type: "SET_IS_DISCONNECTED", payload: false });
   }
@@ -264,6 +283,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
         addMessage,
         resetUnreadCount,
         addContact,
+        removeContact,
         connectWs,
         disConnectWs,
       }}

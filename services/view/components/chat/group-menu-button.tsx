@@ -18,7 +18,6 @@ type Props = {
 export default function GroupMenuButton({ className }: Props) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   return (
     <DropdownMenu>

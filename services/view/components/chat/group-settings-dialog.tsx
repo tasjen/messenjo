@@ -28,16 +28,14 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
   const store = useStore();
   const params = useParams<{ groupId: string }>();
   const currentSettings = store.contacts.find(
-    (contact) => contact.groupId === params.groupId
+    (contact) => contact.groupId === params.groupId && contact.type === "group"
   ) as GroupContact;
   const [name, setName] = useState(currentSettings?.name);
   const [pfp, setPfp] = useState(currentSettings?.pfp);
   const [errMessage, setErrMessage] = useState("");
 
-  if (currentSettings && currentSettings.type !== "group") {
-    throw new Error(
-      "Unexpected client error: found contact.type is not `group`"
-    );
+  if (!currentSettings) {
+    toast("unexpected client error");
   }
 
   async function handleSubmit(): Promise<void> {

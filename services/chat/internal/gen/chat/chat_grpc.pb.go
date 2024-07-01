@@ -29,6 +29,7 @@ const (
 	Chat_UpdateUser_FullMethodName        = "/messenjo.Chat/UpdateUser"
 	Chat_UpdateGroup_FullMethodName       = "/messenjo.Chat/UpdateGroup"
 	Chat_AddFriend_FullMethodName         = "/messenjo.Chat/AddFriend"
+	Chat_Unfriend_FullMethodName          = "/messenjo.Chat/Unfriend"
 	Chat_AddMembers_FullMethodName        = "/messenjo.Chat/AddMembers"
 	Chat_AddMessage_FullMethodName        = "/messenjo.Chat/AddMessage"
 	Chat_ResetUnreadCount_FullMethodName  = "/messenjo.Chat/ResetUnreadCount"
@@ -50,6 +51,7 @@ type ChatClient interface {
 	UpdateUser(ctx context.Context, in *UpdateUserReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateGroup(ctx context.Context, in *UpdateGroupReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddFriend(ctx context.Context, in *AddFriendReq, opts ...grpc.CallOption) (*AddFriendRes, error)
+	Unfriend(ctx context.Context, in *UnfriendReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddMembers(ctx context.Context, in *AddMembersReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddMessage(ctx context.Context, in *AddMessageReq, opts ...grpc.CallOption) (*AddMessageRes, error)
 	ResetUnreadCount(ctx context.Context, in *ResetUnreadCountReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -155,6 +157,16 @@ func (c *chatClient) AddFriend(ctx context.Context, in *AddFriendReq, opts ...gr
 	return out, nil
 }
 
+func (c *chatClient) Unfriend(ctx context.Context, in *UnfriendReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Chat_Unfriend_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *chatClient) AddMembers(ctx context.Context, in *AddMembersReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
@@ -210,6 +222,7 @@ type ChatServer interface {
 	UpdateUser(context.Context, *UpdateUserReq) (*emptypb.Empty, error)
 	UpdateGroup(context.Context, *UpdateGroupReq) (*emptypb.Empty, error)
 	AddFriend(context.Context, *AddFriendReq) (*AddFriendRes, error)
+	Unfriend(context.Context, *UnfriendReq) (*emptypb.Empty, error)
 	AddMembers(context.Context, *AddMembersReq) (*emptypb.Empty, error)
 	AddMessage(context.Context, *AddMessageReq) (*AddMessageRes, error)
 	ResetUnreadCount(context.Context, *ResetUnreadCountReq) (*emptypb.Empty, error)
@@ -248,6 +261,9 @@ func (UnimplementedChatServer) UpdateGroup(context.Context, *UpdateGroupReq) (*e
 }
 func (UnimplementedChatServer) AddFriend(context.Context, *AddFriendReq) (*AddFriendRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFriend not implemented")
+}
+func (UnimplementedChatServer) Unfriend(context.Context, *UnfriendReq) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unfriend not implemented")
 }
 func (UnimplementedChatServer) AddMembers(context.Context, *AddMembersReq) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddMembers not implemented")
@@ -436,6 +452,24 @@ func _Chat_AddFriend_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Chat_Unfriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnfriendReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServer).Unfriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Chat_Unfriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServer).Unfriend(ctx, req.(*UnfriendReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Chat_AddMembers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddMembersReq)
 	if err := dec(in); err != nil {
@@ -550,6 +584,10 @@ var Chat_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddFriend",
 			Handler:    _Chat_AddFriend_Handler,
+		},
+		{
+			MethodName: "Unfriend",
+			Handler:    _Chat_Unfriend_Handler,
 		},
 		{
 			MethodName: "AddMembers",

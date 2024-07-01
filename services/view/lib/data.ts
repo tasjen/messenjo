@@ -69,7 +69,6 @@ export async function fetchContacts(): Promise<Contact[]> {
               },
             ]
           : [],
-        allMessagesLoaded: !e.lastMessage?.id,
       })
     );
   } catch (err) {

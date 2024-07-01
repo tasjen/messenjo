@@ -608,6 +608,43 @@ export class AddFriendRes extends Message$1<AddFriendRes> {
 }
 
 /**
+ * @generated from message messenjo.UnfriendReq
+ */
+export class UnfriendReq extends Message$1<UnfriendReq> {
+  /**
+   * @generated from field: bytes to_user_id = 1;
+   */
+  toUserId = new Uint8Array(0);
+
+  constructor(data?: PartialMessage<UnfriendReq>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "messenjo.UnfriendReq";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "to_user_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UnfriendReq {
+    return new UnfriendReq().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UnfriendReq {
+    return new UnfriendReq().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UnfriendReq {
+    return new UnfriendReq().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UnfriendReq | PlainMessage<UnfriendReq> | undefined, b: UnfriendReq | PlainMessage<UnfriendReq> | undefined): boolean {
+    return proto3.util.equals(UnfriendReq, a, b);
+  }
+}
+
+/**
  * @generated from message messenjo.AddMembersReq
  */
 export class AddMembersReq extends Message$1<AddMembersReq> {

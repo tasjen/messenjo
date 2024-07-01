@@ -15,6 +15,7 @@ import { handleWebError } from "@/lib/util";
 import { useInView } from "react-intersection-observer";
 import { useDebouncedCallback } from "use-debounce";
 import { MESSAGES_BATCH_SIZE } from "@/lib/config";
+import FriendMenuButton from "./friend-menu-button";
 
 type Props = {
   messages: Message[];
@@ -101,8 +102,22 @@ export default function ChatBoard(props: Props) {
   return (
     <>
       <div className="my-2 flex items-center gap-4 justify-between">
-        <div className="font-bold text-xl ml-2">{contact.name}</div>
-        {contact.type === "group" && <GroupMenuButton className="mr-auto" />}
+        <div
+          className="font-bold text-xl ml-2"
+          onClick={() => {
+            if (contact.type === "group") return;
+            chatClient
+              .unfriend({ toUserId: uuidParse(contact.userId) })
+              .catch(handleWebError);
+          }}
+        >
+          {contact.name}
+        </div>
+        {contact.type === "friend" ? (
+          <FriendMenuButton className="mr-auto" />
+        ) : (
+          <GroupMenuButton className="mr-auto" />
+        )}
         <Link href="/" className="flex justify-center items-center w-20">
           <ChevronLeft className="h-6 w-6" />
         </Link>

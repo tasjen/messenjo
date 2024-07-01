@@ -397,6 +397,31 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 	return &chat_pb.AddFriendRes{GroupId: groupId[:]}, nil
 }
 
+func (app *application) Unfriend(ctx context.Context, req *chat_pb.UnfriendReq) (*empty.Empty, error) {
+	fromUserId, ok := ctx.Value(userIdKey{}).(uuid.UUID)
+	if !ok {
+		return &empty.Empty{}, status.Error(
+			codes.Internal,
+			"failed to get `userId` from ctx",
+		)
+	}
+
+	toUserId, err := uuid.FromBytes(req.GetToUserId())
+	if err != nil {
+		return &empty.Empty{}, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprint("invalid toUserId: ", req.GetToUserId()),
+		)
+	}
+
+	err = app.data.Unfriend(ctx, fromUserId, toUserId)
+	if err != nil {
+		return &empty.Empty{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &empty.Empty{}, nil
+}
+
 func (app *application) AddMembers(ctx context.Context, req *chat_pb.AddMembersReq) (*empty.Empty, error) {
 	groupId, err := uuid.FromBytes(req.GetGroupId())
 	if err != nil {

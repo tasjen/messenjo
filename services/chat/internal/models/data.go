@@ -22,6 +22,7 @@ type IDataModel interface {
 	CreateGroup(ctx context.Context, name, pfp string, userIds ...uuid.UUID) (uuid.UUID, error)
 	UpdateGroup(ctx context.Context, groupId uuid.UUID, name, pfp string) error
 	AddFriend(ctx context.Context, fromUserId, toUserId uuid.UUID) (uuid.UUID, error)
+	Unfriend(ctx context.Context, fromUserId, toUserId uuid.UUID) error
 	AddMembers(ctx context.Context, groupId uuid.UUID, userIds ...uuid.UUID) error
 	AddMessage(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error)
 	ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error
@@ -237,6 +238,22 @@ func (d *DataModel) AddFriend(ctx context.Context, fromUserId, toUserId uuid.UUI
 	}
 
 	return groupId, nil
+}
+
+// Delete the friend relationship between user A and user B
+func (d *DataModel) Unfriend(ctx context.Context, fromUserId, toUserId uuid.UUID) error {
+	stmt := `
+		DELETE FROM groups
+		WHERE id IN (
+			SELECT m1.group_id
+			FROM members AS m1
+			JOIN members AS m2
+			ON m1.group_id = m2.group_id
+			WHERE m1.user_id = $1
+				AND m2.user_id = $2
+		) AND name = '';`
+	_, err := d.DB.Exec(ctx, stmt, fromUserId, toUserId)
+	return err
 }
 
 func (d *DataModel) AddMembers(ctx context.Context, groupId uuid.UUID, userIds ...uuid.UUID) error {
