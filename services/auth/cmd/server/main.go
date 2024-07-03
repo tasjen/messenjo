@@ -93,15 +93,9 @@ func run() error {
 	}
 
 	// check if account table exists
-	tableExists, err := app.accounts.TableExists(ctx)
-	switch {
-	case err != nil:
-		return err
-	case !tableExists:
-		return fmt.Errorf(
-			"table `%v` doesn't exists. Please create one",
-			accountTableName,
-		)
+	err = app.accounts.CreateTableIfNotExists(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot create table '%s': %v", accountTableName, err)
 	}
 
 	httpServer = &http.Server{

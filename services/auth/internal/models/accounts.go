@@ -2,7 +2,8 @@ package models
 
 import (
 	"context"
-	"errors"
+	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -13,7 +14,7 @@ import (
 type IAccountModel interface {
 	Get(ctx context.Context, providerId, providerName string) (*Account, error)
 	Add(ctx context.Context, acc *Account) error
-	TableExists(ctx context.Context) (bool, error)
+	CreateTableIfNotExists(ctx context.Context) error
 }
 
 type AccountModel struct {
@@ -49,17 +50,72 @@ func (acc *Account) GetKey() (map[string]types.AttributeValue, error) {
 	}, nil
 }
 
-func (m *AccountModel) TableExists(ctx context.Context) (bool, error) {
-	_, err := m.DB.DescribeTable(
-		ctx, &dynamodb.DescribeTableInput{TableName: aws.String(m.TableName)})
+func (m *AccountModel) tableExists(ctx context.Context) (bool, error) {
+	tables, err := m.DB.ListTables(ctx, &dynamodb.ListTablesInput{})
 	if err != nil {
-		var notFoundErr *types.ResourceNotFoundException
-		if errors.As(err, &notFoundErr) {
-			return false, nil
-		}
 		return false, err
 	}
-	return true, nil
+	for _, name := range tables.TableNames {
+		if name == m.TableName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (m *AccountModel) CreateTableIfNotExists(ctx context.Context) error {
+	exists, err := m.tableExists(ctx)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	log.Printf("Table '%s' doesn't exists. Creating one...", m.TableName)
+	_, err = m.DB.CreateTable(ctx, &dynamodb.CreateTableInput{
+		TableName:   aws.String(m.TableName),
+		TableClass:  types.TableClassStandard,
+		BillingMode: types.BillingModeProvisioned,
+		ProvisionedThroughput: &types.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(1),
+			WriteCapacityUnits: aws.Int64(1),
+		},
+		AttributeDefinitions: []types.AttributeDefinition{
+			{
+				AttributeName: aws.String("provider_id"),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
+			{
+				AttributeName: aws.String("provider_name"),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
+		},
+		KeySchema: []types.KeySchemaElement{
+			{
+				AttributeName: aws.String("provider_id"),
+				KeyType:       types.KeyTypeHash,
+			},
+			{
+				AttributeName: aws.String("provider_name"),
+				KeyType:       types.KeyTypeRange,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	} else {
+		waiter := dynamodb.NewTableExistsWaiter(m.DB)
+		err = waiter.Wait(
+			context.TODO(),
+			&dynamodb.DescribeTableInput{TableName: aws.String(m.TableName)},
+			5*time.Minute,
+		)
+		if err != nil {
+			return err
+		}
+		log.Printf("Table '%s' has been successfully created", m.TableName)
+		return nil
+	}
 }
 
 func (m *AccountModel) Get(ctx context.Context, providerId, providerName string) (*Account, error) {

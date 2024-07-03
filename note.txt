@@ -5,6 +5,7 @@ todo:
  - View: store group members in contact state
  - View: improve ChatBoard UI (pfp, date)
  - View: fix skeleton components
+ - Auth: set up dynamodb local. an example -> https://davidagood.com/dynamodb-local-go/
 
 
 prod image build order:
