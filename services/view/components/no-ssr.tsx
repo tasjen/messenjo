@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function NoSSR({ fallback, children }: Props) {
-  const { isClient } = useStore();
+  const { isClient } = useStore((s) => s);
 
   return isClient ? children : fallback;
 }

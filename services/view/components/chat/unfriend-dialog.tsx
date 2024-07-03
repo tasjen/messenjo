@@ -23,7 +23,7 @@ type Props = {
 };
 
 export default function UnfriendDialog({ isOpen, setIsOpen }: Props) {
-  const store = useStore();
+  const store = useStore(s => s);
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const friend = store.contacts.find(

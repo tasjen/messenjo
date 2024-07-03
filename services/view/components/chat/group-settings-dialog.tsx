@@ -25,7 +25,7 @@ type Props = {
 };
 
 export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
-  const store = useStore();
+  const store = useStore((s) => s);
   const params = useParams<{ groupId: string }>();
   const currentSettings = store.contacts.find(
     (contact) => contact.groupId === params.groupId && contact.type === "group"

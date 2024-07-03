@@ -16,7 +16,7 @@ import NoSSR from "./no-ssr";
 import { chatClient } from "@/lib/grpc-clients/web";
 
 export default function NewUsernameDialog() {
-  const store = useStore();
+  const store = useStore((s) => s);
   const [isOpen, setIsOpen] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [username, setUsername] = useState(store.user.username);

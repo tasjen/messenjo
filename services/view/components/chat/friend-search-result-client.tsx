@@ -16,7 +16,7 @@ type Props = {
 };
 
 export default function FriendSearchResultClient({ user }: Props) {
-  const store = useStore();
+  const store = useStore((s) => s);
 
   // for preventing the previous search result from showing up even if there is no `q` searchParam
   const searchParams = useSearchParams();

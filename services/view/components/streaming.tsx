@@ -9,7 +9,7 @@ import { useStore } from "@/lib/store/client";
 import { toast } from "sonner";
 
 export default function Streaming() {
-  const store = useStore();
+  const store = useStore((s) => s);
 
   const wsUrl = useMemo(() => {
     if (typeof window !== "undefined") {
