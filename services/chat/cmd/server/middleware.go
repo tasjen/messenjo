@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"slices"
 
 	"github.com/google/uuid"
 	auth_pb "github.com/tasjen/messenjo/services/chat/internal/gen/auth"
@@ -62,8 +63,13 @@ func (app *application) authHandler(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-	// no auth for GetGroupIds
-	if info.FullMethod == "/messenjo.Chat/GetGroupIds" {
+	// no auth for GetGroupIds and CreateUser
+	if slices.Contains([]string{
+		"/messenjo.Chat/GetGroupIds",
+		"/messenjo.Chat/CreateUser",
+	},
+		info.FullMethod,
+	) {
 		return handler(ctx, req)
 	}
 	md, ok := metadata.FromIncomingContext(ctx)
