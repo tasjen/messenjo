@@ -12,7 +12,7 @@ import { handleWebError } from "@/lib/util";
 
 export default function ChatForm() {
   const params = useParams<{ groupId: string }>();
-  const store = useStore((s) => s);
+  const store = useStore();
   const contentInput = useRef<HTMLInputElement>(null);
 
   if (!store.user || !store.contacts || store.isWsDisconnected) {

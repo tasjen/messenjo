@@ -6,6 +6,7 @@ todo:
  - View: improve ChatBoard UI (pfp, date)
  - View: fix skeleton components
  - Auth: set up dynamodb local. an example -> https://davidagood.com/dynamodb-local-go/
+ - View: use store selector for render optimization
 
 
 prod image build order:

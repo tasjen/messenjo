@@ -2,14 +2,14 @@ import { createStore as zustandCreateStore } from "zustand/vanilla";
 import { Contact, GroupContact, Message, User } from "../schema";
 import { MESSAGES_BATCH_SIZE } from "../config";
 
-export type State = {
+type State = {
   user: User;
   contacts: Contact[];
   isWsDisconnected: boolean;
   isClient: boolean;
 };
 
-export type Action = {
+type Action = {
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
   loadContacts: (contacts: Contact[]) => void;
@@ -23,7 +23,7 @@ export type Action = {
   disConnectWs: () => void;
 };
 
-export type TStore = State & Action;
+export type Store = State & Action;
 
 export const initStore = (): State => {
   return {
@@ -35,9 +35,9 @@ export const initStore = (): State => {
 };
 
 export function createStore(initState: State) {
-  return zustandCreateStore<TStore>()((set) => ({
+  return zustandCreateStore<Store>()((set) => ({
     ...initState,
-    setUser: (user) => set((state) => ({ ...state, user })),
+    setUser: (user) => set({ user }),
     setGroup: (groupContact) =>
       set((state) => ({
         ...state,
@@ -45,7 +45,7 @@ export function createStore(initState: State) {
           contact.groupId !== groupContact.groupId ? contact : groupContact
         ),
       })),
-    loadContacts: (contacts) => set((state) => ({ ...state, contacts })),
+    loadContacts: (contacts) => set({ contacts }),
     loadLatestMessages: (groupId, messages) =>
       set((state) => ({
         ...state,

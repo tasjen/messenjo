@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import {
@@ -9,12 +8,10 @@ import {
   useEffect,
 } from "react";
 import { useStore as zustandUseStore } from "zustand";
+import { type Store, createStore, initStore } from "./zustand-store";
 
-import { type TStore, createStore, initStore } from "./zustand-store";
-
-export type StoreApi = ReturnType<typeof createStore>;
-
-export const StoreContext = createContext<StoreApi | undefined>(undefined);
+type StoreApi = ReturnType<typeof createStore>;
+const StoreContext = createContext<StoreApi | undefined>(undefined);
 
 export default function StoreProvider({ children }: { children: ReactNode }) {
   const storeRef = useRef<StoreApi>();
@@ -33,12 +30,16 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useStore<T>(selector: (store: TStore) => T): T {
+export function useStore(): Store;
+export function useStore<T>(selector: (s: Store) => T): T;
+export function useStore<T>(selector?: (s: Store) => T): T | Store {
   const storeContext = useContext(StoreContext);
 
   if (!storeContext) {
     throw new Error(`useStore must be use within StoreProvider`);
   }
 
-  return zustandUseStore(storeContext, selector);
+  return selector
+    ? zustandUseStore(storeContext, selector)
+    : zustandUseStore(storeContext, (s) => s);
 }

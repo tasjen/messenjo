@@ -23,7 +23,7 @@ type Props = {
 
 export default function ChatBoard(props: Props) {
   const params = useParams<{ groupId: string }>();
-  const store = useStore((s) => s);
+  const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
   const msgLoader = useInView({ threshold: 0.9 });
 

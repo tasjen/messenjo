@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function MessageItem({ contact, message }: Props) {
-  const store = useStore((s) => s);
+  const store = useStore();
   const isFromMe = store.user.username === message.fromUsername;
 
   const formattedDate = useCallback((sentAt: number): string => {

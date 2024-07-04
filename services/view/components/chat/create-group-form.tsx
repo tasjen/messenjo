@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { chatClient } from "@/lib/grpc-clients/web";
 
 export default function CreateGroupForm() {
-  const store = useStore((s) => s);
+  const store = useStore();
   const [userIds, setUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [pfp, setPfp] = useState("");

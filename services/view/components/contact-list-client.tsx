@@ -17,7 +17,7 @@ type Props = {
 };
 
 export default function ContactListClient(props: Props) {
-  const store = useStore((s) => s);
+  const store = useStore();
   const [term, setTerm] = useState("");
   const params = useParams<{ groupId?: string }>();
   const [animationParent] = useAutoAnimate();
