@@ -41,20 +41,20 @@ export function createStore(initState: State) {
     setGroup: (groupContact) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.map((contact) =>
-          contact.groupId !== groupContact.groupId ? contact : groupContact
+        contacts: state.contacts.map((c) =>
+          c.groupId !== groupContact.groupId ? c : groupContact
         ),
       })),
     loadContacts: (contacts) => set({ contacts }),
     loadLatestMessages: (groupId, messages) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.map((contact) =>
+        contacts: state.contacts.map((c) =>
           // only load messages if not already
-          contact.groupId !== groupId || contact.latestMessagesLoaded
-            ? contact
+          c.groupId !== groupId || c.latestMessagesLoaded
+            ? c
             : {
-                ...contact,
+                ...c,
                 messages,
                 latestMessagesLoaded: true,
                 allMessagesLoaded: messages.length < MESSAGES_BATCH_SIZE,
@@ -64,12 +64,12 @@ export function createStore(initState: State) {
     loadOlderMessages: (groupId, messages) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.map((contact) =>
-          contact.groupId !== groupId || contact.allMessagesLoaded
-            ? contact
+        contacts: state.contacts.map((c) =>
+          c.groupId !== groupId || c.allMessagesLoaded
+            ? c
             : {
-                ...contact,
-                messages: [...contact.messages, ...messages],
+                ...c,
+                messages: [...c.messages, ...messages],
                 allMessagesLoaded: messages.length < MESSAGES_BATCH_SIZE,
               }
         ),
@@ -77,46 +77,44 @@ export function createStore(initState: State) {
     addMessage: (groupId, message) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.map((contact) =>
+        contacts: state.contacts.map((c) =>
           // only add a message if the message is not already added
           // by checking username and sentAt field since one user cannot (?)
           // send more than one messages with the same sentAt value
-          contact.groupId !== groupId ||
-          contact.messages.find(
+          c.groupId !== groupId ||
+          c.messages.find(
             (m) =>
               m.fromUsername === message.fromUsername &&
               m.sentAt === message.sentAt
           )
-            ? contact
+            ? c
             : {
-                ...contact,
+                ...c,
                 messages:
-                  contact.messages.length === 0
+                  c.messages.length === 0
                     ? [message]
-                    : message.sentAt >= contact.messages[0].sentAt
-                      ? [message, ...contact.messages]
-                      : contact.messages.toSpliced(1, 0, message),
+                    : message.sentAt >= c.messages[0].sentAt
+                      ? [message, ...c.messages]
+                      : c.messages.toSpliced(1, 0, message),
                 unreadCount:
                   message.fromUsername === state.user.username
                     ? 0
-                    : contact.unreadCount + 1,
+                    : c.unreadCount + 1,
               }
         ),
       })),
     resetUnreadCount: (groupId) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.map((contact) =>
-          contact.groupId !== groupId ? contact : { ...contact, unreadCount: 0 }
+        contacts: state.contacts.map((c) =>
+          c.groupId !== groupId ? c : { ...c, unreadCount: 0 }
         ),
       })),
     addContact: (contact) =>
       set((state) => ({
         ...state,
         contacts:
-          state.contacts.find(
-            (contact) => contact.groupId === contact.groupId
-          ) ||
+          state.contacts.find((c) => c.groupId === contact.groupId) ||
           (contact.type === "friend" && contact.name === state.user.username)
             ? state.contacts
             : [...state.contacts, contact],
@@ -124,9 +122,7 @@ export function createStore(initState: State) {
     removeContact: (groupId) =>
       set((state) => ({
         ...state,
-        contacts: state.contacts.filter(
-          (contact) => contact.groupId !== groupId
-        ),
+        contacts: state.contacts.filter((c) => c.groupId !== groupId),
       })),
     connectWs: () => set((state) => ({ ...state, isWsDisconnected: false })),
     disConnectWs: () => set((state) => ({ ...state, isWsDisconnected: true })),
