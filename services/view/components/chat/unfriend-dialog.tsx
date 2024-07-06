@@ -23,21 +23,21 @@ type Props = {
 };
 
 export default function UnfriendDialog({ isOpen, setIsOpen }: Props) {
-  const store = useStore(s => s);
+  const store = useStore((s) => s);
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const friend = store.contacts.find(
     (contact) => contact.groupId === params.groupId && contact.type === "friend"
   ) as FriendContact;
 
-  function handleUnfriend(): void {
-    chatClient
-      .unfriend({ toUserId: uuidParse(friend.userId) })
-      .then(() => {
-        store.removeContact(friend.groupId);
-        router.push("/");
-      })
-      .catch(handleWebError);
+  async function handleUnfriend(): Promise<void> {
+    try {
+      await chatClient.unfriend({ toUserId: uuidParse(friend.userId) });
+      store.removeContact(friend.groupId);
+      router.push("/");
+    } catch (err) {
+      handleWebError(err);
+    }
   }
 
   return (

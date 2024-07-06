@@ -25,12 +25,7 @@ export default function NewUsernameDialog() {
     try {
       await chatClient.updateUser({ username, pfp: store.user.pfp });
       store.setUser({ ...store.user, username });
-      toast(`Your username has been changed to ${username}`, {
-        action: {
-          label: "Close",
-          onClick: () => {},
-        },
-      });
+      toast(`Your username has been changed to ${username}`);
       setIsOpen(false);
     } catch (err) {
       if (err instanceof Error) {
