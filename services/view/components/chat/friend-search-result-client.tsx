@@ -57,7 +57,7 @@ export default function FriendSearchResultClient({ user }: Props) {
         {user.username} {contact && <UserCheck className="w-6 h-6" />}
       </div>
       {user.id === store.user.id ? (
-        <div>You</div>
+        <div className="text-muted-foreground">You</div>
       ) : contact ? (
         <Link href={`/chat/${contact.groupId}`}>
           <Button>Chat</Button>

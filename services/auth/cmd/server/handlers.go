@@ -27,7 +27,7 @@ func (app *application) oauthLoginHandler(w http.ResponseWriter, r *http.Request
 	provider, ok := app.providers[providerName]
 	if !ok {
 		clientError(w, http.StatusUnauthorized)
-		app.logger.Warn("invalid provider name")
+		app.logger.Info("invalid provider name")
 		return
 	}
 
@@ -45,7 +45,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 	provider, ok := app.providers[providerName]
 	if !ok {
 		clientError(w, http.StatusUnauthorized)
-		app.logger.Warn("invalid provider name")
+		app.logger.Info("invalid provider name")
 		return
 	}
 
@@ -54,7 +54,7 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
 			clientError(w, http.StatusUnauthorized)
-			app.logger.Warn("no oauthstate cookie found")
+			app.logger.Info("no oauthstate cookie found")
 		default:
 			serverError(w)
 			app.logger.Error(err.Error())
@@ -64,15 +64,21 @@ func (app *application) oauthCallbackHandler(w http.ResponseWriter, r *http.Requ
 
 	if r.URL.Query().Get("state") != oauthstate.Value {
 		clientError(w, http.StatusUnauthorized)
-		app.logger.Warn("callback state does not match oauthstate")
+		app.logger.Info("callback state does not match oauthstate")
 		return
 	}
 
 	code := r.URL.Query().Get("code")
+	// if users hit cancel in their oauth sign in page, they will still be redirected
+	// to this handler with an empty code
+	if code == "" {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	token, err := provider.Config().Exchange(r.Context(), code)
 	if err != nil {
 		clientError(w, http.StatusUnauthorized)
-		app.logger.Warn(fmt.Sprintf("failed to exchange code with access token : %v", err))
+		app.logger.Info(fmt.Sprintf("failed to exchange code with access token, %v", err))
 		return
 	}
 

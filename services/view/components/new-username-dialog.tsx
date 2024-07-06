@@ -60,7 +60,6 @@ export default function NewUsernameDialog() {
               placeholder="username"
               className="col-span-3"
               autoComplete="off"
-              minLength={1}
               required
             />
             <Button type="submit">Confirm</Button>
