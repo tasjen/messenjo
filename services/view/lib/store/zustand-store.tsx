@@ -5,6 +5,7 @@ import { MESSAGES_BATCH_SIZE } from "../config";
 type State = {
   user: User;
   contacts: Contact[];
+  currentContact: Contact | undefined;
   isWsDisconnected: boolean;
   isClient: boolean;
 };
@@ -13,6 +14,7 @@ type Action = {
   setUser: (user: User) => void;
   setGroup: (group: GroupContact) => void;
   loadContacts: (contacts: Contact[]) => void;
+  setCurrentContact: (contact: Contact | undefined) => void;
   loadLatestMessages: (groupId: string, messages: Message[]) => void;
   loadOlderMessages: (groupId: string, messages: Message[]) => void;
   addMessage: (groupId: string, message: Message) => void;
@@ -29,6 +31,7 @@ export const initStore = (): State => {
   return {
     user: {} as User,
     contacts: [],
+    currentContact: undefined,
     isWsDisconnected: false,
     isClient: false,
   };
@@ -46,6 +49,7 @@ export function createStore(initState: State) {
         ),
       })),
     loadContacts: (contacts) => set({ contacts }),
+    setCurrentContact: (contact) => set({ currentContact: contact }),
     loadLatestMessages: (groupId, messages) =>
       set((state) => ({
         ...state,
@@ -124,7 +128,7 @@ export function createStore(initState: State) {
         ...state,
         contacts: state.contacts.filter((c) => c.groupId !== groupId),
       })),
-    connectWs: () => set((state) => ({ ...state, isWsDisconnected: false })),
-    disConnectWs: () => set((state) => ({ ...state, isWsDisconnected: true })),
+    connectWs: () => set({ isWsDisconnected: false }),
+    disConnectWs: () => set({ isWsDisconnected: true }),
   }));
 }

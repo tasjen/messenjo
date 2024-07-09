@@ -20,9 +20,7 @@ export default function FriendSearchResultClient({ user }: Props) {
 
   // for preventing the previous search result from showing up even if there is no `q` searchParam
   const searchParams = useSearchParams();
-  if (!searchParams.get("q")) {
-    return <></>;
-  }
+  if (!searchParams.get("q")) return <></>;
 
   const contact = store.contacts.find(
     (contact) => (contact as FriendContact).userId === user.id

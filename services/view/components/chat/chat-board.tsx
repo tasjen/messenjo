@@ -28,6 +28,9 @@ export default function ChatBoard(props: Props) {
   const msgLoader = useInView({ threshold: 0.9 });
 
   const contact = store.contacts.find((c) => c.groupId === params.groupId);
+  useEffect(() => {
+    store.setCurrentContact(contact);
+  }, [contact]);
 
   const loadMoreMessages = useDebouncedCallback(async () => {
     if (!msgLoader.inView || !contact || contact.allMessagesLoaded) return;

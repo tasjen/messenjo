@@ -6,9 +6,7 @@ type Props = {
 };
 
 export default async function FriendSearchResultServer({ username }: Props) {
-  if (!username) {
-    return <></>;
-  }
+  if (!username) return <></>;
 
   const userResult = await fetchUserByUsername(username);
   if (!userResult) {

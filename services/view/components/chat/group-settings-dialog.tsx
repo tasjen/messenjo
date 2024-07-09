@@ -13,7 +13,6 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store/client";
-import { useParams } from "next/navigation";
 import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
@@ -26,27 +25,23 @@ type Props = {
 
 export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
   const store = useStore();
-  const params = useParams<{ groupId: string }>();
-  const currentSettings = store.contacts.find(
-    (contact) => contact.groupId === params.groupId && contact.type === "group"
-  ) as GroupContact;
+  const currentSettings = store.currentContact as GroupContact;
   const [name, setName] = useState("");
   const [pfp, setPfp] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (!currentSettings) {
-      toast("unexpected client error");
-      return;
-    }
+    if (!currentSettings) return;
     setName(currentSettings.name);
     setPfp(currentSettings.pfp);
   }, [currentSettings]);
 
-  async function handleSubmit(): Promise<void> {
+  if (!currentSettings) return <></>;
+
+  const handleSubmit = async (): Promise<void> => {
     try {
       await chatClient.updateGroup({
-        groupId: uuidParse(params.groupId),
+        groupId: uuidParse(currentSettings.groupId),
         name,
         pfp,
       });
@@ -64,7 +59,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
         setErrorMessage(err.message);
       }
     }
-  }
+  };
 
   return (
     <Dialog

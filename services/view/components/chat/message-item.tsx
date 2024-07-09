@@ -12,10 +12,10 @@ type Props = {
   message: Message;
 };
 
-export default function MessageItem({ contact, message }: Props) {
+export default function MessageItem({ message }: Props) {
   const store = useStore();
   const isFromMe = store.user.username === message.fromUsername;
-
+  const contact = store.currentContact;
   const formattedDate = useCallback((sentAt: number): string => {
     const now = dayjs();
     if (now.isSame(sentAt, "day")) {
@@ -28,6 +28,8 @@ export default function MessageItem({ contact, message }: Props) {
       return dayjs(sentAt).format("DD/MM/YYYY");
     }
   }, []);
+
+  if (!contact) return <></>;
 
   return (
     <li>

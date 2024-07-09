@@ -12,10 +12,9 @@ import { Dispatch, SetStateAction } from "react";
 import { Button } from "@/components/ui/button";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { useStore } from "@/lib/store/client";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { parse as uuidParse } from "uuid";
 import { handleWebError } from "@/lib/util";
-import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
@@ -24,14 +23,10 @@ type Props = {
 
 export default function RemoveContactDialog({ isOpen, setIsOpen }: Props) {
   const store = useStore((s) => s);
-  const params = useParams<{ groupId: string }>();
   const router = useRouter();
-  const contact = store.contacts.find((c) => c.groupId === params.groupId);
+  const contact = store.currentContact;
 
-  if (!contact) {
-    toast("unexpected client error");
-    return <></>;
-  }
+  if (!contact) return <></>;
 
   const handleRemoveContact = async (): Promise<void> => {
     try {
@@ -53,7 +48,7 @@ export default function RemoveContactDialog({ isOpen, setIsOpen }: Props) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
           <DialogDescription>
