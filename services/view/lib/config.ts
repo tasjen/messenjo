@@ -1,1 +1,1 @@
-export const MESSAGES_BATCH_SIZE = 15;
+export const MESSAGES_BATCH_SIZE = 25;
