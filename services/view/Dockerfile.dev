@@ -1,8 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
-
 COPY . .
-
-RUN npm install
-
-CMD ["npm", "run", "dev"]
+RUN corepack enable
+RUN corepack prepare pnpm@latest --activate
+RUN pnpm install
+CMD ["pnpm", "run", "dev"]

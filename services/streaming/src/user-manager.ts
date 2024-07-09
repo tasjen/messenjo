@@ -1,4 +1,4 @@
-import { WebSocket } from "uWebSockets.js";
+import { type WebSocket } from "uWebSockets.js";
 
 export type UserData = {
   userId: string;

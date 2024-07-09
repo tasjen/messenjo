@@ -4,8 +4,8 @@ import path from "path";
 
 try {
   await build({
-    entryPoints: ["./tsc_out/src/server.js"],
-    outdir: "./build",
+    entryPoints: ["./tsc_out/src/index.js"],
+    outfile: "./build/server.js",
     platform: "node",
     loader: {
       ".node": "copy", // others didn't work

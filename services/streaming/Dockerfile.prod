@@ -4,15 +4,15 @@ FROM node:20-alpine AS base
 FROM base AS builder
 WORKDIR /app
 COPY . .
-RUN npm ci
+RUN pnpm install
 RUN apk --no-cache add curl
 RUN BIN="/usr/local/bin" && \
-VERSION="1.33.0" && \
+VERSION="1.34.0" && \
 curl -sSL \
 "https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
 -o "${BIN}/buf" && \
 chmod +x "${BIN}/buf"
-RUN npm run build
+RUN pnpm run build
 
 # running Streaming server using distroless image as a runner will
 # randomly cause "Invalid access of closed uWS.WebSocket/SSLWebSocket" error
@@ -31,7 +31,7 @@ CMD ["node", "./server.js"]
 # COPY . .
 # RUN npm ci
 # RUN BIN="/usr/local/bin" && \
-# VERSION="1.33.0" && \
+# VERSION="1.34.0" && \
 # curl -sSL \
 # "https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
 # -o "${BIN}/buf" && \
