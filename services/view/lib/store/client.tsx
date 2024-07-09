@@ -20,7 +20,7 @@ export default function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    storeRef.current?.setState((state) => ({ ...state, isClient: true }));
+    storeRef.current?.setState({ isClient: true });
   }, []);
 
   return (

@@ -27,18 +27,18 @@ export default function ChatBoard(props: Props) {
   const listRef = useRef<HTMLUListElement>(null);
   const msgLoader = useInView({ threshold: 0.9 });
 
-  const contact = store.contacts.find((e) => e.groupId === params.groupId);
+  const contact = store.contacts.find((c) => c.groupId === params.groupId);
 
   const loadMoreMessages = useDebouncedCallback(async () => {
     if (!msgLoader.inView || !contact || contact.allMessagesLoaded) return;
     try {
       const { messages } = await chatClient.getMessages({
-        groupId: uuidParse(params.groupId),
+        groupId: uuidParse(contact.groupId),
         start: contact.messages.length + 1,
         end: contact.messages.length + MESSAGES_BATCH_SIZE,
       });
       store.loadOlderMessages(
-        params.groupId,
+        contact.groupId,
         messages.map((m) =>
           Message.parse({
             ...m,
