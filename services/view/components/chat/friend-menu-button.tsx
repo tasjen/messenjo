@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UnfriendDialog from "./unfriend-dialog";
+import RemoveContactDialog from "./remove-contact-dialog";
 
 type Props = {
   className: string;
@@ -28,7 +28,10 @@ export default function FriendMenuButton({ className }: Props) {
           <span>Unfriend</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
-      <UnfriendDialog isOpen={isUnfriendOpen} setIsOpen={setIsUnfriendOpen} />
+      <RemoveContactDialog
+        isOpen={isUnfriendOpen}
+        setIsOpen={setIsUnfriendOpen}
+      />
     </DropdownMenu>
   );
 }

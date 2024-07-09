@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddFriendReq, AddFriendRes, AddMembersReq, AddMessageReq, AddMessageRes, CreateGroupReq, CreateGroupRes, GetContactsRes, GetMessagesReq, GetMessagesRes, GetUserByUsernameReq, ResetUnreadCountReq, UnfriendReq, UpdateGroupReq, UpdateUserReq, User } from "./chat_pb";
+import { AddFriendReq, AddFriendRes, AddMembersReq, AddMessageReq, AddMessageRes, CreateGroupReq, CreateGroupRes, GetContactsRes, GetMessagesReq, GetMessagesRes, GetUserByUsernameReq, LeaveGroupReq, ResetUnreadCountReq, UnfriendReq, UpdateGroupReq, UpdateUserReq, User } from "./chat_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -90,6 +90,15 @@ export const Chat = {
     unfriend: {
       name: "Unfriend",
       I: UnfriendReq,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc messenjo.Chat.LeaveGroup
+     */
+    leaveGroup: {
+      name: "LeaveGroup",
+      I: LeaveGroupReq,
       O: Empty,
       kind: MethodKind.Unary,
     },

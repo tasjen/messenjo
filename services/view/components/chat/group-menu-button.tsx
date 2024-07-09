@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Settings, UserPlus } from "lucide-react";
+import { ChevronDown, DoorOpen, Settings, UserPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import GroupSettingsDialog from "./group-settings-dialog";
 import AddMembersDialog from "./add-members-dialog";
+import RemoveContactDialog from "./remove-contact-dialog";
 
 type Props = {
   className: string;
@@ -18,6 +19,7 @@ type Props = {
 export default function GroupMenuButton({ className }: Props) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
+  const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
 
   return (
     <DropdownMenu>
@@ -33,6 +35,10 @@ export default function GroupMenuButton({ className }: Props) {
           <UserPlus className="h-4 w-4 mr-2" />
           <span>Add members</span>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsLeaveGroupOpen(true)}>
+          <DoorOpen className="h-4 w-4 mr-2" />
+          <span>Leave group</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
       <GroupSettingsDialog
         isOpen={isSettingsOpen}
@@ -41,6 +47,10 @@ export default function GroupMenuButton({ className }: Props) {
       <AddMembersDialog
         isOpen={isAddMembersOpen}
         setIsOpen={setIsAddMembersOpen}
+      />
+      <RemoveContactDialog
+        isOpen={isLeaveGroupOpen}
+        setIsOpen={setIsLeaveGroupOpen}
       />
     </DropdownMenu>
   );

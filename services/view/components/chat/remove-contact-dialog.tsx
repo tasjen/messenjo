@@ -13,32 +13,43 @@ import { Button } from "@/components/ui/button";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { useStore } from "@/lib/store/client";
 import { useParams, useRouter } from "next/navigation";
-import { FriendContact } from "@/lib/schema";
 import { parse as uuidParse } from "uuid";
 import { handleWebError } from "@/lib/util";
+import { toast } from "sonner";
 
 type Props = {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function UnfriendDialog({ isOpen, setIsOpen }: Props) {
+export default function RemoveContactDialog({ isOpen, setIsOpen }: Props) {
   const store = useStore((s) => s);
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
-  const friend = store.contacts.find(
-    (contact) => contact.groupId === params.groupId && contact.type === "friend"
-  ) as FriendContact;
+  const contact = store.contacts.find((c) => c.groupId === params.groupId);
 
-  async function handleUnfriend(): Promise<void> {
+  if (!contact) {
+    toast("unexpected client error");
+    return <></>;
+  }
+
+  const handleRemoveContact = async (): Promise<void> => {
     try {
-      await chatClient.unfriend({ toUserId: uuidParse(friend.userId) });
-      store.removeContact(friend.groupId);
-      router.push("/");
+      switch (contact.type) {
+        case "friend":
+          await chatClient.unfriend({ toUserId: uuidParse(contact.userId) });
+          break;
+        case "group":
+          await chatClient.leaveGroup({ groupId: uuidParse(contact.groupId) });
+          break;
+        default:
+      }
+      store.removeContact(contact.groupId);
+      router.replace("/");
     } catch (err) {
       handleWebError(err);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -46,9 +57,18 @@ export default function UnfriendDialog({ isOpen, setIsOpen }: Props) {
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
           <DialogDescription>
-            All the chat history between you and{" "}
-            <span className="text-primary font-bold">{friend.name}</span> will
-            be gone.
+            {contact.type === "friend" ? (
+              <span>
+                All the chat history between you and{" "}
+                <span className="text-primary font-bold">{contact.name}</span>{" "}
+                will be gone.
+              </span>
+            ) : (
+              <span>
+                {"You're leaving"}{" "}
+                <span className="text-primary font-bold">{contact.name}</span>
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -56,9 +76,9 @@ export default function UnfriendDialog({ isOpen, setIsOpen }: Props) {
             <Button
               variant="destructive"
               className="flex-1"
-              onClick={handleUnfriend}
+              onClick={handleRemoveContact}
             >
-              Unfriend
+              {contact.type === "friend" ? "Unfriend" : "Leave"}
             </Button>
             <Button
               variant="outline"

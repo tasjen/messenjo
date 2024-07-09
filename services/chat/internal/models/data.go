@@ -23,6 +23,7 @@ type IDataModel interface {
 	UpdateGroup(ctx context.Context, groupId uuid.UUID, name, pfp string) error
 	AddFriend(ctx context.Context, fromUserId, toUserId uuid.UUID) (uuid.UUID, error)
 	Unfriend(ctx context.Context, fromUserId, toUserId uuid.UUID) error
+	LeaveGroup(ctx context.Context, userId, groupId uuid.UUID) error
 	AddMembers(ctx context.Context, groupId uuid.UUID, userIds ...uuid.UUID) error
 	AddMessage(ctx context.Context, userId, groupId uuid.UUID, content string, sentAt time.Time) (int32, string, string, error)
 	ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error
@@ -254,6 +255,10 @@ func (d *DataModel) Unfriend(ctx context.Context, fromUserId, toUserId uuid.UUID
 		) AND name = '';`
 	_, err := d.DB.Exec(ctx, stmt, fromUserId, toUserId)
 	return err
+}
+
+func (d *DataModel) LeaveGroup(ctx context.Context, userId, groupId uuid.UUID) error {
+	return members.Remove(ctx, userId, groupId)
 }
 
 func (d *DataModel) AddMembers(ctx context.Context, groupId uuid.UUID, userIds ...uuid.UUID) error {

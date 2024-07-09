@@ -645,6 +645,43 @@ export class UnfriendReq extends Message$1<UnfriendReq> {
 }
 
 /**
+ * @generated from message messenjo.LeaveGroupReq
+ */
+export class LeaveGroupReq extends Message$1<LeaveGroupReq> {
+  /**
+   * @generated from field: bytes group_id = 1;
+   */
+  groupId = new Uint8Array(0);
+
+  constructor(data?: PartialMessage<LeaveGroupReq>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "messenjo.LeaveGroupReq";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "group_id", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): LeaveGroupReq {
+    return new LeaveGroupReq().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): LeaveGroupReq {
+    return new LeaveGroupReq().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): LeaveGroupReq {
+    return new LeaveGroupReq().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: LeaveGroupReq | PlainMessage<LeaveGroupReq> | undefined, b: LeaveGroupReq | PlainMessage<LeaveGroupReq> | undefined): boolean {
+    return proto3.util.equals(LeaveGroupReq, a, b);
+  }
+}
+
+/**
  * @generated from message messenjo.AddMembersReq
  */
 export class AddMembersReq extends Message$1<AddMembersReq> {

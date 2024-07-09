@@ -102,17 +102,7 @@ export default function ChatBoard(props: Props) {
   return (
     <>
       <div className="my-2 flex items-center gap-4 justify-between">
-        <div
-          className="font-bold text-xl ml-2"
-          onClick={() => {
-            if (contact.type === "group") return;
-            chatClient
-              .unfriend({ toUserId: uuidParse(contact.userId) })
-              .catch(handleWebError);
-          }}
-        >
-          {contact.name}
-        </div>
+        <div className="font-bold text-xl ml-2">{contact.name}</div>
         {contact.type === "friend" ? (
           <FriendMenuButton className="mr-auto" />
         ) : (

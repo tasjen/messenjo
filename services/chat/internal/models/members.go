@@ -11,6 +11,7 @@ import (
 
 type IMemberModel interface {
 	Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, userIds ...uuid.UUID) error
+	Remove(ctx context.Context, userId, groupId uuid.UUID) error
 	GetGroupIdsFromUserId(ctx context.Context, userId uuid.UUID) ([]uuid.UUID, error)
 	ResetUnreadCount(ctx context.Context, groupId, userId uuid.UUID) error
 }
@@ -38,6 +39,15 @@ func (m *MemberModel) Add(ctx context.Context, tx pgx.Tx, groupId uuid.UUID, use
 			return []any{userIds[i], groupId}, nil
 		}),
 	)
+	return err
+}
+
+func (m *MemberModel) Remove(ctx context.Context, userId, groupId uuid.UUID) error {
+	stmt := `
+	DELETE FROM members
+	WHERE user_id = $1
+		AND group_id = $2;`
+	_, err := m.DB.Exec(ctx, stmt, userId, groupId)
 	return err
 }
 

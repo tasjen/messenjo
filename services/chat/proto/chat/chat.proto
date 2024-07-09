@@ -18,6 +18,7 @@ service Chat {
   rpc UpdateGroup (UpdateGroupReq) returns (google.protobuf.Empty) {}
   rpc AddFriend (AddFriendReq) returns (AddFriendRes) {}
   rpc Unfriend (UnfriendReq) returns (google.protobuf.Empty) {}
+  rpc LeaveGroup (LeaveGroupReq) returns (google.protobuf.Empty) {}
   rpc AddMembers (AddMembersReq) returns (google.protobuf.Empty) {}
   rpc AddMessage (AddMessageReq) returns (AddMessageRes) {}
   rpc ResetUnreadCount (ResetUnreadCountReq) returns (google.protobuf.Empty) {}
@@ -111,6 +112,10 @@ message AddFriendRes {
 
 message UnfriendReq {
   bytes to_user_id = 1;
+}
+
+message LeaveGroupReq {
+ bytes group_id = 1;
 }
 
 message AddMembersReq {
