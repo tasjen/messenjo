@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
-import { Contact, Message } from "@/lib/schema";
+import { Message } from "@/lib/schema";
 import { useStore } from "@/lib/store/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import clsx from "clsx";
 import dayjs from "dayjs";
 
 type Props = {
-  contact: Contact;
   message: Message;
 };
 

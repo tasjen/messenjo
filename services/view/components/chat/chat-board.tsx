@@ -121,7 +121,7 @@ export default function ChatBoard(props: Props) {
         border-t pt-2 pr-2 -mr-2"
       >
         {contact.messages.map((message) => (
-          <MessageItem key={message.id} contact={contact} message={message} />
+          <MessageItem key={message.id} message={message} />
         ))}
         {!contact.allMessagesLoaded && (
           <div ref={msgLoader.ref} className="mx-auto">
