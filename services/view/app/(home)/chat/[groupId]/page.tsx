@@ -1,5 +1,4 @@
-import ChatBoard from "@/components/chat/chat-board";
-import ChatForm from "@/components/chat/chat-form";
+import ChatPageClient from "@/components/chat/chat-page-client";
 import { fetchLatestMessages } from "@/lib/data";
 
 type Props = {
@@ -8,10 +7,5 @@ type Props = {
 
 export default async function ChatPage({ params: { groupId } }: Props) {
   const messages = await fetchLatestMessages(groupId);
-  return (
-    <div className="flex flex-col h-full justify-between gap-4">
-      <ChatBoard messages={messages} />
-      <ChatForm />
-    </div>
-  );
+  return <ChatPageClient messages={messages} />;
 }

@@ -16,12 +16,14 @@ import { useInView } from "react-intersection-observer";
 import { useDebouncedCallback } from "use-debounce";
 import { MESSAGES_BATCH_SIZE } from "@/lib/config";
 import FriendMenuButton from "./friend-menu-button";
+import ChatFormSkeleton from "@/components/skeletons/chat-form";
+import ChatForm from "./chat-form";
 
 type Props = {
   messages: Message[];
 };
 
-export default function ChatBoard(props: Props) {
+export default function ChatPageClient(props: Props) {
   const params = useParams<{ groupId: string }>();
   const store = useStore();
   const listRef = useRef<HTMLUListElement>(null);
@@ -99,11 +101,16 @@ export default function ChatBoard(props: Props) {
   }, [msgLoader.inView]);
 
   if (!store.user || !contact?.latestMessagesLoaded) {
-    return <ChatBoardSkeleton />;
+    return (
+      <div className="flex flex-col h-full justify-between gap-4">
+        <ChatBoardSkeleton />
+        <ChatFormSkeleton />
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full justify-between gap-4">
       <div className="my-2 flex items-center gap-4 justify-between">
         <div className="font-bold text-xl ml-2">{contact.name}</div>
         {contact.type === "friend" ? (
@@ -132,6 +139,7 @@ export default function ChatBoard(props: Props) {
           </div>
         )}
       </ul>
-    </>
+      <ChatForm />
+    </div>
   );
 }

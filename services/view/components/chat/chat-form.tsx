@@ -15,10 +15,6 @@ export default function ChatForm() {
   const store = useStore();
   const contentInput = useRef<HTMLInputElement>(null);
 
-  if (!store.user || !store.contacts || store.isWsDisconnected) {
-    return <ChatFormSkeleton />;
-  }
-
   function handleSubmit(): void {
     const content = contentInput.current?.value;
     if (!content) return;
@@ -42,6 +38,10 @@ export default function ChatForm() {
       })
       .catch(handleWebError);
     contentInput.current.value = "";
+  }
+
+  if (store.isWsDisconnected) {
+    return <ChatFormSkeleton />;
   }
 
   return (
