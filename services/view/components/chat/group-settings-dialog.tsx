@@ -71,7 +71,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
         setErrorMessage("");
       }}
     >
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Group settings</DialogTitle>
         </DialogHeader>

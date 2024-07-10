@@ -53,7 +53,7 @@ export default function SettingsButton() {
           <Settings />
         </Button>
       </DialogTrigger>
-      <DialogContent className="">
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
