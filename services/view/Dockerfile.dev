@@ -1,7 +1,8 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY . .
-RUN corepack enable
-RUN corepack prepare pnpm@latest --activate
-RUN pnpm install
+# install packages
+RUN corepack enable && \
+    corepack prepare pnpm@latest --activate && \
+    pnpm install --frozen-lockfile
 CMD ["pnpm", "run", "dev"]

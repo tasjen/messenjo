@@ -2,9 +2,6 @@ FROM golang:1.22-alpine
 WORKDIR /app
 RUN go install github.com/air-verse/air@latest
 COPY go.mod go.sum ./
-# to eliminate the error 'failed to initialize build cache at /.cache/go-build'
-RUN mkdir /.cache
-RUN chmod -R 777 /.cache
 RUN go mod download
 RUN go mod verify
 CMD ["air"]

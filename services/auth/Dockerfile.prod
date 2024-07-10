@@ -1,13 +1,14 @@
 FROM golang:1.22-bookworm AS build
 WORKDIR /app
 COPY . .
-RUN BIN="/usr/local/bin" && \
-VERSION="1.34.0" && \
-curl -sSL \
-"https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
--o "${BIN}/buf" && \
-chmod +x "${BIN}/buf"
-RUN buf generate
+# generate protobuf code
+RUN BIN="/usr/local/bin" VERSION="1.34.0" && \
+    apk --no-cache add curl && \
+    curl -sSL \
+    "https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
+    -o "${BIN}/buf" && \
+    chmod +x "${BIN}/buf" && \
+    buf generate
 RUN go mod download
 RUN go mod verify
 RUN go build ./cmd/server

@@ -19,17 +19,18 @@ prod image build order:
 7. nginx
 
 install docker:
-sudo yum update -y
-sudo yum install docker -y
-sudo systemctl start docker
-sudo usermod -a -G docker $(whoami)
+sudo yum update -y && \
+sudo yum install docker -y && \
+sudo systemctl start docker && \
+sudo usermod -a -G docker $(whoami) && \
 newgrp docker
 
 install compose:
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} && \
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} \
 VERSION="2.28.1" && \
 mkdir -p $DOCKER_CONFIG/cli-plugins && \
-curl -SL "https://github.com/docker/compose/releases/download/v$VERSION/docker-compose-$(uname -s)-$(uname -m)" \
+curl -SL \
+"https://github.com/docker/compose/releases/download/v$VERSION/docker-compose-$(uname -s)-$(uname -m)" \
 -o $DOCKER_CONFIG/cli-plugins/docker-compose && \
 sudo chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
 docker compose version
@@ -59,7 +60,8 @@ fi
 mkdir ~/TMP_DIR && \
 cd ~/TMP_DIR && \
 curl -L \
-"https://github.com/golang-migrate/migrate/releases/download/v$VERSION/migrate.$OS-$ARCH.tar.gz" | tar xvz && \
-sudo chmod +x migrate
-sudo mv migrate /usr/local/bin/migrate
+"https://github.com/golang-migrate/migrate/releases/download/v$VERSION/migrate.$OS-$ARCH.tar.gz" \
+| tar xvz && \
+sudo chmod +x migrate && \
+sudo mv migrate /usr/local/bin/migrate && \
 cd .. && rm -rf TMP_DIR
