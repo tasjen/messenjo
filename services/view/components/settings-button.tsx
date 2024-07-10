@@ -76,7 +76,7 @@ export default function SettingsButton() {
               <Avatar className="self-center h-20 w-20">
                 <AvatarImage src={pfp} alt="pfp preview" />
                 <AvatarFallback className={clsx(username !== "" && "text-3xl")}>
-                  {username ? username[0] : "preview"}
+                  {username[0] ?? "preview"}
                 </AvatarFallback>
               </Avatar>
               <Input

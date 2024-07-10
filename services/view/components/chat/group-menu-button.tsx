@@ -27,13 +27,13 @@ export default function GroupMenuButton({ className }: Props) {
         <ChevronDown className="ring-0 focus-visible:ring-0 focus-visible:ring-transparent ring-transparent border-0" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-          <Settings className="h-4 w-4 mr-2" />
-          <span>Settings</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setIsAddMembersOpen(true)}>
           <UserPlus className="h-4 w-4 mr-2" />
           <span>Add members</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+          <Settings className="h-4 w-4 mr-2" />
+          <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setIsLeaveGroupOpen(true)}>
           <DoorOpen className="h-4 w-4 mr-2" />

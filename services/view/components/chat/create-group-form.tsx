@@ -86,7 +86,7 @@ export default function CreateGroupForm() {
           <Avatar className="self-center h-20 w-20">
             <AvatarImage src={pfp} alt="pfp preview" />
             <AvatarFallback className={clsx(groupName !== "" && "text-3xl")}>
-              {groupName ? groupName[0] : "preview"}
+              {groupName[0] ?? "preview"}
             </AvatarFallback>
           </Avatar>
           <Input

@@ -93,7 +93,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
               <Avatar className="self-center h-20 w-20">
                 <AvatarImage src={pfp} alt="pfp preview" />
                 <AvatarFallback className={clsx(name !== "" && "text-3xl")}>
-                  {name ? name[0] : "preview"}
+                  {name[0] ?? "preview"}
                 </AvatarFallback>
               </Avatar>
               <Input
