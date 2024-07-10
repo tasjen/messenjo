@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { useStore } from "@/lib/store/client";
 import { ThemeSwitch } from "./theme-switch";
+import { ConnectError } from "@connectrpc/connect";
 
 export default function SettingsButton() {
   const store = useStore();
@@ -39,8 +40,8 @@ export default function SettingsButton() {
       toast("Your profile has been successfully updated");
       setIsOpen(false);
     } catch (err) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
+      if (err instanceof ConnectError) {
+        setErrorMessage(err.rawMessage);
       }
     }
   }
@@ -60,6 +61,7 @@ export default function SettingsButton() {
         setIsOpen(change);
         setUsername(store.user.username);
         setPfp(store.user.pfp);
+        setErrorMessage("");
       }}
     >
       <DialogTrigger asChild>
@@ -102,7 +104,7 @@ export default function SettingsButton() {
             </div>
           </Label>
           <Label className="mt-4 flex gap-3 items-center">
-            Dark mode
+            <span>Dark mode</span>
             <ThemeSwitch />
           </Label>
           <div className="flex justify-between items-end">

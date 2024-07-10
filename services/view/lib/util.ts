@@ -33,7 +33,7 @@ export function handleWebError(err: unknown): void {
         window.location.href = "/login";
         return;
       default:
-        toast(err.message);
+        toast(err.rawMessage);
     }
   } else if (err instanceof Error) {
     toast(err.message);

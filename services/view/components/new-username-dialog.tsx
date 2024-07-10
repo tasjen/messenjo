@@ -14,6 +14,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import NoSSR from "./no-ssr";
 import { chatClient } from "@/lib/grpc-clients/web";
+import { ConnectError } from "@connectrpc/connect";
 
 export default function NewUsernameDialog() {
   const store = useStore();
@@ -28,8 +29,8 @@ export default function NewUsernameDialog() {
       toast(`Your username has been changed to ${username}`);
       setIsOpen(false);
     } catch (err) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
+      if (err instanceof ConnectError) {
+        setErrorMessage(err.rawMessage);
       }
     }
   }

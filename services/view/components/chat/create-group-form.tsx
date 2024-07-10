@@ -13,6 +13,7 @@ import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { chatClient } from "@/lib/grpc-clients/web";
+import { ConnectError } from "@connectrpc/connect";
 
 export default function CreateGroupForm() {
   const store = useStore();
@@ -52,8 +53,8 @@ export default function CreateGroupForm() {
       setPfp("");
       setErrMessage("");
     } catch (err) {
-      if (err instanceof Error) {
-        setErrMessage(err.message);
+      if (err instanceof ConnectError) {
+        setErrMessage(err.rawMessage);
       }
     }
   }

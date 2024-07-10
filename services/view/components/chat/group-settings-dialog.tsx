@@ -17,6 +17,7 @@ import { GroupContact } from "@/lib/schema";
 import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { parse as uuidParse } from "uuid";
+import { ConnectError } from "@connectrpc/connect";
 
 type Props = {
   isOpen: boolean;
@@ -55,8 +56,8 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
       setIsOpen(false);
       setErrorMessage("");
     } catch (err) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
+      if (err instanceof ConnectError) {
+        setErrorMessage(err.rawMessage);
       }
     }
   };
