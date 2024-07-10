@@ -2,7 +2,8 @@ version: "3"
 
 vars:
   EC2_IPv4: 52.76.87.23
-  # for dev mode, replace original chatdb host with localhost + sslmode=disable
+  HOST: messenjo.tasjen.pro
+  EMAIL: tasjen@tasjen.com
   MIGRATE: migrate -path ./services/chatdb/migrations/ -database ${POSTGRESQL_URI/"chatdb:5432/postgres"/"localhost:5432/postgres?sslmode=disable"}
   DEV_COMPOSE: docker-compose.dev.yml
   PROD_COMPOSE: docker-compose.prod.yml
@@ -17,7 +18,7 @@ tasks:
         then
           HOST=localhost:3000 docker compose -f {{.DEV_COMPOSE}} {{index .MATCH 0}} {{.ARGS}};
         else
-          HOST=tasjen.pro docker compose -f {{.PROD_COMPOSE}} {{index .MATCH 0}} {{.ARGS}};
+          HOST={{.HOST}} docker compose -f {{.PROD_COMPOSE}} {{index .MATCH 0}} {{.ARGS}};
         fi
     env:
       MY_UID:
@@ -31,7 +32,6 @@ tasks:
       - task compose-up ARGS="auth chat streaming view nginx"
     silent: true
 
-  # prod only (for dev, change hostname in services/chat/.env.dev from 'chatdb' to 'localhost')
   migrate-create:
     cmds:
       - migrate create -seq -ext=.sql -dir=./services/chatdb/migrations {{.LABEL}}
@@ -69,7 +69,9 @@ tasks:
     silent: true
 
   # prod only
+
+  # run this command for getting free SSL certificate from letsencrypt
   cert:
     cmds:
-      - docker compose -f docker-compose.prod.yml up certbot
+      - EMAIL={{.EMAIL}} DOMAIN={{.HOST}} docker compose -f docker-compose.prod.yml up certbot
     silent: true

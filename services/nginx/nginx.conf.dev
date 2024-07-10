@@ -63,6 +63,5 @@ http {
       proxy_set_header Host $host;
       proxy_read_timeout 24h;
     }
-
   }
 }

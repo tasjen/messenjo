@@ -22,12 +22,17 @@ http {
   }
 
   server {
-    listen 80 default_server;
+    listen 80;
 
-    server_name _;
     location ~ /.well-known/acme-challenge/ {
       root /var/www/certbot;
     }
+
+    # comment everything below and uncomment this block if
+    # it's the first time getting certificate using certbot
+    # location / {
+    #   return 301 https://$host$request_uri;
+    # }
 
     return 301 https://$host$request_uri;
   }
@@ -35,13 +40,12 @@ http {
   server {
     listen 443 ssl;
     http2 on;
-    server_name tasjen.pro;
     access_log off;
     include /etc/nginx/conf.d/gzip.conf;
     include /etc/nginx/conf.d/timeouts.conf;
 
-    ssl_certificate /etc/letsencrypt/live/tasjen.pro/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tasjen.pro/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/messenjo.tasjen.pro/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/messenjo.tasjen.pro/privkey.pem;
     # https://github.com/lebinh/nginx-conf?tab=readme-ov-file#ssl-cache
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;

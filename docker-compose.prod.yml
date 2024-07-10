@@ -93,7 +93,7 @@ services:
 
   certbot:
     image: certbot/certbot
-    container_name: messenjo-certbot-dev
+    container_name: messenjo-certbot-prod
     profiles:
       - certbot
     volumes:
