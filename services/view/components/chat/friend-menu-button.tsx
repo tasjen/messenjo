@@ -20,7 +20,7 @@ export default function FriendMenuButton({ className }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={className}>
-        <ChevronDown className="ring-0 focus-visible:ring-0 focus-visible:ring-transparent ring-transparent border-0" />
+        <ChevronDown />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => setIsUnfriendOpen(true)}>

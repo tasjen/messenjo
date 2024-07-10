@@ -24,7 +24,7 @@ export default function GroupMenuButton({ className }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={className}>
-        <ChevronDown className="ring-0 focus-visible:ring-0 focus-visible:ring-transparent ring-transparent border-0" />
+        <ChevronDown />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={() => setIsAddMembersOpen(true)}>
