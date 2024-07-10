@@ -12,7 +12,7 @@ import { DialogHeader } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import clsx from "clsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
@@ -22,9 +22,15 @@ import { ThemeSwitch } from "./theme-switch";
 export default function SettingsButton() {
   const store = useStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [username, setUsername] = useState(store.user.username);
-  const [pfp, setPfp] = useState(store.user.pfp);
+  const [username, setUsername] = useState("");
+  const [pfp, setPfp] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (!store.user) return;
+    setUsername(store.user.username);
+    setPfp(store.user.pfp);
+  }, [store.user]);
 
   async function handleSubmit(): Promise<void> {
     try {
@@ -37,6 +43,14 @@ export default function SettingsButton() {
         setErrorMessage(err.message);
       }
     }
+  }
+
+  if (!username || !pfp) {
+    return (
+      <Button variant="secondary">
+        <Settings />
+      </Button>
+    );
   }
 
   return (
