@@ -2,19 +2,21 @@
 
 import { useStore } from "@/lib/store/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "@/lib/schema";
+import { Contact, User } from "@/lib/schema";
 
 type Props = {
   user: User;
+  contacts: Contact[];
 };
 
 export default function UserProfileClient(props: Props) {
   const store = useStore();
   const { user } = store.user.id ? store : props;
-  const friendCount = store.contacts.filter(
+  const { contacts } = store.contacts.length ? store : props;
+  const friendCount = contacts.filter(
     (contact) => contact.type === "friend"
   ).length;
-  const groupCount = store.contacts.length - friendCount;
+  const groupCount = contacts.length - friendCount;
 
   return (
     <div className="mt-auto space-y-4">
