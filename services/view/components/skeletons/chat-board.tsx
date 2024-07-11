@@ -18,10 +18,10 @@ export default function ChatBoardSkeleton() {
             key={i}
             className={clsx(
               "flex gap-2",
-              i % 2 === 0 && "ml-auto flex-row-reverse"
+              i % 2 === 1 && "ml-auto flex-row-reverse"
             )}
           >
-            <Skeleton className="rounded-full h-10 w-10" />
+            {i % 2 === 0 && <Skeleton className="rounded-full h-10 w-10" />}
             <Skeleton className="rounded-full p-2 w-36 h-10" />
           </div>
         ))}

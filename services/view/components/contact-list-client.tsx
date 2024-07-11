@@ -62,7 +62,7 @@ export default function ContactListClient(props: Props) {
 
   return (
     <>
-      <div className="relative flex items-center gap-2">
+      <div className="flex items-center gap-2 my-0">
         <Search className="absolute pl-2" />
         <Input
           type="search"
