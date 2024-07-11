@@ -18,14 +18,16 @@ export default function HomePageClient(props: Props) {
   ).length;
   const groupCount = store.contacts.length - friendCount;
   return (
-    <div className="flex flex-col h-full items-center gap-4">
-      <Avatar className="self-center h-28 w-28 mt-8">
-        <AvatarImage src={user.pfp} alt="your pfp" />
-        <AvatarFallback>{user.username[0]}</AvatarFallback>
-      </Avatar>
-      <div className="text-3xl">{user.username}</div>
-      <div>
-        friends: {friendCount} | groups: {groupCount}
+    <div className="flex flex-col h-full">
+      <div className="mt-auto space-y-4">
+        <Avatar className="h-28 w-28 mx-auto">
+          <AvatarImage src={user.pfp} alt="your pfp" />
+          <AvatarFallback>{user.username[0]}</AvatarFallback>
+        </Avatar>
+        <div className="text-3xl text-center">{user.username}</div>
+        <div className="text-ring text-center">
+          friends: {friendCount} | groups: {groupCount}
+        </div>
       </div>
       <div className="ml-auto mt-auto p-2">
         Messenjo v0.0.1
