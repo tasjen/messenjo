@@ -4,5 +4,5 @@ COPY . .
 # install packages
 RUN corepack enable && \
     corepack prepare pnpm@latest --activate && \
-    pnpm install --frozen-lockfile
+    pnpm install
 CMD ["pnpm", "run", "dev"]

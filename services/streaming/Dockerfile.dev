@@ -4,7 +4,7 @@ COPY . .
 # install packages
 RUN corepack enable && \
     corepack prepare pnpm@latest --activate && \
-    pnpm install --frozen-lockfile
+    pnpm install
 # gcompat is required as uWebSocket.js uses glibc
 RUN apk add gcompat
 CMD ["pnpm", "run", "dev"]
