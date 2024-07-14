@@ -3,7 +3,7 @@
 import { useStore } from "@/lib/store/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,10 +20,11 @@ export default function CreateGroupForm() {
   const [userIds, setUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [pfp, setPfp] = useState("");
-  const [errMessage, setErrMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  async function handleSubmit(): Promise<void> {
+  async function handleSubmit(e: FormEvent): Promise<void> {
+    e.preventDefault();
     try {
       const { groupId } = await chatClient.createGroup({
         groupName,
@@ -51,11 +52,15 @@ export default function CreateGroupForm() {
       setUserIds([]);
       setGroupName("");
       setPfp("");
-      setErrMessage("");
+      setErrorMessage("");
     } catch (err) {
-      if (err instanceof ConnectError) {
-        setErrMessage(err.rawMessage);
-      }
+      setErrorMessage(
+        err instanceof ConnectError
+          ? err.rawMessage
+          : err instanceof Error
+            ? err.message
+            : String(err)
+      );
     }
   }
 
@@ -69,7 +74,7 @@ export default function CreateGroupForm() {
     }));
 
   return (
-    <form className="flex flex-col space-y-8" action={handleSubmit}>
+    <form className="flex flex-col space-y-8" onSubmit={handleSubmit}>
       <Label>
         <div className="mb-2 font-bold">Group name</div>
         <Input
@@ -110,7 +115,7 @@ export default function CreateGroupForm() {
         />
       </Label>
       <Button className="flex-grow-0">Submit</Button>
-      <div className="text-red-500 text-xs">{errMessage}</div>
+      <div className="text-red-500 text-xs">{errorMessage}</div>
     </form>
   );
 }

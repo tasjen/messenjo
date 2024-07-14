@@ -12,7 +12,7 @@ import { DialogHeader } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 import { chatClient } from "@/lib/grpc-clients/web";
@@ -33,16 +33,21 @@ export default function SettingsButton() {
     setPfp(store.user.pfp);
   }, [store.user]);
 
-  async function handleSubmit(): Promise<void> {
+  async function handleSubmit(e: FormEvent): Promise<void> {
+    e.preventDefault();
     try {
       await chatClient.updateUser({ username, pfp });
       store.setUser({ ...store.user, username, pfp });
       toast("Your profile has been successfully updated");
       setIsOpen(false);
     } catch (err) {
-      if (err instanceof ConnectError) {
-        setErrorMessage(err.rawMessage);
-      }
+      setErrorMessage(
+        err instanceof ConnectError
+          ? err.rawMessage
+          : err instanceof Error
+            ? err.message
+            : String(err)
+      );
     }
   }
 
@@ -73,7 +78,7 @@ export default function SettingsButton() {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
-        <form className="flex flex-col" action={handleSubmit}>
+        <form className="flex flex-col" onSubmit={handleSubmit}>
           <Label className="my-4">
             <div className="mb-2">Username</div>
             <Input

@@ -9,7 +9,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  Dispatch,
+  FormEvent,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store/client";
@@ -39,7 +45,8 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
 
   if (!currentSettings) return <></>;
 
-  const handleSubmit = async (): Promise<void> => {
+  const handleSubmit = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
     try {
       await chatClient.updateGroup({
         groupId: uuidParse(currentSettings.groupId),
@@ -56,9 +63,13 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
       setIsOpen(false);
       setErrorMessage("");
     } catch (err) {
-      if (err instanceof ConnectError) {
-        setErrorMessage(err.rawMessage);
-      }
+      setErrorMessage(
+        err instanceof ConnectError
+          ? err.rawMessage
+          : err instanceof Error
+            ? err.message
+            : String(err)
+      );
     }
   };
 
@@ -76,7 +87,7 @@ export default function GroupSettingsDialog({ isOpen, setIsOpen }: Props) {
         <DialogHeader>
           <DialogTitle>Group settings</DialogTitle>
         </DialogHeader>
-        <form className="flex flex-col" action={handleSubmit}>
+        <form className="flex flex-col" onSubmit={handleSubmit}>
           <Label className="my-4">
             <div className="mb-2">Group name</div>
             <Input

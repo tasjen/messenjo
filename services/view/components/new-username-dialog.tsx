@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogHeader } from "@/components/ui/dialog";
 import { useStore } from "@/lib/store/client";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import NoSSR from "./no-ssr";
 import { chatClient } from "@/lib/grpc-clients/web";
@@ -22,16 +22,21 @@ export default function NewUsernameDialog() {
   const [errorMessage, setErrorMessage] = useState("");
   const [username, setUsername] = useState(store.user.username);
 
-  async function handleSubmit(): Promise<void> {
+  async function handleSubmit(e: FormEvent): Promise<void> {
+    e.preventDefault();
     try {
       await chatClient.updateUser({ username, pfp: store.user.pfp });
       store.setUser({ ...store.user, username });
       toast(`Your username has been changed to ${username}`);
       setIsOpen(false);
     } catch (err) {
-      if (err instanceof ConnectError) {
-        setErrorMessage(err.rawMessage);
-      }
+      setErrorMessage(
+        err instanceof ConnectError
+          ? err.rawMessage
+          : err instanceof Error
+            ? err.message
+            : String(err)
+      );
     }
   }
 
@@ -47,7 +52,7 @@ export default function NewUsernameDialog() {
             </DialogDescription>
           </DialogHeader>
           <form
-            action={handleSubmit}
+            onSubmit={handleSubmit}
             className="grid grid-cols-4 items-center gap-4"
           >
             <Input

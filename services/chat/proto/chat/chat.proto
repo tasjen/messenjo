@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service Chat {
-  // for Auth
+  // for Auth (auth not required)
   rpc CreateUser (CreateUserReq) returns (CreateUserRes) {}
   
   // for View (auth required)
@@ -23,7 +23,7 @@ service Chat {
   rpc AddMessage (AddMessageReq) returns (AddMessageRes) {}
   rpc ResetUnreadCount (ResetUnreadCountReq) returns (google.protobuf.Empty) {}
 
-  // for Streaming (no auth required)
+  // for Streaming (auth not required)
   rpc GetGroupIds (GetGroupIdsReq) returns (GetGroupIdsRes) {}
 
 }
