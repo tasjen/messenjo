@@ -43,6 +43,9 @@ export default function Streaming() {
       case "ADD_MESSAGE":
         return store.addMessage(payload.toGroupId, payload.message);
       case "ADD_CONTACT":
+        if (store.contacts.find((c) => c.groupId === payload.contact.groupId)) {
+          return;
+        }
         store.addContact(payload.contact);
         switch (payload.contact.type) {
           case "friend":
