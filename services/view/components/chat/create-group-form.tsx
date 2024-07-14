@@ -8,12 +8,13 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import clsx from "clsx";
-import { FriendContact, GroupContact } from "@/lib/schema";
+import { GroupContact } from "@/lib/schema";
 import { parse as uuidParse, stringify as uuidStringify } from "uuid";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { chatClient } from "@/lib/grpc-clients/web";
 import { ConnectError } from "@connectrpc/connect";
+import { useMemberOptions } from "@/lib/hook";
 
 export default function CreateGroupForm() {
   const store = useStore();
@@ -22,6 +23,7 @@ export default function CreateGroupForm() {
   const [pfp, setPfp] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+  const options = useMemberOptions();
 
   async function handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
@@ -63,15 +65,6 @@ export default function CreateGroupForm() {
       );
     }
   }
-
-  const options = store.contacts
-    .filter((contact): contact is FriendContact => contact.type === "friend")
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((contact) => ({
-      img: contact.pfp,
-      value: contact.userId,
-      label: contact.name,
-    }));
 
   return (
     <form className="flex flex-col space-y-8" onSubmit={handleSubmit}>

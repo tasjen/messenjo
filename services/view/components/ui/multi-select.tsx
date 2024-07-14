@@ -95,33 +95,44 @@ const MultiSelect = ({
           <CommandInput placeholder="Search ..." />
           <CommandEmpty>No item found.</CommandEmpty>
           <CommandList>
-            {options.map((option) => (
-              <CommandItem
-                key={option.value}
-                onSelect={() => {
-                  onChange(
-                    selected.includes(option.value)
-                      ? selected.filter((item) => item !== option.value)
-                      : [...selected, option.value]
-                  );
-                  setOpen(true);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selected.includes(option.value)
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                <Avatar className="mr-2 h-6 w-6">
-                  <AvatarImage src={option.img} alt={`${option.label}'s pfp`} />
-                  <AvatarFallback>{option.label[0]}</AvatarFallback>
-                </Avatar>
-                {option.label}
-              </CommandItem>
-            ))}
+            {options
+              .sort((a, b) => {
+                const isAChecked = selected.includes(a.value);
+                const isBChecked = selected.includes(b.value);
+                return isAChecked !== isBChecked
+                  ? +isBChecked - +isAChecked
+                  : a.label.localeCompare(b.label);
+              })
+              .map((option) => (
+                <CommandItem
+                  key={option.value}
+                  onSelect={() => {
+                    onChange(
+                      selected.includes(option.value)
+                        ? selected.filter((item) => item !== option.value)
+                        : [...selected, option.value]
+                    );
+                    setOpen(true);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selected.includes(option.value)
+                        ? "opacity-100"
+                        : "opacity-0"
+                    )}
+                  />
+                  <Avatar className="mr-2 h-6 w-6">
+                    <AvatarImage
+                      src={option.img}
+                      alt={`${option.label}'s pfp`}
+                    />
+                    <AvatarFallback>{option.label[0]}</AvatarFallback>
+                  </Avatar>
+                  {option.label}
+                </CommandItem>
+              ))}
           </CommandList>
         </Command>
       </PopoverContent>

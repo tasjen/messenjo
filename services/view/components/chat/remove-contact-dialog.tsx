@@ -22,7 +22,7 @@ type Props = {
 };
 
 export default function RemoveContactDialog({ isOpen, setIsOpen }: Props) {
-  const store = useStore((s) => s);
+  const store = useStore();
   const router = useRouter();
   const contact = store.currentContact;
 
