@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ needs.check-changes.outputs.changed-services }}
+        service: ${{ needs.check-changes.outputs.services }}
 
     steps:
       - name: Checkout repository
