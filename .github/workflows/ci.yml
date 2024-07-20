@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ fromJson(needs.check-changes.outputs.changed-services) }}
+        service: ${{ fromJSON(needs.check-changes.outputs.changed-services) }}
 
     steps:
       - name: Checkout repository
