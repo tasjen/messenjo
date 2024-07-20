@@ -30,7 +30,7 @@ func setOauthStateCookie(w http.ResponseWriter, oauthState string) {
 		HttpOnly: true,
 		Secure:   *isProd,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   int((time.Minute * 2).Seconds()),
+		MaxAge:   int((time.Minute * 3).Seconds()),
 	})
 }
 

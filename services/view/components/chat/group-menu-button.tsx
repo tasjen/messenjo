@@ -11,6 +11,7 @@ import {
 import GroupSettingsDialog from "./group-settings-dialog";
 import AddMembersDialog from "./add-members-dialog";
 import RemoveContactDialog from "./remove-contact-dialog";
+import { toast } from "sonner";
 
 type Props = {
   className: string;
@@ -27,7 +28,9 @@ export default function GroupMenuButton({ className }: Props) {
         <ChevronDown />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => setIsAddMembersOpen(true)}>
+        <DropdownMenuItem
+          onClick={() => toast("This feature is not yet available")}
+        >
           <UserPlus className="h-4 w-4 mr-2" />
           <span>Add members</span>
         </DropdownMenuItem>

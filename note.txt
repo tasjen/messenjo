@@ -8,6 +8,8 @@ todo:
  - Auth: set up dynamodb local. an example -> https://davidagood.com/dynamodb-local-go/
  - View: use store selector for render optimization
  - View: handle when users get unfriended (remove them from contact list via Streaming)
+ - View: handle failed optimistic updates
+ - All: set up the entire infrastructure using Terraform
 
 
 prod image build order:
