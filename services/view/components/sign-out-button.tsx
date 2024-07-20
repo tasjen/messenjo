@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 
 export default function SignOutButton() {
   return (
-    <a href="/api/auth/logout">
+    <form action="/api/auth/logout" method="POST">
       <Button variant="secondary">
         <LogOut />
       </Button>
-    </a>
+    </form>
   );
 }
