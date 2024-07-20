@@ -1,6 +1,6 @@
 services:
   auth:
-    image: messenjo-auth:dev
+    image: tasjen/messenjo:auth-dev
     container_name: messenjo-auth-dev
     environment:
       - HOST=${HOST}
@@ -13,7 +13,7 @@ services:
       - ./services/auth/.env.dev
 
   chat:
-    image: messenjo-chat:dev
+    image: tasjen/messenjo:chat-dev
     container_name: messenjo-chat-dev
     user: ${MY_UID}:${MY_GID} # to make the host be able to modify or delete files created in the container
     build:
@@ -29,7 +29,7 @@ services:
       - redis
 
   streaming:
-    image: messenjo-streaming:dev
+    image: tasjen/messenjo:streaming-dev
     container_name: messenjo-streaming-dev
     build:
       context: ./services/streaming
@@ -45,7 +45,7 @@ services:
       - redis
 
   view:
-    image: messenjo-view:dev
+    image: tasjen/messenjo:view-dev
     container_name: messenjo-view-dev
     environment:
       - HOST=${HOST}
@@ -75,8 +75,6 @@ services:
   redis:
     image: ghcr.io/microsoft/garnet-alpine
     container_name: messenjo-redis-dev
-    build:
-      context: ./services/redis
 
   envoy:
     image: envoyproxy/envoy:distroless-v1.30-latest
