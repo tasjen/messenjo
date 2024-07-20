@@ -24,7 +24,7 @@ jobs:
           CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
           CHANGED_SERVICES="[${CHANGED_SERVICES// /,}]"
           echo "Changed services: $CHANGED_SERVICES"
-          echo "::set-output name=services::${CHANGED_SERVICES}"
+          echo "services=${CHANGED_SERVICES}" >>$GITHUB_OUTPUT
 
       # - name: Build and push Docker images
       #   if: steps.changed-services.outputs.services
