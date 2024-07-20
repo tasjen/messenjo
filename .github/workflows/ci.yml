@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [auth, chat, streaming, view]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: tasjen
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Determine changed services
+        id: changed
+        # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
+        run: |
+          CHANGED_SERVICES=$(git diff --name-only HEAD^ HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
+          echo "Changed services: $CHANGED_SERVICES"
+          echo "::set-output name=services::${CHANGED_SERVICES}"
+
+      # - name: Build and push Docker images
+      #   if: steps.changed-services.outputs.services
+      #   run: |
+      #     for SERVICE in ${{ steps.changed-services.outputs.services }}; do
+      #       echo "Building and pushing Docker image for service $SERVICE"
+      #       docker buildx build --platform linux/amd64,linux/arm64 --push -t x/$SERVICE:latest ./services/$SERVICE
+      #     done
+
+      - name: Build and push Docker images if changes detected
+        if: contains(steps.changed.outputs.services, matrix.service)
+        run: |
+          echo "Building Docker image for service ${{ matrix.service }}"
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          -t tasjen/messenjo:${{ matrix.service }} \
+          -f services/${{ matrix.service }}/Dockerfile.prod services/${{ matrix.service }} \
+          --push
