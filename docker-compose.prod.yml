@@ -1,6 +1,6 @@
 services:
   auth:
-    image: tasjen/messenjo:auth-prod
+    image: tasjen/messenjo:auth
     container_name: messenjo-auth-prod
     environment:
       - HOST=${HOST}
@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
 
   chat:
-    image: tasjen/messenjo:chat-prod
+    image: tasjen/messenjo:chat
     container_name: messenjo-chat-prod
     build:
       context: ./services/chat
@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
 
   streaming:
-    image: tasjen/messenjo:streaming-prod
+    image: tasjen/messenjo:streaming
     container_name: messenjo-streaming-prod
     build:
       context: ./services/streaming
@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
   view:
-    image: tasjen/messenjo:view-prod
+    image: tasjen/messenjo:view
     container_name: messenjo-view-prod
     environment:
       - HOST=${HOST}
