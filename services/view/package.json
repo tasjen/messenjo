@@ -28,7 +28,7 @@
     "lucide-react": "^0.373.0",
     "next": "^14.2.4",
     "next-themes": "^0.3.0",
-    "pino": "^9.2.0",
+    "pino": "^9.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-intersection-observer": "^9.10.3",
