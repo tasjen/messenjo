@@ -35,6 +35,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.8
 	github.com/google/uuid v1.6.0
 	golang.org/x/oauth2 v0.21.0
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	google.golang.org/grpc v1.64.0
 )
