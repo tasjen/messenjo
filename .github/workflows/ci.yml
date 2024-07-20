@@ -9,11 +9,36 @@ on:
       - main
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed-services: ${{ steps.changed.outputs.services }}
+
+    steps:
+      - name: Determine changed services
+        id: changed
+        # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
+        run: |
+          CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
+          CHANGED_SERVICES="[${CHANGED_SERVICES// /,}]"
+          echo "Changed services: $CHANGED_SERVICES"
+          echo "::set-output name=services::${CHANGED_SERVICES}"
+
+      # - name: Build and push Docker images
+      #   if: steps.changed-services.outputs.services
+      #   run: |
+      #     for SERVICE in ${{ steps.changed-services.outputs.services }}; do
+      #       echo "Building and pushing Docker image for service $SERVICE"
+      #       docker buildx build --platform linux/amd64,linux/arm64 --push -t x/$SERVICE:latest ./services/$SERVICE
+      #     done
+
   build-and-push:
+    needs: check-changes
+    # if: ${{ needs.check-changes.outputs.changed-services != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [auth, chat, streaming, view]
+        service: ${{ needs.check-changes.outputs.changed-services }}
 
     steps:
       - name: Checkout repository
@@ -28,24 +53,8 @@ jobs:
           username: tasjen
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Determine changed services
-        id: changed
-        # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
-        run: |
-          CHANGED_SERVICES=$(git diff --name-only HEAD^ HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
-          echo "Changed services: $CHANGED_SERVICES"
-          echo "::set-output name=services::${CHANGED_SERVICES}"
-
-      # - name: Build and push Docker images
-      #   if: steps.changed-services.outputs.services
-      #   run: |
-      #     for SERVICE in ${{ steps.changed-services.outputs.services }}; do
-      #       echo "Building and pushing Docker image for service $SERVICE"
-      #       docker buildx build --platform linux/amd64,linux/arm64 --push -t x/$SERVICE:latest ./services/$SERVICE
-      #     done
-
       - name: Build and push Docker images if changes detected
-        if: contains(steps.changed.outputs.services, matrix.service)
+        if: contains("auth chat streaming view", matrix.service)
         run: |
           echo "Building Docker image for service ${{ matrix.service }}"
           docker buildx build \
