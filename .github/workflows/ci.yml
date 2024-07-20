@@ -29,7 +29,7 @@ jobs:
           done                  
           CHANGED_SERVICES_JSON=[${CHANGED_SERVICES_JSON:1}]  # Remove leading comma
           echo "Changed services: $CHANGED_SERVICES"
-          echo "CHANGED_SERVICES=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
+          echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
 
       # - name: Build and push Docker images
       #   if: steps.changed-services.outputs.services
