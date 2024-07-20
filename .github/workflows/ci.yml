@@ -15,6 +15,8 @@ jobs:
       changed-services: ${{ steps.changed.outputs.services }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Determine changed services
         id: changed
         # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
