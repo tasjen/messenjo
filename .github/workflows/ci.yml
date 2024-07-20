@@ -56,7 +56,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker images if changes detected
-        if: contains("auth chat streaming view", matrix.service)
+        if: contains('auth chat streaming view', matrix.service)
         run: |
           echo "Building Docker image for service ${{ matrix.service }}"
           docker buildx build \
