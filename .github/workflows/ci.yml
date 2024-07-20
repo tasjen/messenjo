@@ -12,21 +12,21 @@ jobs:
   check-changes:
     runs-on: ubuntu-latest
     outputs:
-      changed-services: ${{ steps.changed.outputs.services }}
+      changed-services: ${{ steps.check.outputs.CHANGED_SERVICES }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - name: Determine changed services
-        id: changed
+      - name: Check changed services
+        id: check
         # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
         run: |
           CHANGED_SERVICES=$(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
           CHANGED_SERVICES="[${CHANGED_SERVICES// /,}]"
           echo "Changed services: $CHANGED_SERVICES"
-          echo "services=${CHANGED_SERVICES}" >>$GITHUB_OUTPUT
+          echo "CHANGED_SERVICES=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
 
       # - name: Build and push Docker images
       #   if: steps.changed-services.outputs.services
@@ -40,9 +40,11 @@ jobs:
     needs: check-changes
     # if: ${{ needs.check-changes.outputs.changed-services != '[]' }}
     runs-on: ubuntu-latest
+    env:
+      CHANGED_SERVICES: ${{ needs.check-changes.outputs.CHANGED_SERVICES }}
     strategy:
       matrix:
-        service: ${{ needs.check-changes.outputs.services }}
+        service: ${{ CHANGED_SERVICES }}
 
     steps:
       - name: Checkout repository
