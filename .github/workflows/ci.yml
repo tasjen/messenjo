@@ -21,16 +21,17 @@ jobs:
       - name: Check changed services
         id: check
         # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
+        # CHANGED_SERVICES_JSON=""
+        # for service in "${CHANGED_SERVICES[@]}"; do
+        #   CHANGED_SERVICES_JSON+=",\"$service\""
+        # done
+        # CHANGED_SERVICES_JSON=[${CHANGED_SERVICES_JSON:1}]  # Remove leading comma
         run: |
           CHANGED_SERVICES=($(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq))
-          CHANGED_SERVICES_JSON=""                              
-          for service in "${CHANGED_SERVICES[@]}"; do
-            CHANGED_SERVICES_JSON+=",\"$service\""
-          done                  
-          CHANGED_SERVICES_JSON=[${CHANGED_SERVICES_JSON:1}]  # Remove leading comma
-          echo "Changed services: $CHANGED_SERVICES"
-          echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
+          CHANGED_SERVICES=[${CHANGED_SERVICES// /, }]
 
+          echo "Changed services: $CHANGED_SERVICES"
+          echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
       # - name: Build and push Docker images
       #   if: steps.changed-services.outputs.services
       #   run: |
@@ -45,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ fromJSON(needs.check-changes.outputs.changed-services) }}
+        service: ${{ needs.check-changes.outputs.changed-services }}
 
     steps:
       - name: Checkout repository
