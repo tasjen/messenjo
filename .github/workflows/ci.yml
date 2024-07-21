@@ -20,33 +20,23 @@ jobs:
           fetch-depth: 2
       - name: Check changed services
         id: check
-        # CHANGED_SERVICES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^services/' | cut -d/ -f2 | sort | uniq)
-        # CHANGED_SERVICES_JSON=""
-        # for service in "${CHANGED_SERVICES[@]}"; do
-        #   CHANGED_SERVICES_JSON+=",\"$service\""
-        # done
-        # CHANGED_SERVICES_JSON=[${CHANGED_SERVICES_JSON:1}]  # Remove leading comma
         run: |
           CHANGED_SERVICES=($(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq))
-          CHANGED_SERVICES=[${CHANGED_SERVICES// /, }]
-
+          CHANGED_SERVICES_JSON=""                              
+          for service in "${CHANGED_SERVICES[@]}"; do
+            CHANGED_SERVICES_JSON+=",\"$service\""
+          done                  
+          CHANGED_SERVICES_JSON=[${CHANGED_SERVICES_JSON:1}]  # Remove leading comma
           echo "Changed services: $CHANGED_SERVICES"
-          echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
-      # - name: Build and push Docker images
-      #   if: steps.changed-services.outputs.services
-      #   run: |
-      #     for SERVICE in ${{ steps.changed-services.outputs.services }}; do
-      #       echo "Building and pushing Docker image for service $SERVICE"
-      #       docker buildx build --platform linux/amd64,linux/arm64 --push -t x/$SERVICE:latest ./services/$SERVICE
-      #     done
+          echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
 
   build-and-push:
     needs: check-changes
-    # if: ${{ needs.check-changes.outputs.changed-services != '[]' }}
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ needs.check-changes.outputs.changed-services }}
+        service: ${{ fromJSON(needs.check-changes.outputs.changed-services) }}
 
     steps:
       - name: Checkout repository
@@ -64,7 +54,7 @@ jobs:
       - name: Build and push Docker images if changes detected
         if: contains('auth chat streaming view', matrix.service)
         run: |
-          echo "Building Docker image for service ${{ matrix.service }}"
+          echo "Building Docker image for service '${{ matrix.service }}'"
           docker buildx build \
           --platform linux/amd64,linux/arm64 \
           -t tasjen/messenjo:${{ matrix.service }} \
