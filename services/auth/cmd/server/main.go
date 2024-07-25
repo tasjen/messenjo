@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"google.golang.org/grpc"
@@ -56,13 +57,8 @@ func main() {
 func run() error {
 	flag.Parse()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-
-	awsConfig, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to load SDK config, %v", err)
-	}
 
 	// connect to Chat's gRPC server
 	chatConn, err := grpc.NewClient(
@@ -79,6 +75,11 @@ func run() error {
 			"that stores user accounts `ACCOUNT_TABLE_NAME` in .env file")
 	}
 
+	authDbClient, err := newAuthDbClient(ctx)
+	if err != nil {
+		return err
+	}
+
 	app := &application{
 		logger: slog.New(slog.NewJSONHandler(os.Stdout, nil)),
 		providers: map[string]oa2.Provider{
@@ -86,13 +87,13 @@ func run() error {
 			"google": oa2.NewGoogleProvider(),
 		},
 		accounts: models.NewAccountModel(
-			dynamodb.NewFromConfig(awsConfig),
+			authDbClient,
 			accountTableName,
 		),
 		chatClient: chat_pb.NewChatClient(chatConn),
 	}
 
-	// check if account table exists
+	// check if account table exists, if not then creates one
 	err = app.accounts.CreateTableIfNotExists(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot create table '%s': %v", accountTableName, err)
@@ -148,4 +149,39 @@ func run() error {
 		grpcServer.GracefulStop()
 		return nil
 	}
+}
+
+func newAuthDbClient(ctx context.Context) (*dynamodb.Client, error) {
+	awsConfig, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return &dynamodb.Client{}, err
+	}
+
+	localAuthDbEndpoint := "http://authdb:8000"
+	// wait for authdb instance to spin up. 'depends_on' attribute in docker compose file doesn't work
+	if !*isProd {
+		client := &http.Client{}
+		for i := 0; i < 10; i++ {
+			resp, err := client.Get(localAuthDbEndpoint)
+			if err != nil {
+				if i == 9 {
+					return &dynamodb.Client{}, fmt.Errorf("cannot connect to local authdb: %v", err)
+				}
+				time.Sleep(time.Second)
+				continue
+			}
+			resp.Body.Close()
+			break
+		}
+	}
+
+	c := dynamodb.NewFromConfig(awsConfig,
+		func(o *dynamodb.Options) {
+			if !*isProd {
+				o.BaseEndpoint = aws.String(localAuthDbEndpoint)
+			}
+		},
+	)
+
+	return c, nil
 }

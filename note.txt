@@ -5,7 +5,6 @@ todo:
  - View: store group members in contact state
  - View: improve ChatBoard UI (pfp, date)
  - View: fix skeleton components
- - Auth: set up dynamodb local. an example -> https://davidagood.com/dynamodb-local-go/
  - View: use store selector for render optimization
  - View: handle when users get unfriended (remove them from contact list via Streaming)
  - View: handle failed optimistic updates
