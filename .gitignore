@@ -46,4 +46,8 @@ next-env.d.ts
 /services/chatdb/data/
 /services/auth/tmp/
 
+# terraform
+.terraform
+terraform.tfstate*
+secrets.tfvars
 

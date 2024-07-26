@@ -6,5 +6,8 @@
   "files.associations": {
     "nginx.conf*": "nginx",
     ".env*": "properties"
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform"
   }
 }

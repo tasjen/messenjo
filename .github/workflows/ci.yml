@@ -10,6 +10,7 @@ on:
 
 jobs:
   check-changes:
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     outputs:
       changed-services: ${{ steps.check.outputs.CHANGED_SERVICES_JSON }}
@@ -18,17 +19,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - name: Check changed services
+      - name: Check for changed services
         id: check
         run: |
           CHANGED_SERVICES=$(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
-          CHANGED_SERVICES_JSON="[$(echo $CHANGED_SERVICES | sed 's/[^ ]\+/"&"/g' | sed 's/ /,/g')]"
           echo "Changed services: $CHANGED_SERVICES"
+          CHANGED_SERVICES_JSON="[$(echo $CHANGED_SERVICES | sed 's/[^ ]\+/"&"/g' | sed 's/ /,/g')]"
           echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
 
   build-and-push:
     needs: check-changes
-    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
