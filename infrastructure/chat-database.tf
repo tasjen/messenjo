@@ -2,7 +2,7 @@ resource "aws_db_instance" "main" {
   identifier                 = "messenjo-chatdb"
   allocated_storage          = 20
   auto_minor_version_upgrade = true
-  availability_zone          = "ap-southeast-1a"
+  availability_zone          = "${var.region}a"
   multi_az                   = false
   engine                     = "postgres"
   engine_version             = "16.3"

@@ -22,7 +22,7 @@ resource "aws_instance" "main" {
 
 resource "aws_eip" "main" {
   instance             = aws_instance.main.id
-  network_border_group = "ap-southeast-1"
+  network_border_group = var.region
   tags = {
     Name = "messenjo-main-server-public-ipv4"
   }

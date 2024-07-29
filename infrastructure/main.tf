@@ -15,7 +15,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-1"
+  region = var.region
 }
 
 resource "aws_vpc" "main" {
@@ -61,7 +61,7 @@ resource "aws_route_table" "public" {
 resource "aws_subnet" "public_a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "ap-southeast-1a"
+  availability_zone = "${var.region}a"
   tags = {
     Name = "messenjo-public-subnet-A"
   }
@@ -70,7 +70,7 @@ resource "aws_subnet" "public_a" {
 resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.101.0/24"
-  availability_zone = "ap-southeast-1a"
+  availability_zone = "${var.region}a"
   tags = {
     Name = "messenjo-private-subnet-A"
   }
@@ -79,7 +79,7 @@ resource "aws_subnet" "private_a" {
 resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.102.0/24"
-  availability_zone = "ap-southeast-1b"
+  availability_zone = "${var.region}b"
   tags = {
     Name = "messenjo-private-subnet-B"
   }

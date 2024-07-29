@@ -1,3 +1,8 @@
+variable "region" {
+  type    = string
+  default = "ap-southeast-1" # singapore
+}
+
 variable "authdb_table_name" {
   type = string
 }
