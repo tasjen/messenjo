@@ -42,7 +42,7 @@ export default function MessageItem({ message }: Props) {
         )}
       >
         {!isFromMe && (
-          <Avatar className="self-center">
+          <Avatar className="self-start">
             <AvatarImage
               src={message.fromPfp}
               alt={`${message.fromUsername}'s pfp`}
