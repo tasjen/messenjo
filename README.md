@@ -11,6 +11,7 @@ Messenjo is a simple full-stack real-time messaging web application. It's built 
 - OAuth 2.0 authentication (GitHub, Google)
 - Add/remove friends
 - Create/leave groups
+- Send/read messages to friends/groups
 - Change username and group name
 - Add/change/remove user and group profile picture
 - Real-time notifications
@@ -59,9 +60,9 @@ Messenjo is a simple full-stack real-time messaging web application. It's built 
 
 ![infrastructure](images/infrastructure.png)
 
-## Workflow
+## CI/CD
 
-![workflow](images/workflow.png)
+![ci-cd](images/ci-cd.png)
 
 [Go]: https://go.dev/
 [TypeScript]: https://www.typescriptlang.org/
