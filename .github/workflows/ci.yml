@@ -13,7 +13,8 @@ jobs:
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
     runs-on: ubuntu-latest
     outputs:
-      changed-services: ${{ steps.check.outputs.CHANGED_SERVICES_JSON }}
+      changed-services: ${{ steps.check.outputs.CHANGED_SERVICES }}
+      changed-services-json: ${{ steps.check.outputs.CHANGED_SERVICES_JSON }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,6 +25,7 @@ jobs:
         run: |
           CHANGED_SERVICES=$(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
           echo "Changed services: $CHANGED_SERVICES"
+          echo "CHANGED_SERVICES=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           CHANGED_SERVICES_JSON="[$(echo $CHANGED_SERVICES | sed 's/[^ ]\+/"&"/g' | sed 's/ /,/g')]"
           echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
 
@@ -33,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ${{ fromJSON(needs.check-changes.outputs.changed-services) }}
+        service: ${{ fromJSON(needs.check-changes.outputs.changed-services-json) }}
 
     steps:
       - name: Checkout repository
@@ -57,3 +59,27 @@ jobs:
           -t tasjen/messenjo:${{ matrix.service }} \
           -f services/${{ matrix.service }}/Dockerfile.prod services/${{ matrix.service }} \
           --push
+
+  deploy:
+    needs:
+      - check-changes
+      - build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: re-pull images and deploy
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "re-deploy" \
+            --parameters commands=[ \
+              "cd /home/ec2-user", \
+              "task compose-down", \
+              "task compose-pull ARGS='${{ needs.check-changes.outputs.changed-services }}'", \
+              "task compose-up", \
+            ] \
+            --output text
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "ap-southeast-1"
