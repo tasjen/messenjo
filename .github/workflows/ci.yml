@@ -19,13 +19,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0 # fetch full tree
       - name: Check for changed services
         id: check
         run: |
-          CHANGED_SERVICES=$(git diff --name-only HEAD~1 HEAD | grep '^services/' | cut -d/ -f2 | sort | uniq)
+          CHANGED_SERVICES=$(git diff --name-only ${{github.event.before}} ${{github.sha}} | grep '^services/' | cut -d/ -f2 | sort | uniq | tr '\n' ' ')
           echo "Changed services: $CHANGED_SERVICES"
-          echo "CHANGED_SERVICES='$CHANGED_SERVICES'" >> $GITHUB_OUTPUT
+          echo "CHANGED_SERVICES=$CHANGED_SERVICES" >> $GITHUB_OUTPUT
           CHANGED_SERVICES_JSON="[$(echo $CHANGED_SERVICES | sed 's/[^ ]\+/"&"/g' | sed 's/ /,/g')]"
           echo "CHANGED_SERVICES_JSON=$CHANGED_SERVICES_JSON" >> $GITHUB_OUTPUT
 
@@ -67,18 +67,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: re-pull images and deploy
-        run: |
+        run: >
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --comment "re-deploy" \
-            --parameters commands=[ \
-              "cd /home/ec2-user", \
-              "task compose-down", \
-              "task compose-pull ARGS='${{ needs.check-changes.outputs.changed-services }}'", \
-              "task compose-up", \
-            ] \
-            --output text
+            --output text \
+            --parameters 'commands=[
+                "cd /home/ec2-user",
+                "task compose-down",
+                "task compose-pull ARGS=\"${{ needs.check-changes.outputs.changed-services }}\"",
+                "task compose-up"
+              ]'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
