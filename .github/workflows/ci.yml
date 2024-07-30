@@ -31,7 +31,7 @@ jobs:
 
   build-and-push:
     needs: check-changes
-    if: ${{ needs.check-changes.outputs.changed-services != '[]' }}
+    if: ${{ needs.check-changes.outputs.changed-services-json != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
