@@ -26,9 +26,9 @@ sudo systemctl start docker && \
 sudo usermod -a -G docker $(whoami) && \
 newgrp docker
 
-install compose:
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} \
-VERSION="2.28.1" && \
+install compose: # for all users
+DOCKER_CONFIG=/usr/local/lib/docker \
+VERSION="2.29.1" && \
 mkdir -p $DOCKER_CONFIG/cli-plugins && \
 curl -SL \
 "https://github.com/docker/compose/releases/download/v$VERSION/docker-compose-$(uname -s)-$(uname -m)" \

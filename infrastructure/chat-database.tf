@@ -28,6 +28,8 @@ resource "aws_db_subnet_group" "private" {
   }
 }
 
+# Create a security group for our RDS instance to allow ingress connections from
+# EC2 instances that allow egress connections referenced to this security group
 resource "aws_security_group" "database" {
   name   = "messenjo-database-sg"
   vpc_id = aws_vpc.main.id
@@ -35,7 +37,6 @@ resource "aws_security_group" "database" {
     Name = "messenjo-database-sg"
   }
 }
-
 resource "aws_vpc_security_group_ingress_rule" "server_to_db_5432" {
   security_group_id            = aws_security_group.database.id
   ip_protocol                  = "tcp"
@@ -45,6 +46,8 @@ resource "aws_vpc_security_group_ingress_rule" "server_to_db_5432" {
   description                  = "Rule to allow connections from EC2 instances with ${aws_security_group.server_to_database.id} attached"
 }
 
+# Create a security group for EC2 instances that allows egress connections
+# referenced to the above security group
 resource "aws_security_group" "server_to_database" {
   name   = "messenjo-server-to-database-sg"
   vpc_id = aws_vpc.main.id
@@ -52,7 +55,6 @@ resource "aws_security_group" "server_to_database" {
     Name = "messenjo-server-to-database-sg"
   }
 }
-
 resource "aws_vpc_security_group_egress_rule" "server_to_db_5432" {
   security_group_id            = aws_security_group.server_to_database.id
   ip_protocol                  = "tcp"
