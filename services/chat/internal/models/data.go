@@ -126,7 +126,8 @@ func (d *DataModel) GetContacts(ctx context.Context, userId uuid.UUID) ([]Contac
 		LEFT JOIN latest_messages
 		ON groups.id = latest_messages.group_id
 	WHERE
-		users.id != $1;`
+		groups.name != '' OR
+		(groups.name = '' AND users.id != $1);`
 	rows, err := d.DB.Query(ctx, stmt, userId)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
