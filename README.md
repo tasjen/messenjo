@@ -63,3 +63,7 @@ Messenjo is a simple full-stack real-time messaging web application. It's built 
 ## CI/CD
 
 ![ci-cd](images/ci-cd.png)
+
+### Appendix
+
+- All the diagrams shown above were drawn using **[eraser.io](https://www.eraser.io/)** and **[dbdiagram.io](https://dbdiagram.io/)**
