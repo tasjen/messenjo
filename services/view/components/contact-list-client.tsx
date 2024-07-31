@@ -27,12 +27,21 @@ export default function ContactListClient(props: Props) {
     store.loadContacts(props.contacts);
   }, []);
 
+  // Set unload event every time the groupId param changes.
+  // For example, if a user navigates to groupId 'A' and closes his tab.
+  // 'resetUnreadCount' beacon to the groupId 'A' will be sent. However,
+  // if the user navigates to groupId 'A' then navigates to any page that
+  // doesn't have groupId param and closes his tab, resetUnreadCount to
+  // the groupId 'A' will not be sent as the 'window.onbeforeunload' would
+  // already be set to null.
   useEffect(() => {
-    if (params.groupId) {
-      window.onbeforeunload = function () {
-        navigator.sendBeacon(`/api/resetUnreadCount?groupId=${params.groupId}`);
-      };
-    }
+    window.onbeforeunload = params.groupId
+      ? function () {
+          navigator.sendBeacon(
+            `/api/resetUnreadCount?groupId=${params.groupId}`
+          );
+        }
+      : null;
   }, [params.groupId]);
 
   const contacts = (store.contacts.length ? store : props).contacts
