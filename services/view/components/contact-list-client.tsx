@@ -44,7 +44,9 @@ export default function ContactListClient(props: Props) {
       : null;
   }, [params.groupId]);
 
-  const contacts = (store.contacts.length ? store : props).contacts
+  const contacts = (
+    store.contacts.length || store.isClient ? store : props
+  ).contacts
     .filter((e) => e.name.toLowerCase().includes(term.toLowerCase()))
     .sort((a, b) => {
       const lastMessageA = a.messages[0];
