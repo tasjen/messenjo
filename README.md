@@ -4,7 +4,7 @@
 
 [![preview](images/preview.png)](https://messenjo.tasjen.pro)
 
-Messenjo is a simple full-stack real-time messaging web application. It's built following (or trying to follow) the microservices pattern with a focus on low latency performance. The design of the backend might seem a bit overcooked, it was for learning purposes.
+**_[Messenjo](https://messenjo.tasjen.pro)_** is a simple full-stack real-time messaging web application. It's built following (or trying to follow) the microservices pattern with a focus on low latency performance. The design of the backend might seem a bit overcooked, it was for learning purposes.
 
 ## Features
 
