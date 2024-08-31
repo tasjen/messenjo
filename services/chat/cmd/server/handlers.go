@@ -275,24 +275,21 @@ func (app *application) CreateGroup(ctx context.Context, req *chat_pb.CreateGrou
 		return &chat_pb.CreateGroupRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	go func() {
-		var userIdsString []string
-		for _, e := range userIds {
-			userIdsString = append(userIdsString, e.String())
-		}
-		action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
-		actionJson, err := json.Marshal(action)
+	// publish to Streaming service
+	var userIdsString []string
+	for _, e := range userIds {
+		userIdsString = append(userIdsString, e.String())
+	}
+	action := NewAddGroupContactAction(userIdsString, groupId.String(), groupName, pfp, len(userIds))
+	actionJson, err := json.Marshal(action)
+	if err != nil {
+		app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
+	} else {
+		err = app.redisClient.Publish(ctx, "main", actionJson).Err()
 		if err != nil {
 			app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
-		} else {
-			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-			err = app.redisClient.Publish(newCtx, "main", actionJson).Err()
-			if err != nil {
-				app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
-			}
 		}
-	}()
+	}
 
 	return &chat_pb.CreateGroupRes{GroupId: groupId[:]}, nil
 }
@@ -353,31 +350,28 @@ func (app *application) AddFriend(ctx context.Context, req *chat_pb.AddFriendReq
 		return &chat_pb.AddFriendRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	go func() {
-		newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		fromUser, err := app.data.GetUserById(newCtx, fromUserId)
-		if err != nil {
-			app.logger.Error(err.Error())
-			return
-		}
-		action := NewAddFriendContactAction(
-			toUserId.String(),
-			groupId.String(),
-			fromUserId.String(),
-			fromUser.Username,
-			fromUser.Pfp,
-		)
-		actionJson, err := json.Marshal(action)
+	// publish to Streaming service
+	fromUser, err := app.data.GetUserById(ctx, fromUserId)
+	if err != nil {
+		app.logger.Error(err.Error())
+		return &chat_pb.AddFriendRes{GroupId: groupId[:]}, nil
+	}
+	action := NewAddFriendContactAction(
+		toUserId.String(),
+		groupId.String(),
+		fromUserId.String(),
+		fromUser.Username,
+		fromUser.Pfp,
+	)
+	actionJson, err := json.Marshal(action)
+	if err != nil {
+		app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
+	} else {
+		err = app.redisClient.Publish(ctx, "main", actionJson).Err()
 		if err != nil {
 			app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
-		} else {
-			err = app.redisClient.Publish(newCtx, "main", actionJson).Err()
-			if err != nil {
-				app.logger.Error(fmt.Sprint("failed to send AddContactAction:", err.Error()))
-			}
 		}
-	}()
+	}
 
 	return &chat_pb.AddFriendRes{GroupId: groupId[:]}, nil
 }
@@ -491,20 +485,17 @@ func (app *application) AddMessage(ctx context.Context, req *chat_pb.AddMessageR
 		return &chat_pb.AddMessageRes{}, status.Error(codes.Internal, err.Error())
 	}
 
-	go func() {
-		addMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
-		addMessageActionJson, err := json.Marshal(addMessageAction)
+	// publish to Streaming service
+	addMessageAction := NewAddMessageAction(groupId.String(), id, fromUsername, fromPfp, content, sentAt.UnixMilli())
+	addMessageActionJson, err := json.Marshal(addMessageAction)
+	if err != nil {
+		app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
+	} else {
+		err = app.redisClient.Publish(ctx, "main", addMessageActionJson).Err()
 		if err != nil {
 			app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
-		} else {
-			newCtx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
-			err = app.redisClient.Publish(newCtx, "main", addMessageActionJson).Err()
-			if err != nil {
-				app.logger.Error(fmt.Sprint("failed to send AddMessageAction:", err.Error()))
-			}
 		}
-	}()
+	}
 
 	return &chat_pb.AddMessageRes{MessageId: id}, nil
 }
