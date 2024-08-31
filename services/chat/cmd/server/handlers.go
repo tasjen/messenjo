@@ -65,6 +65,7 @@ func (app *application) GetContacts(ctx context.Context, req *empty.Empty) (*cha
 	}
 
 	var contactsPb []*chat_pb.Contact
+	var groupIds []string
 	for _, e := range contacts {
 		contactsPb = append(contactsPb, &chat_pb.Contact{
 			Type:        e.Type,
@@ -80,6 +81,13 @@ func (app *application) GetContacts(ctx context.Context, req *empty.Empty) (*cha
 				SentAt:  timestamp.New(e.LastSentAt),
 			},
 		})
+		groupIds = append(groupIds, e.GroupId.String())
+	}
+
+	groupIdsJson, err := json.Marshal(groupIds)
+	err = app.redisClient.Set(ctx, userId.String(), string(groupIdsJson[:]), 10*time.Second).Err()
+	if err != nil {
+		return &chat_pb.GetContactsRes{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &chat_pb.GetContactsRes{Contacts: contactsPb}, nil
@@ -142,29 +150,6 @@ func (app *application) GetMessages(ctx context.Context, req *chat_pb.GetMessage
 		})
 	}
 	return &chat_pb.GetMessagesRes{Messages: messagesPb}, nil
-}
-
-// this method is only for Streaming service when users connect to WebSocket
-// no auth required
-func (app *application) GetGroupIds(ctx context.Context, req *chat_pb.GetGroupIdsReq) (*chat_pb.GetGroupIdsRes, error) {
-	userId, err := uuid.FromBytes(req.GetUserId())
-	if err != nil {
-		return &chat_pb.GetGroupIdsRes{}, status.Error(
-			codes.InvalidArgument,
-			fmt.Sprint("invalid userId: ", req.GetUserId()),
-		)
-	}
-
-	groupIds, err := app.data.GetGroupIdsFromUserId(ctx, userId)
-	if err != nil {
-		return &chat_pb.GetGroupIdsRes{}, status.Error(codes.Internal, err.Error())
-	}
-	var groupIdsBytes [][]byte
-	for _, e := range groupIds {
-		groupIdsBytes = append(groupIdsBytes, e[:])
-	}
-
-	return &chat_pb.GetGroupIdsRes{GroupIds: groupIdsBytes}, nil
 }
 
 // this method is only for Auth service when creating new users

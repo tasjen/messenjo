@@ -51,3 +51,5 @@ export const Action = z.discriminatedUnion("type", [
   AddMessageAction,
   AddContactAction,
 ]);
+
+export const GroupIds = z.array(z.string());

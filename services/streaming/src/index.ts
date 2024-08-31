@@ -1,10 +1,10 @@
 import { App } from "uWebSockets.js";
-import { createClient } from "redis";
-import { authClient, chatClient } from "./grpc-clients";
+import { createClient, RedisClientType } from "redis";
+import { authClient } from "./grpc-clients";
 import { type UserData, UserManager } from "./user-manager";
-import { parse as uuidParse, stringify as uuidStringify } from "uuid";
+import { stringify as uuidStringify } from "uuid";
 import cookie from "cookie";
-import { Action } from "./schema";
+import { Action, GroupIds } from "./schema";
 import { logger } from "./logger";
 
 const { PORT, REDIS_URI } = process.env;
@@ -16,6 +16,7 @@ let subDelay = 1; //second
 
 const app = App();
 const userManager = new UserManager();
+let redisClient: RedisClientType;
 
 app.ws<UserData>("/", {
   idleTimeout: 0, // cannot be greater than 960s, set this in nginx.conf instead
@@ -77,10 +78,13 @@ app.ws<UserData>("/", {
       if (conns) {
         topics = conns[0].getTopics();
       } else {
-        const { groupIds } = await chatClient.getGroupIds({
-          userId: uuidParse(userId),
-        });
-        topics = groupIds.map((e) => uuidStringify(e)).concat(userId);
+        const groupIdsJson = await redisClient.get(userId);
+        if (!groupIdsJson)
+          throw new Error(
+            "Couldn't find `groupIds` data from Redis cache. It may already be expired"
+          );
+        const groupIds = GroupIds.parse(JSON.parse(groupIdsJson));
+        topics = groupIds.concat(userId);
       }
       for (const t of topics) {
         ws.subscribe(t);
@@ -117,20 +121,22 @@ app.listen(Number(PORT), (listenSocket) => {
 
 async function subToRedis() {
   await new Promise((resolve) => setTimeout(resolve, subDelay * 1e3));
+  redisClient = createClient({ url: REDIS_URI });
   try {
-    const redisClient = createClient({ url: REDIS_URI });
     await redisClient.connect();
     console.log(
       `Connected to redis server on port: ${REDIS_URI?.split(":").slice(-1)[0]}`
     );
     await redisClient.subscribe("main", onAction);
     console.log(`Subscribing to redis channel: "main"`);
+    subDelay = 1;
   } catch (err) {
     if (err instanceof Error) {
       console.log(`failed to subscribe to channel "main": ${err.message}`);
     } else {
       console.log(`unknown error from 'subToredis': ${err}`);
     }
+    await redisClient.disconnect();
     subDelay *= 3;
     console.log(`retrying in ${subDelay} seconds`);
     subToRedis();

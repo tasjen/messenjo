@@ -63,9 +63,8 @@ func (app *application) authHandler(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-	// no auth for GetGroupIds and CreateUser
+	// no auth for CreateUser (called by Auth service)
 	if slices.Contains([]string{
-		"/messenjo.Chat/GetGroupIds",
 		"/messenjo.Chat/CreateUser",
 	},
 		info.FullMethod,

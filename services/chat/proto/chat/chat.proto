@@ -22,10 +22,6 @@ service Chat {
   rpc AddMembers (AddMembersReq) returns (google.protobuf.Empty) {}
   rpc AddMessage (AddMessageReq) returns (AddMessageRes) {}
   rpc ResetUnreadCount (ResetUnreadCountReq) returns (google.protobuf.Empty) {}
-
-  // for Streaming (auth not required)
-  rpc GetGroupIds (GetGroupIdsReq) returns (GetGroupIdsRes) {}
-
 }
 
 message User {
@@ -66,13 +62,6 @@ message Message {
   string from_pfp = 3;
   string content = 4;
   google.protobuf.Timestamp sent_at = 5;
-}
-
-message GetGroupIdsReq {
-  bytes user_id = 1;
-}
-message GetGroupIdsRes {
-  repeated bytes group_ids = 1;
 }
 
 message CreateUserReq {
